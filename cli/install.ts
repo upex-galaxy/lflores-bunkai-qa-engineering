@@ -65,7 +65,7 @@
 
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
-import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 
@@ -146,8 +146,8 @@ interface InstallState {
   postInstall: {
     agentsSetup: 'pending' | 'completed' | 'skipped-non-interactive' | 'failed'
     acliAuth: 'pending' | 'completed' | 'skipped-non-interactive' | 'skipped-no-binary' | 'skipped-no-auth' | 'failed'
-    jiraSyncFields: 'pending' | 'completed' | 'skipped-non-interactive' | 'skipped-no-auth' | 'failed'
-    jiraSyncWorkflows: 'pending' | 'completed' | 'skipped-non-interactive' | 'skipped-no-auth' | 'failed'
+    jiraSyncFields: 'pending' | 'completed' | 'skipped-non-interactive' | 'skipped-no-auth' | 'skipped-no-admin' | 'failed'
+    jiraSyncWorkflows: 'pending' | 'completed' | 'skipped-non-interactive' | 'skipped-no-auth' | 'skipped-no-admin' | 'failed'
     jiraCheck: 'pending' | 'completed' | 'skipped-non-interactive' | 'skipped-prereq' | 'failed'
   }
 }
@@ -967,10 +967,32 @@ async function ensureEnvFileExists(): Promise<void> {
 async function appendVarsToEnv(vars: Record<string, string>): Promise<void> {
   if (Object.keys(vars).length === 0) { return; }
   const existing = await readFile(ENV_PATH, 'utf8');
-  const needsNewline = existing.length > 0 && !existing.endsWith('\n');
-  const header = '\n# ===== Added by `bun run setup` =====\n';
-  const body = `${Object.entries(vars).map(([k, v]) => `${k}=${v}`).join('\n')}\n`;
-  await writeFile(ENV_PATH, `${existing}${needsNewline ? '\n' : ''}${header}${body}`, 'utf8');
+  // Upsert: replace an existing `KEY=` line in place so re-runs and the acli
+  // retry loop never accumulate duplicate secret lines; append only new keys.
+  const lines = existing.split('\n');
+  const remaining: Record<string, string> = { ...vars };
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trimStart().startsWith('#')) { continue; }
+    const eq = lines[i].indexOf('=');
+    if (eq <= 0) { continue; }
+    const key = lines[i].slice(0, eq).trim();
+    if (Object.prototype.hasOwnProperty.call(remaining, key)) {
+      lines[i] = `${key}=${remaining[key]}`;
+      delete remaining[key];
+    }
+  }
+  let next = lines.join('\n');
+  const toAppend = Object.entries(remaining);
+  if (toAppend.length > 0) {
+    const needsNewline = next.length > 0 && !next.endsWith('\n');
+    const header = '\n# ===== Added by `bun run setup` =====\n';
+    const body = `${toAppend.map(([k, v]) => `${k}=${v}`).join('\n')}\n`;
+    next = `${next}${needsNewline ? '\n' : ''}${header}${body}`;
+  }
+  // .env holds secrets — write 0600 (best effort; mode is a no-op on Windows).
+  await writeFile(ENV_PATH, next, { mode: 0o600 });
+  try { await chmod(ENV_PATH, 0o600); }
+  catch { /* best effort */ }
 }
 
 async function promptForVar(name: string): Promise<string> {
@@ -1540,7 +1562,9 @@ async function setupGithubRemote(state: InstallState, forceKeys: Set<string>): P
   log.success(`Remote created: ${account}/${repoName}`);
 
   // Step 2: push (separate so we can distinguish failure modes)
-  const pushRes = spawnSync('git', ['push', '-u', 'origin', 'main'], {
+  const branchRes = spawnSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { encoding: 'utf8' });
+  const currentBranch = branchRes.status === 0 ? branchRes.stdout.trim() : 'main';
+  const pushRes = spawnSync('git', ['push', '-u', 'origin', currentBranch], {
     stdio: ['ignore', 'pipe', 'pipe'],
     encoding: 'utf8',
   });
@@ -1549,7 +1573,7 @@ async function setupGithubRemote(state: InstallState, forceKeys: Set<string>): P
     if (pushRes.stderr) { log.dim(`  ${pushRes.stderr.trim()}`); }
     log.dim('  This usually means pre-push hooks rejected the push.');
     log.dim('  Fix the hook errors then retry:');
-    log.dim('    git push -u origin main');
+    log.dim(`    git push -u origin ${currentBranch}`);
     return;
   }
   log.success('Initial push succeeded.');
@@ -1756,8 +1780,14 @@ function reloadDotEnv(): void {
       const eq = line.indexOf('=');
       if (eq < 0) { continue; }
       const k = line.slice(0, eq).trim();
-      const v = line.slice(eq + 1).trim().replace(/^['"]|['"]$/g, '');
-      if (k) { process.env[k] = v; }
+      let v = line.slice(eq + 1).trim();
+      // Strip only a *matched* surrounding quote pair — a lone quote is part of
+      // the value (e.g. a password) and must not be mangled.
+      if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith('\'') && v.endsWith('\''))) {
+        v = v.slice(1, -1);
+      }
+      // Don't overwrite an already-populated value with an empty one from .env.
+      if (k && (v !== '' || !process.env[k])) { process.env[k] = v; }
     }
   }
   catch {
@@ -1842,6 +1872,42 @@ async function jiraAuthLoop(): Promise<'authenticated' | 'skipped'> {
 }
 
 /**
+ * Stderr marker emitted by `scripts/sync-jira-fields.ts` and
+ * `scripts/sync-jira-workflows.ts` when the authenticated Jira user does not
+ * have Administer permission. The script exits 0 in that case (lack of admin
+ * is not a failure — the user can still use the repo with the boilerplate's
+ * bundled JSON), so we rely on this marker to distinguish a true success from
+ * a graceful skip.
+ */
+const JIRA_SKIP_NO_ADMIN_MARKER = '[JIRA_SYNC_SKIPPED_NO_ADMIN]';
+
+/**
+ * Run a Jira sync script while teeing its stderr through this process. Looks
+ * for the `[JIRA_SYNC_SKIPPED_NO_ADMIN]` marker to detect the no-admin skip
+ * path. Returns `'skipped-no-admin'` when the marker appears (exit code is
+ * 0 in that case), `'completed'` on plain success, or `'failed'` on non-zero
+ * exit without the marker.
+ */
+function runJiraSyncCapturingMarker(
+  args: string[],
+): 'completed' | 'failed' | 'skipped-no-admin' {
+  const child = spawnSync('bun', args, {
+    stdio: ['inherit', 'inherit', 'pipe'],
+  });
+  const stderrText = child.stderr ? child.stderr.toString('utf8') : '';
+  if (stderrText) {
+    process.stderr.write(stderrText);
+  }
+  if (stderrText.includes(JIRA_SKIP_NO_ADMIN_MARKER)) {
+    return 'skipped-no-admin';
+  }
+  if (child.status === 0) {
+    return 'completed';
+  }
+  return 'failed';
+}
+
+/**
  * PHASE 5 — INITIAL CONFIGURATION
  *
  * Steps:
@@ -1915,6 +1981,7 @@ async function runInitialConfigurationPhase(state: InstallState): Promise<void> 
       process.stdout.write(`${tui.statusIcon('fail')} Cannot run acli auth — ATLASSIAN_* still missing: ${stillMissing.join(', ')}\n`);
       process.stdout.write('    Set them in .env (re-run setup) or run manually:\n');
       process.stdout.write(`    ${MANUAL_ACLI_LOGIN}\n`);
+      await writeInstallState(state);
       process.exit(1);
     }
 
@@ -1940,6 +2007,7 @@ async function runInitialConfigurationPhase(state: InstallState): Promise<void> 
         state.postInstall.acliAuth = 'skipped-non-interactive';
         process.stdout.write(`${tui.statusIcon('fail')} Cannot run acli auth login — ATLASSIAN_URL / ATLASSIAN_EMAIL / ATLASSIAN_API_TOKEN missing.\n`);
         process.stdout.write(`    Manual auth: ${MANUAL_ACLI_LOGIN}\n`);
+        await writeInstallState(state);
         process.exit(1);
       }
 
@@ -1981,6 +2049,7 @@ async function runInitialConfigurationPhase(state: InstallState): Promise<void> 
         state.postInstall.acliAuth = 'failed';
         process.stdout.write(`${tui.statusIcon('fail')} acli auth login failed after ${MAX_ATTEMPTS} attempts.\n`);
         process.stdout.write(`    Manual auth: ${MANUAL_ACLI_LOGIN}\n`);
+        await writeInstallState(state);
         process.exit(1);
       }
     }
@@ -2013,13 +2082,19 @@ async function runInitialConfigurationPhase(state: InstallState): Promise<void> 
       // script's safety check still protects user edits in later sessions
       // because the early-exit guard above short-circuits subsequent runs.
       const syncArgs = ['run', 'jira:sync-fields', '--', '--force'];
-      const res = spawnSync('bun', syncArgs, { stdio: 'inherit' });
-      state.postInstall.jiraSyncFields = res.status === 0 ? 'completed' : 'failed';
-      if (res.status === 0) {
+      const outcome = runJiraSyncCapturingMarker(syncArgs);
+      state.postInstall.jiraSyncFields = outcome;
+      if (outcome === 'completed') {
         process.stdout.write(`${tui.statusIcon('ok')} jira:sync-fields completed\n`);
       }
+      else if (outcome === 'skipped-no-admin') {
+        process.stdout.write(`${tui.statusIcon('warn')} jira:sync-fields skipped — your Jira user is not an Administrator.\n`);
+        process.stdout.write('  The boilerplate-bundled .agents/jira-fields.json stays as-is (repo still works).\n');
+        process.stdout.write('  Options: ask a Jira admin to run `bun run jira:sync-fields` and commit the result,\n');
+        process.stdout.write('           or download the UPEX standard catalog via `bun run jira:sync-fields --upex`.\n');
+      }
       else {
-        process.stdout.write(`${tui.statusIcon('fail')} jira:sync-fields exited with ${res.status}. Continuing.\n`);
+        process.stdout.write(`${tui.statusIcon('fail')} jira:sync-fields failed. Continuing.\n`);
       }
     }
   }
@@ -2038,18 +2113,29 @@ async function runInitialConfigurationPhase(state: InstallState): Promise<void> 
     state.postInstall.jiraSyncWorkflows = 'skipped-non-interactive';
     process.stdout.write(`${tui.statusIcon('warn')} Skipped (no TTY). Re-run via: bun run jira:sync-workflows\n`);
   }
+  else if (state.postInstall.jiraSyncFields === 'skipped-no-admin') {
+    // Same root cause — admin permission missing. Skip to keep messages consistent.
+    state.postInstall.jiraSyncWorkflows = 'skipped-no-admin';
+    process.stdout.write(`${tui.statusIcon('warn')} Skipped — jira:sync-fields detected no Administer permission. Same applies here.\n`);
+    process.stdout.write('  UPEX-standard alternative: `bun run jira:sync-workflows --upex`.\n');
+  }
   else if (state.postInstall.jiraSyncFields !== 'completed') {
     state.postInstall.jiraSyncWorkflows = 'skipped-no-auth';
     process.stdout.write(`${tui.statusIcon('warn')} Skipped — jira:sync-fields did not complete (uses same Atlassian credentials).\n`);
   }
   else {
-    const res = spawnSync('bun', ['run', 'jira:sync-workflows'], { stdio: 'inherit' });
-    state.postInstall.jiraSyncWorkflows = res.status === 0 ? 'completed' : 'failed';
-    if (res.status === 0) {
+    const outcome = runJiraSyncCapturingMarker(['run', 'jira:sync-workflows']);
+    state.postInstall.jiraSyncWorkflows = outcome;
+    if (outcome === 'completed') {
       process.stdout.write(`${tui.statusIcon('ok')} jira:sync-workflows completed\n`);
     }
+    else if (outcome === 'skipped-no-admin') {
+      process.stdout.write(`${tui.statusIcon('warn')} jira:sync-workflows skipped — your Jira user is not an Administrator.\n`);
+      process.stdout.write('  The boilerplate-bundled .agents/jira-workflows.json stays as-is (repo still works).\n');
+      process.stdout.write('  UPEX-standard alternative: `bun run jira:sync-workflows --upex`.\n');
+    }
     else {
-      process.stdout.write(`${tui.statusIcon('fail')} jira:sync-workflows exited with ${res.status}. Continuing.\n`);
+      process.stdout.write(`${tui.statusIcon('fail')} jira:sync-workflows failed. Continuing.\n`);
     }
   }
 
@@ -2066,6 +2152,14 @@ async function runInitialConfigurationPhase(state: InstallState): Promise<void> 
   else if (AUTO_NON_INTERACTIVE) {
     state.postInstall.jiraCheck = 'skipped-non-interactive';
     process.stdout.write(`${tui.statusIcon('warn')} Skipped (no TTY). Re-run via: bun run jira:check\n`);
+  }
+  else if (
+    state.postInstall.jiraSyncFields === 'skipped-no-admin'
+    || state.postInstall.jiraSyncWorkflows === 'skipped-no-admin'
+  ) {
+    state.postInstall.jiraCheck = 'skipped-prereq';
+    process.stdout.write(`${tui.statusIcon('warn')} Skipped — Jira sync was no-admin (boilerplate JSON in use). jira:check would compare against the upstream catalog, not yours.\n`);
+    process.stdout.write('  After downloading UPEX standard with `--upex`, you can run: bun run jira:check\n');
   }
   else if (state.postInstall.jiraSyncFields !== 'completed' || state.postInstall.jiraSyncWorkflows !== 'completed') {
     state.postInstall.jiraCheck = 'skipped-prereq';
