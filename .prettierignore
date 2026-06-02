@@ -71,3 +71,6 @@ docs/mcp/
 .auth/
 .playwright/
 !.playwright/cli.config.json
+
+# ----- 2026-06-01 (sync) -----
+.claude/worktrees/

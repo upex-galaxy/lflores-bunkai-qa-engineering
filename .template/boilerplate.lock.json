@@ -23,17 +23,31 @@
       ]
     },
     ".prettierignore": {
-      "lastSyncedSha": "0ce51515b54c61877a5b0e1dcb601f78af885509",
+      "lastSyncedSha": "1e3f9500969ad5ea6ac33eb186773d0daf90633d",
       "appendedLines": [
         ".claude/settings.local.json",
         ".auth/",
         ".playwright/",
-        "!.playwright/cli.config.json"
+        "!.playwright/cli.config.json",
+        ".claude/worktrees/"
       ]
     }
   },
-  "packageJsonSync": {},
+  "packageJsonSync": {
+    "package.json": {
+      "scripts": {
+        "lastSyncedSha": "f06c50d56ebaa88567056a7dba3a01b6158880a6",
+        "appliedKeys": [
+          "vars:env:check"
+        ]
+      },
+      "devDependencies": {
+        "lastSyncedSha": "f06c50d56ebaa88567056a7dba3a01b6158880a6",
+        "appliedKeys": []
+      }
+    }
+  },
   "cliVersion": "7.0",
-  "lastSyncedAt": "2026-05-30T18:51:27.488Z",
+  "lastSyncedAt": "2026-06-01T23:31:12.162Z",
   "variableSystemVersion": 1
 }
