@@ -1,0 +1,7 @@
+[API Setup] Starting API authentication...
+[API Setup] Target: https://dojo.upexgalaxy.com/api/auth/login
+---- API NOK: 401 - https://dojo.upexgalaxy.com/api/auth/login
+❌ [PROJ-101] authenticateSuccessfully - FAIL: expect(received).toBe(expected) // Object.is equality
+
+Expected: 200
+Received: 401
