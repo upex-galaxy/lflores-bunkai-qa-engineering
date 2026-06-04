@@ -60,6 +60,7 @@ const SCAN_FILES = [
 const SKIP_DIRS = new Set([
   'node_modules',
   '.git',
+  'worktrees', // git worktrees under .claude/ are another branch's checkout — not this tree
   '.scratch',
   'tests',
   'api',
@@ -83,6 +84,8 @@ const DOC_META_ALLOWLIST: Array<[string, string]> = [
   ['VAR', 'CLAUDE.md'],
   // §Tool Resolution pseudocode type list: "`{{PROJECT_VAR}}` (from `.agents/project.yaml`)"
   ['PROJECT_VAR', 'CLAUDE.md'],
+  // §3.5 Validate / §Verify checklist: adapt-framework.md documents the {{VAR}} syntax inside vars:check comments
+  ['VAR', 'adapt-framework.md'],
 ];
 
 // -----------------------------------------------------------------------------
