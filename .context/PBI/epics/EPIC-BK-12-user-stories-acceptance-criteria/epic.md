@@ -1,9 +1,9 @@
 # EPIC: User Stories & Acceptance Criteria
 
-**Jira Key:** [BK-12](https://upexgalaxy67.atlassian.net/browse/BK-12)
+**Jira Key:** [BK-12](https://jira.upexgalaxy.com/browse/BK-12)
 **Priority:** Medium
 **Status:** Planning
-**Total Story Points:** 13
+**Total Story Points:** 24
 
 ---
 
@@ -65,10 +65,10 @@ MVP runs on the built stack: ***Next.js 15 App Router**** (API routes under `app
 
 | Key | Story | Points | Priority | Status |
 | --- | ----- | ------ | -------- | ------ |
-| [BK-14](https://upexgalaxy67.atlassian.net/browse/BK-14) | TMS-US | Manage user stories anchored to a module | - | Medium | Shift-Left QA |
-| [BK-15](https://upexgalaxy67.atlassian.net/browse/BK-15) | TMS-AC | Manage criteria under a user story | - | Medium | Shift-Left QA |
-| [BK-16](https://upexgalaxy67.atlassian.net/browse/BK-16) | Markdown Editor | Write and preview Markdown safely | 13 | Medium | Ready For Dev |
-| [BK-17](https://upexgalaxy67.atlassian.net/browse/BK-17) | Jira Import | Pull Jira issues by JQL | - | Medium | Ready For Dev |
+| [BK-14](https://jira.upexgalaxy.com/browse/BK-14) | TMS-US | Manage user stories anchored to a module | 3 | Medium | Ready For QA |
+| [BK-15](https://jira.upexgalaxy.com/browse/BK-15) | TMS-AC | Manage criteria under a user story | 3 | Medium | Ready For QA |
+| [BK-16](https://jira.upexgalaxy.com/browse/BK-16) | Markdown Editor | Write and preview Markdown safely | 13 | Medium | Ready For QA |
+| [BK-17](https://jira.upexgalaxy.com/browse/BK-17) | Jira Import | Pull Jira issues by JQL | 5 | Medium | Ready For QA |
 
 ---
 
@@ -83,4 +83,3 @@ MVP runs on the built stack: ***Next.js 15 App Router**** (API routes under `app
 ---
 
 _Synced from Jira by sync-jira-issues_
-_Last sync: 2026-06-02T00:12:12.479Z_

@@ -1,11 +1,11 @@
 # TMS-ATC Duplicate | Duplicate an ATC with steps and assertions
 
-**Jira Key:** [BK-23](https://upexgalaxy67.atlassian.net/browse/BK-23)
-**Epic:** [BK-13](https://upexgalaxy67.atlassian.net/browse/BK-13) (ATC Library (Atomic Test Components))
+**Jira Key:** [BK-23](https://jira.upexgalaxy.com/browse/BK-23)
+**Epic:** [BK-13](https://jira.upexgalaxy.com/browse/BK-13) (ATC Library (Atomic Test Components))
 **Type:** Story
-**Status:** Shift-Left QA
+**Status:** Estimation
 **Priority:** Medium
-**Story Points:** -
+**Story Points:** 2
 
 ---
 
@@ -28,27 +28,14 @@
 
 ---
 
-## Fields
-
-> Each rich-text field is a separate file in this folder.
-
-- [Acceptance Criteria](./acceptance-criteria.md)
-- [Business Rules](./business-rules.md)
-- [Scope](./scope.md)
-- [Out Of Scope](./out-of-scope.md)
-- [Workflow](./workflow.md)
-
----
-
 ## Metadata
 
 - **Created:** 5/20/2026
-- **Updated:** 5/29/2026
+- **Updated:** 6/5/2026
 - **Reporter:** Ely
-- **Assignee:** Unassigned
+- **Assignee:** Benjamin Segovia
 - **Labels:** atc, clone, mvp, wave-2
 
 ---
 
 _Synced from Jira by sync-jira-issues_
-_Last sync: 2026-06-02T00:12:13.879Z_

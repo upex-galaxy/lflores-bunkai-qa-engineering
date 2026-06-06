@@ -1,9 +1,9 @@
 # Markdown Editor | Write and preview Markdown safely
 
-**Jira Key:** [BK-16](https://upexgalaxy67.atlassian.net/browse/BK-16)
-**Epic:** [BK-12](https://upexgalaxy67.atlassian.net/browse/BK-12) (User Stories & Acceptance Criteria)
+**Jira Key:** [BK-16](https://jira.upexgalaxy.com/browse/BK-16)
+**Epic:** [BK-12](https://jira.upexgalaxy.com/browse/BK-12) (User Stories & Acceptance Criteria)
 **Type:** Story
-**Status:** Ready For Dev
+**Status:** Ready For QA
 **Priority:** Medium
 **Story Points:** 13
 
@@ -28,23 +28,10 @@
 
 ---
 
-## Fields
-
-> Each rich-text field is a separate file in this folder.
-
-- [Acceptance Criteria](./acceptance-criteria.md)
-- [Business Rules](./business-rules.md)
-- [Scope](./scope.md)
-- [Out Of Scope](./out-of-scope.md)
-- [Workflow](./workflow.md)
-- [Acceptance Test Plan (QA)](./acceptance-test-plan.md)
-
----
-
 ## Metadata
 
 - **Created:** 5/20/2026
-- **Updated:** 6/1/2026
+- **Updated:** 6/5/2026
 - **Reporter:** Ely
 - **Assignee:** Facu Barea
 - **Labels:** markdown, mvp, shift-left-2026-06-01, shift-left-reviewed, ux, wave-2
@@ -52,4 +39,3 @@
 ---
 
 _Synced from Jira by sync-jira-issues_
-_Last sync: 2026-06-02T00:12:12.487Z_

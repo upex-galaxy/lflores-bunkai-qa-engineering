@@ -1,7 +1,7 @@
 # TMS-Test Tags | Assign reserved and custom tags to a test
 
-**Jira Key:** [BK-33](https://upexgalaxy67.atlassian.net/browse/BK-33)
-**Epic:** [BK-24](https://upexgalaxy67.atlassian.net/browse/BK-24) (Tests (chains of ATCs))
+**Jira Key:** [BK-33](https://jira.upexgalaxy.com/browse/BK-33)
+**Epic:** [BK-24](https://jira.upexgalaxy.com/browse/BK-24) (Tests (chains of ATCs))
 **Type:** Story
 **Status:** Backlog
 **Priority:** Medium
@@ -33,34 +33,21 @@
 
 ---
 
-## Fields
-
-> Each rich-text field is a separate file in this folder.
-
-- [Acceptance Criteria](./acceptance-criteria.md)
-- [Business Rules](./business-rules.md)
-- [Scope](./scope.md)
-- [Out Of Scope](./out-of-scope.md)
-- [Workflow](./workflow.md)
-
----
-
 ## Traceability
 
 ### Story (1)
 
-- [BK-27](https://upexgalaxy67.atlassian.net/browse/BK-27): TMS-Test Builder | Assemble a test by chaining ATCs _(Shift-Left QA)_
+- [BK-27](https://jira.upexgalaxy.com/browse/BK-27): TMS-Test Builder | Assemble a test by chaining ATCs _(Estimation)_
 
 ---
 
 ## Metadata
 
 - **Created:** 5/28/2026
-- **Updated:** 5/29/2026
+- **Updated:** 6/5/2026
 - **Reporter:** Ely
 - **Assignee:** Unassigned
 
 ---
 
 _Synced from Jira by sync-jira-issues_
-_Last sync: 2026-06-02T00:12:15.291Z_

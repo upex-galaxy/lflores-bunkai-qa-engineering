@@ -1,6 +1,6 @@
 # EPIC: Bunkai TMS — Credenciales de Acceso para Testing (DB / API / UI)
 
-**Jira Key:** [BK-29](https://upexgalaxy67.atlassian.net/browse/BK-29)
+**Jira Key:** [BK-29](https://jira.upexgalaxy.com/browse/BK-29)
 **Priority:** Medium
 **Status:** Backlog
 **Total Story Points:** 0
@@ -85,7 +85,7 @@ Tres formas válidas de obtener un Bearer PAT:
 
 Flujo headless:
 
-```bash
+```java
 # 1. Signup once (idempotente — 409 si el user ya existe)
 curl -X POST https://<host>/api/v1/auth/signup \
   -H 'content-type: application/json' \
@@ -168,4 +168,3 @@ Re-ejecutar `/testability-guide` para sincronizar drift cuando el stack o las mi
 ---
 
 _Synced from Jira by sync-jira-issues_
-_Last sync: 2026-06-02T00:12:16.243Z_

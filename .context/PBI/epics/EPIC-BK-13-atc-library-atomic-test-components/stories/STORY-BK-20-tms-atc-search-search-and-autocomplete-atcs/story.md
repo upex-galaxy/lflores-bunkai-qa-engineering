@@ -1,7 +1,7 @@
 # TMS-ATC Search | Search and autocomplete ATCs
 
-**Jira Key:** [BK-20](https://upexgalaxy67.atlassian.net/browse/BK-20)
-**Epic:** [BK-13](https://upexgalaxy67.atlassian.net/browse/BK-13) (ATC Library (Atomic Test Components))
+**Jira Key:** [BK-20](https://jira.upexgalaxy.com/browse/BK-20)
+**Epic:** [BK-13](https://jira.upexgalaxy.com/browse/BK-13) (ATC Library (Atomic Test Components))
 **Type:** Story
 **Status:** Ready For Dev
 **Priority:** Medium
@@ -28,23 +28,10 @@
 
 ---
 
-## Fields
-
-> Each rich-text field is a separate file in this folder.
-
-- [Acceptance Criteria](./acceptance-criteria.md)
-- [Business Rules](./business-rules.md)
-- [Scope](./scope.md)
-- [Out Of Scope](./out-of-scope.md)
-- [Workflow](./workflow.md)
-- [Acceptance Test Plan (QA)](./acceptance-test-plan.md)
-
----
-
 ## Metadata
 
 - **Created:** 5/20/2026
-- **Updated:** 6/1/2026
+- **Updated:** 6/5/2026
 - **Reporter:** Ely
 - **Assignee:** Facu Barea
 - **Labels:** atc, fts, mvp, search, shift-left-2026-06-01, shift-left-reviewed, wave-2
@@ -52,4 +39,3 @@
 ---
 
 _Synced from Jira by sync-jira-issues_
-_Last sync: 2026-06-02T00:12:13.878Z_

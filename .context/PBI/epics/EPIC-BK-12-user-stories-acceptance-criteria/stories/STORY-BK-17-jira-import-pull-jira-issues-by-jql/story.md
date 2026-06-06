@@ -1,11 +1,11 @@
 # Jira Import | Pull Jira issues by JQL
 
-**Jira Key:** [BK-17](https://upexgalaxy67.atlassian.net/browse/BK-17)
-**Epic:** [BK-12](https://upexgalaxy67.atlassian.net/browse/BK-12) (User Stories & Acceptance Criteria)
+**Jira Key:** [BK-17](https://jira.upexgalaxy.com/browse/BK-17)
+**Epic:** [BK-12](https://jira.upexgalaxy.com/browse/BK-12) (User Stories & Acceptance Criteria)
 **Type:** Story
-**Status:** Ready For Dev
+**Status:** Ready For QA
 **Priority:** Medium
-**Story Points:** -
+**Story Points:** 5
 
 ---
 
@@ -42,22 +42,10 @@ The user opens Project settings, picks ***Import from Jira***, enters a JQL, and
 
 ---
 
-## Fields
-
-> Each rich-text field is a separate file in this folder.
-
-- [Acceptance Criteria](./acceptance-criteria.md)
-- [Business Rules](./business-rules.md)
-- [Scope](./scope.md)
-- [Out Of Scope](./out-of-scope.md)
-- [Workflow](./workflow.md)
-
----
-
 ## Metadata
 
 - **Created:** 5/20/2026
-- **Updated:** 5/29/2026
+- **Updated:** 6/5/2026
 - **Reporter:** Ely
 - **Assignee:** Ely
 - **Labels:** integration, jira-import, mvp, shift-left-2026-05-27, shift-left-reviewed, wave-2
@@ -65,4 +53,3 @@ The user opens Project settings, picks ***Import from Jira***, enters a JQL, and
 ---
 
 _Synced from Jira by sync-jira-issues_
-_Last sync: 2026-06-02T00:12:12.487Z_

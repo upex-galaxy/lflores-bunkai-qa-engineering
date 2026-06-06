@@ -1,11 +1,11 @@
 # TMS-Project | Create a project inside a workspace
 
-**Jira Key:** [BK-8](https://upexgalaxy67.atlassian.net/browse/BK-8)
-**Epic:** [BK-7](https://upexgalaxy67.atlassian.net/browse/BK-7) (Project & Module Hierarchy)
+**Jira Key:** [BK-8](https://jira.upexgalaxy.com/browse/BK-8)
+**Epic:** [BK-7](https://jira.upexgalaxy.com/browse/BK-7) (Project & Module Hierarchy)
 **Type:** Story
-**Status:** Ready For Dev
+**Status:** In Test
 **Priority:** Medium
-**Story Points:** 5
+**Story Points:** 8
 
 ---
 
@@ -25,7 +25,7 @@ As a Workspace member, I want to create a Project inside a Workspace so that I c
 
 ### Ambiguities Found
 
-- ***A1 — Error code separator****: ACs write NAME**TOO*SHORT but codebase standard is NAME*TOO*SHORT (underscore). Likely typo.
+- ***A1 — Error code separator***: ACs write NAME*TOO*SHORT but codebase standard is NAME*TOO*SHORT (underscore). Likely typo.
 - ***A2 — Workspace param***: URL says /workspaces/W/projects but Workflow step 9 uses ws-slug. UUID or slug?
 - ***A3 — Auth mechanism***: Cookie session or PAT bearer? If PAT, what scope? No existing scope covers project creation.
 - ***A4 — Slug derivation***: Accent handling, max length, consecutive hyphens, and collision behavior (409 vs auto-suffix) unspecified.
@@ -51,28 +51,24 @@ As a Workspace member, I want to create a Project inside a Workspace so that I c
 
 ---
 
-## Fields
+## Traceability
 
-> Each rich-text field is a separate file in this folder.
+### Bugs (3)
 
-- [Acceptance Criteria](./acceptance-criteria.md)
-- [Business Rules](./business-rules.md)
-- [Scope](./scope.md)
-- [Out Of Scope](./out-of-scope.md)
-- [Workflow](./workflow.md)
-- [Acceptance Test Plan (QA)](./acceptance-test-plan.md)
+- [BK-54](https://jira.upexgalaxy.com/browse/BK-54): BK-8: Reserved project slugs are not rejected (AC-11) — created with HTTP 201 _(Open)_
+- [BK-55](https://jira.upexgalaxy.com/browse/BK-55): BK-8: Project detail route /projects/{slug} is not workspace-scoped _(Open)_
+- [BK-56](https://jira.upexgalaxy.com/browse/BK-56): BK-8: Non-Latin (CJK/Cyrillic) project names rejected as name_no_alphanumeric _(Open)_
 
 ---
 
 ## Metadata
 
 - **Created:** 5/19/2026
-- **Updated:** 5/29/2026
+- **Updated:** 6/5/2026
 - **Reporter:** Ely
-- **Assignee:** Andrés Daniel Cumare Morales
+- **Assignee:** Ely
 - **Labels:** hierarchy, mvp, shift-left-2026-05-28, shift-left-reviewed, wave-1
 
 ---
 
 _Synced from Jira by sync-jira-issues_
-_Last sync: 2026-06-02T00:12:11.834Z_

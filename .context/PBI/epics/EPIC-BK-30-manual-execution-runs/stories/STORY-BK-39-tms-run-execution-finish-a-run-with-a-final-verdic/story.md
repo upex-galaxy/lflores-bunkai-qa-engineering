@@ -1,7 +1,7 @@
 # TMS-Run Execution | Finish a run with a final verdict
 
-**Jira Key:** [BK-39](https://upexgalaxy67.atlassian.net/browse/BK-39)
-**Epic:** [BK-30](https://upexgalaxy67.atlassian.net/browse/BK-30) (Manual Execution & Runs)
+**Jira Key:** [BK-39](https://jira.upexgalaxy.com/browse/BK-39)
+**Epic:** [BK-30](https://jira.upexgalaxy.com/browse/BK-30) (Manual Execution & Runs)
 **Type:** Story
 **Status:** Backlog
 **Priority:** Medium
@@ -31,34 +31,21 @@
 
 ---
 
-## Fields
-
-> Each rich-text field is a separate file in this folder.
-
-- [Acceptance Criteria](./acceptance-criteria.md)
-- [Business Rules](./business-rules.md)
-- [Scope](./scope.md)
-- [Out Of Scope](./out-of-scope.md)
-- [Workflow](./workflow.md)
-
----
-
 ## Traceability
 
 ### Story (1)
 
-- [BK-34](https://upexgalaxy67.atlassian.net/browse/BK-34): TMS-Run Execution | Start a manual run in a chosen environment _(Backlog)_
+- [BK-34](https://jira.upexgalaxy.com/browse/BK-34): TMS-Run Execution | Start a manual run in a chosen environment _(Backlog)_
 
 ---
 
 ## Metadata
 
 - **Created:** 5/28/2026
-- **Updated:** 5/29/2026
+- **Updated:** 6/5/2026
 - **Reporter:** Ely
 - **Assignee:** Unassigned
 
 ---
 
 _Synced from Jira by sync-jira-issues_
-_Last sync: 2026-06-02T00:12:17.668Z_

@@ -22,9 +22,9 @@
         "1920x1080"
       ]
     },
-    "dbhub": {
-      "command": "bunx",
-      "args": ["-y", "@bytebase/dbhub@latest", "--config", "dbhub.toml"]
+    "staging-dbhub": {
+      "command": "/home/lflores/.bun/bin/dbhub",
+      "args": ["--config", "dbhub.toml"]
     },
     "openapi": {
       "command": "bunx",

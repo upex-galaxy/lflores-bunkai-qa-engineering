@@ -1,7 +1,7 @@
 # TMS-Traceability | Export the assembled chain as a read-only snapshot
 
-**Jira Key:** [BK-50](https://upexgalaxy67.atlassian.net/browse/BK-50)
-**Epic:** [BK-44](https://upexgalaxy67.atlassian.net/browse/BK-44) (Coverage & Traceability)
+**Jira Key:** [BK-50](https://jira.upexgalaxy.com/browse/BK-50)
+**Epic:** [BK-44](https://jira.upexgalaxy.com/browse/BK-44) (Coverage & Traceability)
 **Type:** Story
 **Status:** Shift-Left QA
 **Priority:** Medium
@@ -17,28 +17,18 @@ As a QA Lead, I want to export a user story's assembled evidence chain as a shar
 
 ---
 
-## Fields
-
-> Each rich-text field is a separate file in this folder.
-
-- [Acceptance Criteria](./acceptance-criteria.md)
-- [Scope](./scope.md)
-- [Out Of Scope](./out-of-scope.md)
-
----
-
 ## Traceability
 
 ### Story (1)
 
-- [BK-45](https://upexgalaxy67.atlassian.net/browse/BK-45): TMS-Traceability | Render full US to bug evidence chain in one read _(Shift-Left QA)_
+- [BK-45](https://jira.upexgalaxy.com/browse/BK-45): TMS-Traceability | Render full US to bug evidence chain in one read _(Shift-Left QA)_
 
 ---
 
 ## Metadata
 
 - **Created:** 6/1/2026
-- **Updated:** 6/1/2026
+- **Updated:** 6/5/2026
 - **Reporter:** Ely
 - **Assignee:** Unassigned
 - **Labels:** new-feature
@@ -46,4 +36,3 @@ As a QA Lead, I want to export a user story's assembled evidence chain as a shar
 ---
 
 _Synced from Jira by sync-jira-issues_
-_Last sync: 2026-06-02T00:12:19.285Z_
