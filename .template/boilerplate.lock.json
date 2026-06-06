@@ -3,17 +3,17 @@
   "templateRepo": "upex-galaxy/agentic-qa-boilerplate",
   "templateCommit": "",
   "perComponentCommit": {
-    "skills": "5a07dfc9a19ae042b3072a58acc4ed652ee70132",
-    "commands": "5a07dfc9a19ae042b3072a58acc4ed652ee70132",
-    "scripts": "5a07dfc9a19ae042b3072a58acc4ed652ee70132",
+    "skills": "fdc7af826b833b2aa6c607b311a8aeef7fd80cc0",
+    "commands": "fdc7af826b833b2aa6c607b311a8aeef7fd80cc0",
+    "scripts": "fdc7af826b833b2aa6c607b311a8aeef7fd80cc0",
     "docs": "5a07dfc9a19ae042b3072a58acc4ed652ee70132",
     "cli": "57a2dfdfc1ecaf50b569114e328908e14e211aea",
     "vscode": "57a2dfdfc1ecaf50b569114e328908e14e211aea",
     "husky": "5a07dfc9a19ae042b3072a58acc4ed652ee70132",
-    "agents-docs": "5a07dfc9a19ae042b3072a58acc4ed652ee70132",
+    "agents-docs": "fdc7af826b833b2aa6c607b311a8aeef7fd80cc0",
     "claude-config": "5a07dfc9a19ae042b3072a58acc4ed652ee70132",
     "tooling": "57a2dfdfc1ecaf50b569114e328908e14e211aea",
-    "env-template": "5a07dfc9a19ae042b3072a58acc4ed652ee70132"
+    "env-template": "fdc7af826b833b2aa6c607b311a8aeef7fd80cc0"
   },
   "syncedComponents": [],
   "ignoreFileSync": {
@@ -24,7 +24,7 @@
       ]
     },
     ".prettierignore": {
-      "lastSyncedSha": "560d6a347dad1078d475af5e592d717cf8cd12f5",
+      "lastSyncedSha": "c458761b1ac4605ca54f82dcf30411797bfc6b0a",
       "appendedLines": [
         ".claude/settings.local.json",
         ".auth/",
@@ -33,7 +33,8 @@
         ".claude/worktrees/",
         "api/openapi*",
         "api/.openapi-config.json",
-        ".playwright-mcp/"
+        ".playwright-mcp/",
+        ".backups/"
       ]
     }
   },
@@ -52,6 +53,6 @@
     }
   },
   "cliVersion": "7.0",
-  "lastSyncedAt": "2026-06-04T10:54:44.747Z",
+  "lastSyncedAt": "2026-06-06T12:21:46.968Z",
   "variableSystemVersion": 1
 }
