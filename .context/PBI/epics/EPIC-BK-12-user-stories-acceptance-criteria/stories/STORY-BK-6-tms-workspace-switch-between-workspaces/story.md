@@ -3,7 +3,7 @@
 **Jira Key:** [BK-6](https://jira.upexgalaxy.com/browse/BK-6)
 **Epic:** [BK-1](https://jira.upexgalaxy.com/browse/BK-1) (Tenancy & Identity)
 **Type:** Story
-**Status:** Ready For QA
+**Status:** BLOCKED
 **Priority:** Medium
 **Story Points:** -
 
@@ -51,12 +51,28 @@ Implements ***FR-004***.
 
 ---
 
+## Fields
+
+> Each rich-text field is a separate file in this folder.
+
+- [Acceptance Test Plan (QA)](./acceptance-test-plan.md)
+
+---
+
+## Traceability
+
+### Bug (1)
+
+- [BK-83](https://jira.upexgalaxy.com/browse/BK-83): WorkspaceSwitch: API: POST /api/v1/me/active-workspace response missing workspace fields (id, slug, name, role) _(Open)_
+
+---
+
 ## Metadata
 
 - **Created:** 5/19/2026
-- **Updated:** 6/5/2026
+- **Updated:** 6/6/2026
 - **Reporter:** Ely
-- **Assignee:** Luis Eduardo Flores Villarroel
+- **Assignee:** Ely
 - **Labels:** mvp, tenancy, wave-1
 
 ---
