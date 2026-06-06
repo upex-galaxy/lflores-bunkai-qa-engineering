@@ -324,6 +324,24 @@ export const VAR_MANIFEST: VarSpec[] = [
     obtainHint: 'your project DB connection — set when adapting the framework.',
     note: 'DBHub MCP password. Local only; sensitive.',
   },
+  {
+    name: 'QA_INSPECTOR_RO_URL',
+    destinations: ['local'],
+    secret: true,
+    required: false,
+    critical: false,
+    obtainHint: 'BK-29 epic — read-only Supabase connection string for QA agents.',
+    note: 'Full postgres:// URL for qa_inspector_ro role. Local only; sensitive.',
+  },
+  {
+    name: 'QA_INSPECTOR_RW_URL',
+    destinations: ['local'],
+    secret: true,
+    required: false,
+    critical: false,
+    obtainHint: 'BK-29 epic — read-write Supabase connection string for QA agents.',
+    note: 'Full postgres:// URL for qa_inspector_rw role. Local only; sensitive.',
+  },
 ];
 
 // ----------------------------------------------------------------------------
