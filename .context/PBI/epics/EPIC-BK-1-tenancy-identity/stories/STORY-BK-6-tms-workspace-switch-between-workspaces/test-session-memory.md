@@ -108,6 +108,12 @@ jira-native — ATP/ATR via Jira custom fields + comments (no Xray). XRAY creden
   - Blocker linked: BK-83 "is blocked by" BK-6 (Blocks link type, inward direction) ✓
   - Transition: In Test → BLOCKED (defect_reported) ✓
   - Final status: BLOCKED
+- Re-test 2026-06-12: TC1 re-verified PASSED after BK-83 fix confirmed. BK-6 → QA Approved.
+  - TC1 response body: `{"ok":true,"active_workspace_id":"9a2c3de7...","id":"9a2c3de7...","slug":"extra-test","name":"Extra Test","role":"member"}` HTTP 200 ✓
+  - ATR (updated): customfield_10284 PUT returned HTTP 400 → fallback: ATR re-test comment posted to BK-6 (comment ID: 11567) ✓
+  - QA comment (Template A — Story PASSED): posted to BK-6 (comment ID: 11568) ✓
+  - Transition: BLOCKED → QA Approved (via `back_from_blocked` + `qa_sign_off`) ✓
+  - Final status: QA Approved
 
 ## Stage 2 — Execution
 
@@ -159,6 +165,14 @@ jira-native — ATP/ATR via Jira custom fields + comments (no Xray). XRAY creden
 | TC2 | AC2 | Non-member workspace rejected | PASSED | — | Error code is `forbidden` not `NOT_A_MEMBER` (observation, not blocking) |
 | TC3 | AC3 | Suspended membership rejected | PASSED | — | Error code is `forbidden` not `MEMBERSHIP_SUSPENDED`; API uses RLS not status check |
 | TC4 | AC4 | UI switcher reflects active workspace | PASSED | — | Switcher shows correct workspace before + after reload |
+
+### TC Re-test Results (2026-06-12 — after BK-83 fix)
+| TC | AC | Scenario | Status | Notes |
+|----|-----|----------|--------|-------|
+| TC1 | AC1 | Happy path — switch + response schema | PASSED | BK-83 fix confirmed. Response: `{"ok":true,"active_workspace_id":"9a2c3de7...","id":"9a2c3de7...","slug":"extra-test","name":"Extra Test","role":"member"}` HTTP 200. Evidence: tc1-retest-2026-06-12.json |
+
+**Final verdict: PASSED (4/4 TCs, 100%)**
+**Transition trail**: BLOCKED → (back_from_blocked) → In Test → (qa_sign_off) → QA Approved ✓
 
 ### Findings (carry to Stage 3)
 - **BK-83** (DEF-001): POST /api/v1/me/active-workspace response missing {id, slug, name, role} — AC1 schema mismatch. Severity: Moderate. Filed 2026-06-06.
