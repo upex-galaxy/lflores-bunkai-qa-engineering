@@ -37,16 +37,16 @@
 
 ### Story (1)
 
-- [BK-27](https://jira.upexgalaxy.com/browse/BK-27): TMS-Test Builder | Assemble a test by chaining ATCs _(Estimation)_
+- [BK-27](https://jira.upexgalaxy.com/browse/BK-27): TMS-Test Builder | Assemble a test by chaining ATCs _(Ready For Dev)_
 
 ---
 
 ## Metadata
 
 - **Created:** 5/28/2026
-- **Updated:** 6/5/2026
+- **Updated:** 6/9/2026
 - **Reporter:** Ely
-- **Assignee:** Benjamin Segovia
+- **Assignee:** Unassigned
 
 ---
 

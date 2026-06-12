@@ -3,7 +3,7 @@
 **Jira Key:** [BK-35](https://jira.upexgalaxy.com/browse/BK-35)
 **Epic:** [BK-30](https://jira.upexgalaxy.com/browse/BK-30) (Manual Execution & Runs)
 **Type:** Story
-**Status:** Backlog
+**Status:** Estimation
 **Priority:** Medium
 **Story Points:** 1
 
@@ -35,7 +35,7 @@
 
 ### Storys (2)
 
-- [BK-34](https://jira.upexgalaxy.com/browse/BK-34): TMS-Run Execution | Start a manual run in a chosen environment _(Backlog)_
+- [BK-34](https://jira.upexgalaxy.com/browse/BK-34): TMS-Run Execution | Start a manual run in a chosen environment _(Ready For Dev)_
 - [BK-40](https://jira.upexgalaxy.com/browse/BK-40): TMS-Defect Filing | File a defect from a failing run step _(Backlog)_
 
 ---
@@ -43,9 +43,10 @@
 ## Metadata
 
 - **Created:** 5/28/2026
-- **Updated:** 6/5/2026
+- **Updated:** 6/11/2026
 - **Reporter:** Ely
-- **Assignee:** Unassigned
+- **Assignee:** Benjamin Segovia
+- **Labels:** shift-left-reviewed
 
 ---
 

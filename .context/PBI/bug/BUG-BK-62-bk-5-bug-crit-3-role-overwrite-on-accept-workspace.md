@@ -2,7 +2,7 @@
 
 **Jira Key:** [BK-62](https://jira.upexgalaxy.com/browse/BK-62)
 **Priority:** Medium
-**Status:** Open
+**Status:** Closed
 **Components:** None
 
 ---
@@ -67,9 +67,9 @@ Check existing role before upsert. If existing row has higher role, preserve it 
 ## Metadata
 
 - **Created:** 6/5/2026
-- **Updated:** 6/5/2026
+- **Updated:** 6/10/2026
 - **Reporter:** Nahuel Gomez
-- **Assignee:** Nahuel Gomez
+- **Assignee:** Ely
 
 ---
 

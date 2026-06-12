@@ -2,7 +2,7 @@
 
 **Jira Key:** [BK-60](https://jira.upexgalaxy.com/browse/BK-60)
 **Priority:** Medium
-**Status:** Open
+**Status:** Closed
 **Components:** None
 
 ---
@@ -49,9 +49,9 @@ Security boundary breach: members receive duplicate invite tokens. Could enable 
 ## Metadata
 
 - **Created:** 6/5/2026
-- **Updated:** 6/5/2026
+- **Updated:** 6/10/2026
 - **Reporter:** Nahuel Gomez
-- **Assignee:** Nahuel Gomez
+- **Assignee:** Ely
 
 ---
 

@@ -22,7 +22,7 @@
 ## Definition of done
 
 - [ ] A "Report defect" action appears when a step is marked failed during a run
-- [ ] The defect form opens pre-filled with the module, the steps already executed, the failing test component, and any captured evidence
+- [ ] The defect form opens pre-filled with the module, the steps already executed, the failing ATC, and any captured evidence
 - [ ] Severity can be set to one of P1, P2, P3 or P4 before saving
 - [ ] A defect can also be filed standalone (not tied to any run) from the defects area
 - [ ] Title length is validated (5 to 200 characters) with a clear message when out of range
@@ -36,7 +36,7 @@
 
 ### Storys (4)
 
-- [BK-35](https://jira.upexgalaxy.com/browse/BK-35): TMS-Run Execution | Mark each step pass, fail, or block _(Backlog)_
+- [BK-35](https://jira.upexgalaxy.com/browse/BK-35): TMS-Run Execution | Mark each step pass, fail, or block _(Estimation)_
 - [BK-42](https://jira.upexgalaxy.com/browse/BK-42): TMS-Defect Heatmap | View count and week-over-week trend per module _(Backlog)_
 - [BK-41](https://jira.upexgalaxy.com/browse/BK-41): TMS-Defect List | List and filter defects by module, status, severity _(Backlog)_
 - [BK-43](https://jira.upexgalaxy.com/browse/BK-43): TMS-Defect Sync | Sync defects one-way to the external tracker _(Backlog)_
@@ -46,7 +46,7 @@
 ## Metadata
 
 - **Created:** 5/28/2026
-- **Updated:** 6/5/2026
+- **Updated:** 6/10/2026
 - **Reporter:** Ely
 - **Assignee:** Unassigned
 

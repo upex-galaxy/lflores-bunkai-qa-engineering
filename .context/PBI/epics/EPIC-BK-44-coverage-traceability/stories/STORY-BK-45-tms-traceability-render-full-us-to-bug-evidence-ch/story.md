@@ -3,7 +3,7 @@
 **Jira Key:** [BK-45](https://jira.upexgalaxy.com/browse/BK-45)
 **Epic:** [BK-44](https://jira.upexgalaxy.com/browse/BK-44) (Coverage & Traceability)
 **Type:** Story
-**Status:** Shift-Left QA
+**Status:** Estimation
 **Priority:** Medium
 **Story Points:** -
 
@@ -13,7 +13,7 @@
 
 ## User story
 
-As a QA Lead, I want to open any user story and see its full evidence chain — acceptance criteria, the test components that satisfy them, the tests they belong to, the latest run result, and any defect raised — so that I can answer audit and coverage questions without assembling the picture by hand.
+As a QA Lead, I want to open any user story and see its full evidence chain — acceptance criteria, the ATCs that satisfy them, the tests they belong to, the latest run result, and any defect raised — so that I can answer audit and coverage questions without assembling the picture by hand.
 
 ---
 
@@ -34,10 +34,10 @@ As a QA Lead, I want to open any user story and see its full evidence chain — 
 ## Metadata
 
 - **Created:** 6/1/2026
-- **Updated:** 6/5/2026
+- **Updated:** 6/11/2026
 - **Reporter:** Ely
-- **Assignee:** Unassigned
-- **Labels:** new-feature
+- **Assignee:** Benjamin Segovia
+- **Labels:** shift-left-2026-06-11, shift-left-reviewed
 
 ---
 

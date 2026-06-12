@@ -2,7 +2,7 @@
 
 **Jira Key:** [BK-61](https://jira.upexgalaxy.com/browse/BK-61)
 **Priority:** Medium
-**Status:** Open
+**Status:** Closed
 **Components:** None
 
 ---
@@ -54,9 +54,9 @@ No DB unique constraint on (workspace_id, lower(email)) for pending invites, and
 ## Metadata
 
 - **Created:** 6/5/2026
-- **Updated:** 6/5/2026
+- **Updated:** 6/10/2026
 - **Reporter:** Nahuel Gomez
-- **Assignee:** Nahuel Gomez
+- **Assignee:** Ely
 
 ---
 

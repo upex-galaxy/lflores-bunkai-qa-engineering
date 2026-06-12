@@ -21,7 +21,7 @@ As a QA Lead, I want to see the acceptance criteria and modules that have no tes
 
 ### Epics (2)
 
-- [BK-13](https://jira.upexgalaxy.com/browse/BK-13): ATC Library (Atomic Test Components) _(Planning)_
+- [BK-13](https://jira.upexgalaxy.com/browse/BK-13): ATC Library (Acceptance Test Cases) _(Planning)_
 - [BK-30](https://jira.upexgalaxy.com/browse/BK-30): Manual Execution & Runs _(Planning)_
 
 ---
@@ -29,7 +29,7 @@ As a QA Lead, I want to see the acceptance criteria and modules that have no tes
 ## Metadata
 
 - **Created:** 6/1/2026
-- **Updated:** 6/5/2026
+- **Updated:** 6/10/2026
 - **Reporter:** Ely
 - **Assignee:** Unassigned
 - **Labels:** new-feature

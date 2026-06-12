@@ -2,7 +2,7 @@
 
 **Jira Key:** [BK-67](https://jira.upexgalaxy.com/browse/BK-67)
 **Priority:** Medium
-**Status:** Open
+**Status:** Ready For QA
 **Components:** None
 
 ---
@@ -22,7 +22,7 @@ ACTUAL: When a module is successfully created at depth 5 or 6, only toast.warnin
 ## Metadata
 
 - **Created:** 6/6/2026
-- **Updated:** 6/6/2026
+- **Updated:** 6/10/2026
 - **Reporter:** Andrés Daniel Cumare Morales
 - **Assignee:** Andrés Daniel Cumare Morales
 - **Labels:** bk-9, depth-warning, toast, ux

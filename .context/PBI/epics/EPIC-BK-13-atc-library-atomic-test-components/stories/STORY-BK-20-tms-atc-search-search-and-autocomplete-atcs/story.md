@@ -1,7 +1,7 @@
 # TMS-ATC Search | Search and autocomplete ATCs
 
 **Jira Key:** [BK-20](https://jira.upexgalaxy.com/browse/BK-20)
-**Epic:** [BK-13](https://jira.upexgalaxy.com/browse/BK-13) (ATC Library (Atomic Test Components))
+**Epic:** [BK-13](https://jira.upexgalaxy.com/browse/BK-13) (ATC Library (Acceptance Test Cases))
 **Type:** Story
 **Status:** Ready For Dev
 **Priority:** Medium
@@ -28,10 +28,18 @@
 
 ---
 
+## Traceability
+
+### Story (1)
+
+- [BK-18](https://jira.upexgalaxy.com/browse/BK-18): TMS-ATC API | Create and edit ATCs with steps and assertions _(In Test)_
+
+---
+
 ## Metadata
 
 - **Created:** 5/20/2026
-- **Updated:** 6/5/2026
+- **Updated:** 6/9/2026
 - **Reporter:** Ely
 - **Assignee:** Facu Barea
 - **Labels:** atc, fts, mvp, search, shift-left-2026-06-01, shift-left-reviewed, wave-2

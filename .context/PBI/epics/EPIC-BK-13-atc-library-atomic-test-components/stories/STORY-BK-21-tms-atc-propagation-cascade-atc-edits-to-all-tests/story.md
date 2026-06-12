@@ -1,7 +1,7 @@
 # TMS-ATC Propagation | Cascade ATC edits to all tests
 
 **Jira Key:** [BK-21](https://jira.upexgalaxy.com/browse/BK-21)
-**Epic:** [BK-13](https://jira.upexgalaxy.com/browse/BK-13) (ATC Library (Atomic Test Components))
+**Epic:** [BK-13](https://jira.upexgalaxy.com/browse/BK-13) (ATC Library (Acceptance Test Cases))
 **Type:** Story
 **Status:** Shift-Left QA
 **Priority:** Medium
@@ -28,10 +28,19 @@
 
 ---
 
+## Traceability
+
+### Storys (2)
+
+- [BK-18](https://jira.upexgalaxy.com/browse/BK-18): TMS-ATC API | Create and edit ATCs with steps and assertions _(In Test)_
+- [BK-27](https://jira.upexgalaxy.com/browse/BK-27): TMS-Test Builder | Assemble a test by chaining ATCs _(Ready For Dev)_
+
+---
+
 ## Metadata
 
 - **Created:** 5/20/2026
-- **Updated:** 6/5/2026
+- **Updated:** 6/9/2026
 - **Reporter:** Ely
 - **Assignee:** Ramiro Majdalani
 - **Labels:** atc, mvp, propagation, wave-2

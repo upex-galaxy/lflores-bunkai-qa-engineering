@@ -2,7 +2,7 @@
 
 **Jira Key:** [BK-59](https://jira.upexgalaxy.com/browse/BK-59)
 **Priority:** Medium
-**Status:** Open
+**Status:** Ready For QA
 **Components:** None
 
 ---
@@ -16,7 +16,7 @@ Structural module operations (rename, move, soft-delete cascade) do not write to
 ## Metadata
 
 - **Created:** 6/5/2026
-- **Updated:** 6/5/2026
+- **Updated:** 6/10/2026
 - **Reporter:** Ely
 - **Assignee:** Ely
 

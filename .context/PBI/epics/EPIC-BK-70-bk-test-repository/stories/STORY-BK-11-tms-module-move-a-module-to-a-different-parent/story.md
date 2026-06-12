@@ -28,10 +28,18 @@
 
 ---
 
+## Traceability
+
+### Story (1)
+
+- [BK-9](https://jira.upexgalaxy.com/browse/BK-9): TMS-Module | Create modules with nested sub-modules _(In Test)_
+
+---
+
 ## Metadata
 
 - **Created:** 5/19/2026
-- **Updated:** 6/5/2026
+- **Updated:** 6/9/2026
 - **Reporter:** Ely
 - **Assignee:** micaelavirgagarcia
 - **Labels:** hierarchy, mvp, wave-1

@@ -2,7 +2,7 @@
 
 **Jira Key:** [BK-51](https://jira.upexgalaxy.com/browse/BK-51)
 **Priority:** Medium
-**Status:** Open
+**Status:** Ready For QA
 **Components:** None
 
 ---
@@ -49,10 +49,16 @@ Reserved slugs collide with Next.js route segments under `app/(app)/projects/[pr
 
 ---
 
+## Related Issues
+
+- is duplicated by: [BK-54](https://jira.upexgalaxy.com/browse/BK-54) - BK-8: Reserved project slugs are not rejected (AC-11) — created with HTTP 201
+
+---
+
 ## Metadata
 
 - **Created:** 6/4/2026
-- **Updated:** 6/5/2026
+- **Updated:** 6/10/2026
 - **Reporter:** Ely
 - **Assignee:** Ely
 - **Labels:** bk-8, sprint-defect, wave-1

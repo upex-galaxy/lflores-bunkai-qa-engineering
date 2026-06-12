@@ -2,7 +2,7 @@
 
 **Jira Key:** [BK-56](https://jira.upexgalaxy.com/browse/BK-56)
 **Priority:** Medium
-**Status:** Open
+**Status:** Duplicated
 **Components:** None
 
 ---
@@ -52,13 +52,14 @@ International users cannot name a project in their own script. Improvement-grade
 ## Related Issues
 
 - created by: [BK-8](https://jira.upexgalaxy.com/browse/BK-8) - TMS-Project | Create a project inside a workspace
+- duplicates: [BK-53](https://jira.upexgalaxy.com/browse/BK-53) - BK-8: Non-Latin (CJK/Cyrillic) project names rejected as name_no_alphanumeric
 
 ---
 
 ## Metadata
 
 - **Created:** 6/4/2026
-- **Updated:** 6/5/2026
+- **Updated:** 6/10/2026
 - **Reporter:** Ely
 - **Assignee:** Ely
 - **Labels:** bk-8, sprint-defect, wave-1

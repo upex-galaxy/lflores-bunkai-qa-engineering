@@ -2,7 +2,7 @@
 
 **Jira Key:** [BK-52](https://jira.upexgalaxy.com/browse/BK-52)
 **Priority:** Medium
-**Status:** Open
+**Status:** Ready For QA
 **Components:** None
 
 ---
@@ -47,10 +47,16 @@ Per-workspace slug uniqueness (a core design rule, and an explicit AC: "same slu
 
 ---
 
+## Related Issues
+
+- is duplicated by: [BK-55](https://jira.upexgalaxy.com/browse/BK-55) - BK-8: Project detail route /projects/{slug} is not workspace-scoped
+
+---
+
 ## Metadata
 
 - **Created:** 6/4/2026
-- **Updated:** 6/5/2026
+- **Updated:** 6/10/2026
 - **Reporter:** Ely
 - **Assignee:** Ely
 - **Labels:** bk-8, sprint-defect, wave-1

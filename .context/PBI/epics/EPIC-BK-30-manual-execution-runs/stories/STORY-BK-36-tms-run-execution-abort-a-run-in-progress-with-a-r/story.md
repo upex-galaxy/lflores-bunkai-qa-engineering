@@ -3,7 +3,7 @@
 **Jira Key:** [BK-36](https://jira.upexgalaxy.com/browse/BK-36)
 **Epic:** [BK-30](https://jira.upexgalaxy.com/browse/BK-30) (Manual Execution & Runs)
 **Type:** Story
-**Status:** Backlog
+**Status:** Estimation
 **Priority:** Medium
 **Story Points:** 1
 
@@ -35,16 +35,16 @@
 
 ### Story (1)
 
-- [BK-34](https://jira.upexgalaxy.com/browse/BK-34): TMS-Run Execution | Start a manual run in a chosen environment _(Backlog)_
+- [BK-34](https://jira.upexgalaxy.com/browse/BK-34): TMS-Run Execution | Start a manual run in a chosen environment _(Ready For Dev)_
 
 ---
 
 ## Metadata
 
 - **Created:** 5/28/2026
-- **Updated:** 6/5/2026
+- **Updated:** 6/10/2026
 - **Reporter:** Ely
-- **Assignee:** Unassigned
+- **Assignee:** Juan Leites
 
 ---
 
