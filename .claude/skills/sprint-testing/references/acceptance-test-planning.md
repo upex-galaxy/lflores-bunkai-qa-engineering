@@ -14,6 +14,7 @@ This reference is for **manual / exploratory in-sprint testing per ticket RIGHT 
 For feature / multi-story scope see `feature-test-planning.md`.
 
 > **Before publishing ATP body to Story rich-text fields** (`{{jira.acceptance_test_plan}}` or description), read `../../agentic-qa-core/references/jira-publishing-gotchas.md` — covers the two ADF conversion gotchas (`md-to-adf` mark collision + MCP batched custom-field rejection) that silently fail HTTP 400.
+> **And format for readability** per `../../acli/references/adf-authoring-style.md` — ATP test steps read best as a table (step → expected); use a panel for a shared precondition that spans scenarios. The field's hard-rule wins: if a scenario must be Gherkin, keep the fenced block — do not replace it with a table.
 
 ---
 
@@ -365,7 +366,7 @@ ATP = `Test Plan` issue. ATR = `Test Execution` issue. Both linked bidirectional
   description: {full ATP body}
 
 [ISSUE_TRACKER_TOOL] Link Issues:
-  linkType: "is tested by"
+  linkType: {{jira.link_types.test.name}}   # Story is tested by Test Plan
   outward: {ATP_KEY}
   inward:  {STORY_KEY}
 
@@ -377,10 +378,12 @@ ATP = `Test Plan` issue. ATR = `Test Execution` issue. Both linked bidirectional
   # tests: [] — filled at Stage 3 or by CI import
 
 [ISSUE_TRACKER_TOOL] Link Issues:
-  linkType: "is tested by"
+  linkType: {{jira.link_types.test.name}}   # Story is tested by Test Execution
   outward: {ATR_KEY}
   inward:  {STORY_KEY}
 ```
+
+> Resolve the `test` link type by slug only and verify direction after each create — see `agentic-qa-core/references/traceability-linking.md` (§2 slug resolution, §4 directionality + mandatory verification).
 
 Load `/xray-cli` skill for the concrete CLI syntax.
 

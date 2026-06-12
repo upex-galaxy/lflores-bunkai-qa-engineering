@@ -416,3 +416,37 @@ work_types:
       deprecated: { from: any, to: deprecated, description: Retire the TC (global transition) }
       recover: { from: deprecated, to: draft, description: Restore a deprecated TC back to draft }
     used_by: [test-documentation, test-automation]
+
+# Jira issue link types the methodology requires for traceability edges.
+# Slug resolution: {{jira.link_types.<slug>.name}} → workspace name from .agents/jira-link-types.json.
+# Validate workspace presence with `bun run jira:check`.
+# Sync from workspace with `bun run jira:sync-link-types`.
+link_types:
+  required:
+    test:
+      name: Test
+      outward: tests
+      inward: is tested by
+      fallback: null
+      description: Coverage edge — Story is tested by a Test artifact (Test / Test Plan / Test Execution).
+      used_by: [shift-left-testing, sprint-testing, test-documentation, regression-testing]
+
+    problem_incident:
+      name: Problem/Incident
+      outward: causes
+      inward: is caused by
+      fallback: relates
+      description: Causation edge — Story causes a Bug / defect filed during sprint QA.
+      used_by: [sprint-testing]
+
+    blocks:
+      name: Blocks
+      outward: blocks
+      inward: is blocked by
+      fallback: relates
+      description: Blocking edge — Bug blocks a Story when QA fires the defect_reported → blocked gate.
+      used_by: [sprint-testing]
+
+  optional:
+  # (No optional link types at this time. Add here when a workspace-specific link type
+  #  enhances the workflow but is not strictly required.)
