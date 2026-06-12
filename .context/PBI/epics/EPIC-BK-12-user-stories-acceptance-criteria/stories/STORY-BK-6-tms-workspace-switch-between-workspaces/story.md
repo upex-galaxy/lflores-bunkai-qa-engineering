@@ -63,16 +63,16 @@ Implements ***FR-004***.
 
 ### Bug (1)
 
-- [BK-83](https://jira.upexgalaxy.com/browse/BK-83): WorkspaceSwitch: API: POST /api/v1/me/active-workspace response missing workspace fields (id, slug, name, role) _(Ready For QA)_
+- [BK-83](https://jira.upexgalaxy.com/browse/BK-83): WorkspaceSwitch: API: POST /api/v1/me/active-workspace response missing workspace fields (id, slug, name, role) _(Closed)_
 
 ---
 
 ## Metadata
 
 - **Created:** 5/19/2026
-- **Updated:** 6/10/2026
+- **Updated:** 6/12/2026
 - **Reporter:** Ely
-- **Assignee:** Ely
+- **Assignee:** Luis Eduardo Flores Villarroel
 - **Labels:** mvp, tenancy, wave-1
 
 ---
