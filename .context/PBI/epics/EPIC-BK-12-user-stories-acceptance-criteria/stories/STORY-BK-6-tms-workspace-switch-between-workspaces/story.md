@@ -3,7 +3,7 @@
 **Jira Key:** [BK-6](https://jira.upexgalaxy.com/browse/BK-6)
 **Epic:** [BK-1](https://jira.upexgalaxy.com/browse/BK-1) (Tenancy & Identity)
 **Type:** Story
-**Status:** In Test
+**Status:** QA Approved
 **Priority:** Medium
 **Story Points:** 5
 

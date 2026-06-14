@@ -104,12 +104,6 @@ if (requestedScopes.includes('workspace:admin')) {
 
 ---
 
-## Related Issues
-
-- blocks: [BK-109](https://jira.upexgalaxy.com/browse/BK-109) - 🚀 Settings | Manage Personal Access Tokens
-
----
-
 ## Metadata
 
 - **Created:** 6/11/2026

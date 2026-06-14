@@ -12,7 +12,7 @@ _Project: BK_
 - [BK-3](https://jira.upexgalaxy.com/browse/BK-3) Authentication | Sign up and sign in via OAuth (GitHub / Google) _(8 pts, Ready For Dev)_
 - [BK-4](https://jira.upexgalaxy.com/browse/BK-4) TMS-Workspace | Create a workspace _(- pts, Ready For Release)_
 - [BK-5](https://jira.upexgalaxy.com/browse/BK-5) TMS-Workspace | Invite a teammate with a role _(13 pts, QA Approved)_
-- [BK-6](https://jira.upexgalaxy.com/browse/BK-6) TMS-Workspace | Switch between workspaces _(5 pts, In Test)_
+- [BK-6](https://jira.upexgalaxy.com/browse/BK-6) TMS-Workspace | Switch between workspaces _(5 pts, QA Approved)_
 
 ## [BK-7](https://jira.upexgalaxy.com/browse/BK-7) - Project & Module Hierarchy
 
@@ -40,7 +40,7 @@ _Project: BK_
 - [BK-18](https://jira.upexgalaxy.com/browse/BK-18) TMS-ATC API | Create and edit ATCs with steps and assertions _(5 pts, In Test)_
 - [BK-19](https://jira.upexgalaxy.com/browse/BK-19) TMS-ATC Builder | Build an ATC with ordered steps and assertions _(5 pts, Ready For QA)_
 - [BK-20](https://jira.upexgalaxy.com/browse/BK-20) TMS-ATC Search | Search and autocomplete ATCs _(5 pts, Ready For Dev)_
-- [BK-21](https://jira.upexgalaxy.com/browse/BK-21) TMS-ATC Propagation | Cascade ATC edits to all tests _(5 pts, Shift-Left QA)_
+- [BK-21](https://jira.upexgalaxy.com/browse/BK-21) TMS-ATC Propagation | Cascade ATC edits to all tests _(5 pts, Ready For Dev)_
 - [BK-22](https://jira.upexgalaxy.com/browse/BK-22) TMS-ATC Usage | See a "Used in N tests" report _(3 pts, Ready For Dev)_
 - [BK-23](https://jira.upexgalaxy.com/browse/BK-23) TMS-ATC Duplicate | Duplicate an ATC with steps and assertions _(5 pts, Ready For Dev)_
 
@@ -48,7 +48,7 @@ _Project: BK_
 
 **Status:** Planning | **Stories:** 4 | **Points:** 22
 
-- [BK-27](https://jira.upexgalaxy.com/browse/BK-27) TMS-Test Builder | Assemble a test by chaining ATCs _(8 pts, Ready For Dev)_
+- [BK-27](https://jira.upexgalaxy.com/browse/BK-27) TMS-Test Builder | Assemble a test by chaining ATCs _(8 pts, Ready For QA)_
 - [BK-28](https://jira.upexgalaxy.com/browse/BK-28) TMS-Test Builder | Reorder ATCs inside a test _(5 pts, Ready For Dev)_
 - [BK-32](https://jira.upexgalaxy.com/browse/BK-32) TMS-Test View | View a test with all chained ATCs expanded _(1 pts, Backlog)_
 - [BK-33](https://jira.upexgalaxy.com/browse/BK-33) TMS-Test Tags | Assign reserved and custom tags to a test _(8 pts, Ready For Dev)_
@@ -94,7 +94,7 @@ _Project: BK_
 
 ## [BK-85](https://jira.upexgalaxy.com/browse/BK-85) - Account & Settings
 
-**Status:** Planning | **Stories:** 9 | **Points:** 28
+**Status:** Planning | **Stories:** 6 | **Points:** 19
 
 - [BK-86](https://jira.upexgalaxy.com/browse/BK-86) Account | View my identity, role, and sign out _(3 pts, Ready For Dev)_
 - [BK-87](https://jira.upexgalaxy.com/browse/BK-87) Settings | Open a settings hub and view my account _(2 pts, Ready For Dev)_
@@ -102,9 +102,6 @@ _Project: BK_
 - [BK-89](https://jira.upexgalaxy.com/browse/BK-89) TMS-Workspace | View the workspaces I belong to _(2 pts, Shift-Left QA)_
 - [BK-90](https://jira.upexgalaxy.com/browse/BK-90) TMS-Workspace | Leave a workspace _(5 pts, Ready For Dev)_
 - [BK-101](https://jira.upexgalaxy.com/browse/BK-101) 🚀 TMS-Workspace | View the workspaces I belong to _(2 pts, QA Approved)_
-- [BK-105](https://jira.upexgalaxy.com/browse/BK-105) 🚀 TMS-Workspace | View the workspaces I belong to _(2 pts, Ready For QA)_
-- [BK-109](https://jira.upexgalaxy.com/browse/BK-109) 🚀 Settings | Manage Personal Access Tokens _(5 pts, BLOCKED)_
-- [BK-113](https://jira.upexgalaxy.com/browse/BK-113) 🚀 TMS-Workspace | View the workspaces I belong to _(2 pts, Ready For QA)_
 
 ---
 

@@ -95,7 +95,7 @@ Ready for Estimation after PO confirms the MVP reserved tag vocabulary and accep
 
 ### Story (1)
 
-- [BK-27](https://jira.upexgalaxy.com/browse/BK-27): TMS-Test Builder | Assemble a test by chaining ATCs _(Ready For Dev)_
+- [BK-27](https://jira.upexgalaxy.com/browse/BK-27): TMS-Test Builder | Assemble a test by chaining ATCs _(Ready For QA)_
 
 ---
 

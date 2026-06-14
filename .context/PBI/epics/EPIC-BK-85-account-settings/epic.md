@@ -3,7 +3,7 @@
 **Jira Key:** [BK-85](https://jira.upexgalaxy.com/browse/BK-85)
 **Priority:** Medium
 **Status:** Planning
-**Total Story Points:** 28
+**Total Story Points:** 19
 
 ---
 
@@ -23,9 +23,6 @@ The signed-in user's self-service surface: identity, role, sign out, Personal Ac
 | [BK-89](https://jira.upexgalaxy.com/browse/BK-89) | TMS-Workspace | View the workspaces I belong to | 2 | Medium | Shift-Left QA |
 | [BK-90](https://jira.upexgalaxy.com/browse/BK-90) | TMS-Workspace | Leave a workspace | 5 | Medium | Ready For Dev |
 | [BK-101](https://jira.upexgalaxy.com/browse/BK-101) | 🚀 TMS-Workspace | View the workspaces I belong to | 2 | Medium | QA Approved |
-| [BK-105](https://jira.upexgalaxy.com/browse/BK-105) | 🚀 TMS-Workspace | View the workspaces I belong to | 2 | Medium | Ready For QA |
-| [BK-109](https://jira.upexgalaxy.com/browse/BK-109) | 🚀 Settings | Manage Personal Access Tokens | 5 | Medium | BLOCKED |
-| [BK-113](https://jira.upexgalaxy.com/browse/BK-113) | 🚀 TMS-Workspace | View the workspaces I belong to | 2 | Medium | Ready For QA |
 
 ---
 
