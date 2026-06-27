@@ -157,6 +157,20 @@ required:
     options: [blocked, failed, n_r, passed]
     description: Per-Test issue execution status (Jira-native TMS).
     used_by: [test-documentation]
+  # ---- Cross-work-type QA ownership (consumed by every work-type skill) ----
+  qa_assignee:
+    name: QA Assignee
+    type: user
+    fallback: { target: comment, label: QA Assignee }
+    description: |
+      The QA who owns testing for a work item — the QA-lane parallel of the native
+      `assignee` (dev owner), distinct from `reporter` (who raised it ≠ who retests it).
+      Set on EVERY work-type issue (story / tech_story / tech_debt / bug / defect /
+      improvement) to the authenticated session user (self-assign); NEVER overwrite an
+      existing owner except on an explicit, justified handover. Doctrine:
+      agentic-qa-core/references/defect-management-doctrine.md (Part 2).
+    used_by:
+      [sprint-testing, test-documentation, test-automation, regression-testing, shift-left-testing]
 
 optional:
   # Fields that enhance the workflow but won't break it if missing.
@@ -448,5 +462,24 @@ link_types:
       used_by: [sprint-testing]
 
   optional:
-  # (No optional link types at this time. Add here when a workspace-specific link type
-  #  enhances the workflow but is not strictly required.)
+    test_design:
+      name: Test Design
+      outward: designs
+      inward: is designed by
+      fallback: relates
+      description: |
+        TMS traceability edge — ATP `designs` TC / TC `is designed by` ATP.
+        Requires a custom "Test Design" link type in Jira (or Xray auto-creates it).
+        Fallback to `relates` if the workspace link type is not yet configured.
+      used_by: [test-documentation]
+
+    test_execute:
+      name: Test Execution
+      outward: executes
+      inward: is executed by
+      fallback: relates
+      description: |
+        TMS traceability edge — ATR `executes` TC / TC `is executed by` ATR.
+        Requires a custom "Test Execution" link type in Jira (or Xray auto-creates it).
+        Fallback to `relates` if the workspace link type is not yet configured.
+      used_by: [test-documentation]
