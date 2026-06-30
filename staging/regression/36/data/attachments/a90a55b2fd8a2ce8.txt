@@ -1,0 +1,6 @@
+[API Setup] Starting API authentication...
+[API Setup] Target: https://staging-upexbunkai.vercel.app/api/v1/auth/signin
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/auth/signin
+❌ [PROJ-101] authenticateSuccessfully - FAIL: expect(received).toBeDefined()
+
+Received: undefined
