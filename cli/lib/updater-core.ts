@@ -1872,11 +1872,15 @@ export async function runUpdate(
   const templateDir = cfg.tempDir;
   try {
     // Sparse-checkout must include component paths, ignore-file paths AND
-    // package.json paths so Phase 4.5 / 4.5b can read them out of the partial clone.
+    // package.json paths so Phase 4.5 / 4.5b can read them out of the partial
+    // clone — plus any extra paths hooks need to read from upstream (e.g. the
+    // protected-file drift watchlist; without them the advisory silently
+    // skips every entry because the upstream copy "does not exist").
     const sparsePatterns = [
       ...buildSparseCheckoutPatterns(cfg.components),
       ...cfg.ignoreFiles.map(spec => spec.path),
       ...(cfg.packageJsonSpecs ?? []).map(spec => spec.path),
+      ...(cfg.sparseExtraPaths ?? []),
     ];
     await partialCloneTemplate(cfg.templateRepo, cfg.tempDir, sparsePatterns);
     fetchSpin.stop(`Template descargado (sparse-checkout): ${cfg.templateRepo}`);
@@ -2151,6 +2155,19 @@ export async function runUpdate(
 
   if (visible.length === 0 && ignoreDeltasPre.length === 0 && pkgJsonDeltasPre.length === 0) {
     sink.step('Sin cambios detectados respecto al upstream. Nada que sincronizar.');
+    // Advisory hooks still run: protected watchlist files (not synced
+    // components) can drift upstream even when every component is current,
+    // and the template clone they read from is still on disk here.
+    if (cfg.hooks?.afterApply && !opts.dryRun) {
+      try {
+        await cfg.hooks.afterApply(emptySummary);
+      }
+      catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        sink.warn(`afterApply hook falló: ${msg}`);
+      }
+    }
+    cleanupTempDir(cfg.tempDir);
     return emptySummary;
   }
   if (visible.length > 0) {
