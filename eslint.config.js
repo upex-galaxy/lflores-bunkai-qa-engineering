@@ -20,6 +20,9 @@ export default antfu({
     'reports',
     'cli/legacy/**',
     '*.min.js',
+    // JXA (JavaScript for Automation) script — runs under macOS osascript,
+    // not Node/Bun. Globals (ObjC, $) aren't a Node dialect ESLint knows.
+    'cli/slack-clip.js',
     // Documentation files (contain code examples that shouldn't be linted)
     '**/*.md',
     // GitHub workflows (YAML files)
