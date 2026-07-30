@@ -124,6 +124,13 @@ dbhub.local.toml
 # ===== Skill-creator eval workspaces (local iteration artifacts, never committed) =====
 .claude/skills/*-workspace/
 
+# ===== Community skills installed at project level (never committed) =====
+# Installed by `cli/install.ts` / `bunx skills add` into .claude/skills/.
+# Reproducible from skills-lock.json, so the vendored sources stay local.
+.claude/skills/playwright-best-practices/
+.claude/skills/playwright-cli/
+.claude/skills/resend-cli/
+
 # ===== refcheck per-dev config (local-only) =====
 .refcheckrc.toml
 
