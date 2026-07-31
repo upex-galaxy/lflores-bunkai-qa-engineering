@@ -52,3 +52,12 @@ Key workspaces for switching tests:
 **Result:** BLOCKED
 **Workflow Complete:** 2026-06-06
 **Next:** Wait for BK-83 fix, re-run TC1, re-evaluate for QA Approved
+
+## Stage 4 — Test Documentation (2026-07-31)
+
+- ATP/ATR backfilled into dedicated Jira fields `customfield_10067` / `customfield_10147` (previously only in comments — see BK-6 comment history).
+- 4 TCs documented and created in Jira as `Test` issues, all verdict Candidate: BK-250 (TC1), BK-251 (TC2), BK-252 (TC3), BK-253 (TC4). Local cache under `test-cases/`.
+
+### Pending — Improvement not yet filed
+- **Gap**: `workspace_members.status` has a live DB CHECK constraint allowing a third value, `invited` (pending, unaccepted invite) — confirmed via direct query on staging. No AC and no TC (TC1–TC4) covers a workspace-switch attempt while `status = 'invited'`.
+- **Action needed**: file a Jira Improvement asking PO/Dev to clarify expected behavior (should an invited-but-unaccepted user get 403 like a non-member, or something else?), then extend AC3 / add a TC once resolved. NOT filed yet — flagged here as pending.
