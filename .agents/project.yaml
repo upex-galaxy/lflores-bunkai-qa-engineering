@@ -48,7 +48,7 @@ qa:
       key: null # discovered/created at runtime, then cached here (e.g. PROJ-100)
     test_repository_epic:
       name: QA Test Repository # convention name; holds every Test (TC) issue
-      key: null # discovered/created at runtime, then cached here (e.g. PROJ-456)
+      key: BK-70 # discovered/created at runtime, then cached here (e.g. PROJ-456)
     test_artifacts_epic:
       name: QA Test Artifacts # holds every Test Execution (FTR/STR/ATR), Precondition, Test Set
       key: null # discovered/created at runtime, then cached here (e.g. PROJ-789)
