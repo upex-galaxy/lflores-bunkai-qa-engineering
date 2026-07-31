@@ -1,6 +1,6 @@
 # BK-4 — Scope
 
-> Jira field: `customfield_10142` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-4)
+> Jira field: `customfield_10119` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-4)
 
 - POST /api/v1/workspaces endpoint
 - Name validation: 3-60 chars, unique per owner (case-insensitive)
@@ -10,4 +10,4 @@
 - workspace.created event
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:10.415Z_
+_Synced from Jira by sync-jira-issues_

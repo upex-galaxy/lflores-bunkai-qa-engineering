@@ -1,6 +1,6 @@
 # BK-27 — Workflow
 
-> Jira field: `customfield_10161` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-27)
+> Jira field: `customfield_10082` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-27)
 
 ## User flow
 
@@ -19,4 +19,4 @@
 When an agent (Claude Code, GitHub Copilot, a Playwright CI job) creates a Test using the Bunkai headless surface instead of the UI, the exact same business rules above apply. The agent provides title + ATC chain + a retry-safe identifier; the system applies the same validations and emits the same activity-log entry. There is no parallel "agent-only" Test creation path — one rulebook, three executors.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:15.289Z_
+_Synced from Jira by sync-jira-issues_

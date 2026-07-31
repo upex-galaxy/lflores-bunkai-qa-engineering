@@ -1,6 +1,6 @@
 # BK-43 — Out Of Scope
 
-> Jira field: `customfield_10135` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-43)
+> Jira field: `customfield_10075` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-43)
 
 - Two-way sync or pulling changes back from the external tracker into Bunkai
 - Configuring or connecting the external tracker integration itself
@@ -11,4 +11,4 @@
 - Syncing defect status changes after the initial creation
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:18.676Z_
+_Synced from Jira by sync-jira-issues_

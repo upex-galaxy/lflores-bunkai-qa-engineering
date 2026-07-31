@@ -1,6 +1,6 @@
 # BK-42 — Out Of Scope
 
-> Jira field: `customfield_10135` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-42)
+> Jira field: `customfield_10075` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-42)
 
 - Filing or editing defects (BK-025)
 - Listing or filtering the underlying defects by status and severity (BK-026)
@@ -10,4 +10,4 @@
 - Exporting the heatmap as an image or report
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:18.675Z_
+_Synced from Jira by sync-jira-issues_

@@ -1,6 +1,6 @@
 # BK-28 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-28)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-28)
 
 ## Business rules
 
@@ -14,4 +14,4 @@
 - Reorder inherits the Test's workspace boundary — no cross-workspace reorder is possible because no cross-workspace Test is reachable in the first place.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:15.290Z_
+_Synced from Jira by sync-jira-issues_

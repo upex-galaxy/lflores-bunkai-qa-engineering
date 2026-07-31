@@ -1,6 +1,6 @@
 # BK-9 — Workflow
 
-> Jira field: `customfield_10161` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-9)
+> Jira field: `customfield_10082` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-9)
 
 1. Elena opens a Project and views its Module tree.
 2. She picks ***New Module**** at the Project root, or ****Add sub-module*** on an existing Module.
@@ -10,4 +10,4 @@
 6. She repeats to build out the product-area structure before anchoring User Stories and ATCs to it.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:11.834Z_
+_Synced from Jira by sync-jira-issues_

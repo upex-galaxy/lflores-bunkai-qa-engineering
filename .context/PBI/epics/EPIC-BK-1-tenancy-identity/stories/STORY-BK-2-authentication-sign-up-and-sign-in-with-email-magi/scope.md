@@ -1,6 +1,6 @@
 # BK-2 — Scope
 
-> Jira field: `customfield_10142` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-2)
+> Jira field: `customfield_10119` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-2)
 
 - Email magic-link sign-up (new account creation)
 - Email magic-link sign-in (returning user)
@@ -9,4 +9,4 @@
 - Magic-link TTL 15 minutes, single-use
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:10.412Z_
+_Synced from Jira by sync-jira-issues_

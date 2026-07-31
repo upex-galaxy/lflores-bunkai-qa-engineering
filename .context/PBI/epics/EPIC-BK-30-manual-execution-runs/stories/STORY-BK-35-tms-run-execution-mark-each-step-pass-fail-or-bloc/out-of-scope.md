@@ -1,6 +1,6 @@
 # BK-35 — Out Of Scope
 
-> Jira field: `customfield_10135` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-35)
+> Jira field: `customfield_10075` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-35)
 
 - Starting the run and creating the pending checklist (covered by BK-019)
 - Aborting the run mid-flight (covered by BK-021)
@@ -10,4 +10,4 @@
 - Uploading evidence files (a link is attached, not a file upload)
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:17.665Z_
+_Synced from Jira by sync-jira-issues_

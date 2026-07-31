@@ -1,8 +1,8 @@
 # BK-16 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-16)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-16)
 
-| Rule | Constraint |
+| ***Rule**** | ****Constraint*** |
 | --- | --- |
 | Body size | Capped at 50 KB |
 | Supported formatting | Headings, bullet/numbered lists, code blocks, links, blockquotes, tables |
@@ -11,4 +11,4 @@
 | Defense in depth | Content is cleaned both when saved and when displayed |
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:12.486Z_
+_Synced from Jira by sync-jira-issues_

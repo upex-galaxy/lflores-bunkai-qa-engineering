@@ -1,6 +1,6 @@
 # BK-27 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-27)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-27)
 
 ## Business rules
 
@@ -15,4 +15,4 @@
 - The title of a Test is required and free-text, limited to 200 characters. Whitespace-only titles are rejected.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:15.289Z_
+_Synced from Jira by sync-jira-issues_

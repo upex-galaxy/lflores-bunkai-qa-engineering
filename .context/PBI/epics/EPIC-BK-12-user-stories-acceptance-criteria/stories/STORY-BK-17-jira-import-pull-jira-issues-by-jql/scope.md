@@ -1,6 +1,6 @@
 # BK-17 — Scope
 
-> Jira field: `customfield_10142` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-17)
+> Jira field: `customfield_10119` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-17)
 
 - POST /api/imports - enqueue a Jira import job, return import*job*id
 - GET /api/imports/:id - poll job status (queued | running | completed | failed)
@@ -13,4 +13,4 @@
 - Per-issue error capture into errors[] without aborting the whole job
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:12.487Z_
+_Synced from Jira by sync-jira-issues_

@@ -1,8 +1,8 @@
 # BK-22 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-22)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-22)
 
-| Rule | Constraint |
+| ***Rule**** | ****Constraint*** |
 | --- | --- |
 | Count | Reflects the current number of Tests that chain the ATC |
 | Listing | Each listed Test shows the ATC's position within it |
@@ -10,4 +10,4 @@
 | Scope | Only Tests in the same workspace are counted |
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:13.879Z_
+_Synced from Jira by sync-jira-issues_

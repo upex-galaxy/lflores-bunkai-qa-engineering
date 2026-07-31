@@ -1,9 +1,9 @@
 # BUG: BK-8: Project detail route /projects/{slug} is not workspace-scoped
 
 **Jira Key:** [BK-52](https://jira.upexgalaxy.com/browse/BK-52)
-**Priority:** Medium
-**Status:** Ready For QA
-**Components:** None
+**Priority:** High
+**Status:** Closed
+**Components:** Project & Module Hierarchy
 
 ---
 
@@ -56,9 +56,9 @@ Per-workspace slug uniqueness (a core design rule, and an explicit AC: "same slu
 ## Metadata
 
 - **Created:** 6/4/2026
-- **Updated:** 6/10/2026
+- **Updated:** 6/26/2026
 - **Reporter:** Ely
-- **Assignee:** Ely
+- **Assignee:** Nahuel Gomez
 - **Labels:** bk-8, sprint-defect, wave-1
 
 ---

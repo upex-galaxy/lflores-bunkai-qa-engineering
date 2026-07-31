@@ -1,6 +1,6 @@
 # BK-10 — Workflow
 
-> Jira field: `customfield_10161` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-10)
+> Jira field: `customfield_10082` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-10)
 
 1. Elena opens a Module's actions in the tree.
 2. To rename: she edits the name and/or description and saves; the tree label updates in place.
@@ -9,4 +9,4 @@
 5. The branch disappears from the active tree; counts and listings update to exclude it.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:11.835Z_
+_Synced from Jira by sync-jira-issues_

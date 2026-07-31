@@ -1,8 +1,8 @@
 # BK-9 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-9)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-9)
 
-| Rule | Constraint |
+| ***Rule**** | ****Constraint*** |
 | --- | --- |
 | Module name | Required, 2–80 characters |
 | Ownership | A Module belongs to exactly one Project, optionally one parent Module in the same Project |
@@ -12,4 +12,4 @@
 | Visibility | Visible only to members of the owning Workspace |
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:11.834Z_
+_Synced from Jira by sync-jira-issues_

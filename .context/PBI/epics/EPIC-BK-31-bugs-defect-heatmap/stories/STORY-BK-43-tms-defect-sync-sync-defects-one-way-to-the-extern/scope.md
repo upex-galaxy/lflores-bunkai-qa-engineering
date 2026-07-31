@@ -1,6 +1,6 @@
 # BK-43 — Scope
 
-> Jira field: `customfield_10142` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-43)
+> Jira field: `customfield_10119` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-43)
 
 - Automatic, one-way sync of a newly filed defect to the team's external tracker when the integration is enabled
 - A back-link on the synced item pointing to the original defect in Bunkai
@@ -10,4 +10,4 @@
 - Filing that always succeeds independent of the sync outcome
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:18.676Z_
+_Synced from Jira by sync-jira-issues_

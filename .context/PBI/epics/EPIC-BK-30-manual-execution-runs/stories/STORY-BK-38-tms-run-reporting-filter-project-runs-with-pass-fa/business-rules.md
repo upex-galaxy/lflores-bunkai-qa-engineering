@@ -1,6 +1,6 @@
 # BK-38 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-38)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-38)
 
 - The run list is scoped to a single Project
 - Filters — date range, module, status, executor type — apply in combination, narrowing the list
@@ -10,4 +10,4 @@
 - Clearing all filters returns the complete project-wide list and totals
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:17.667Z_
+_Synced from Jira by sync-jira-issues_

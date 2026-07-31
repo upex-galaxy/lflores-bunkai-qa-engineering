@@ -1,6 +1,6 @@
 # BK-19 — Workflow
 
-> Jira field: `customfield_10161` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-19)
+> Jira field: `customfield_10082` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-19)
 
 1. Elena opens the ATC builder from a Module or a User Story.
 2. She names the ATC, picks the layer (UI / API / Unit) and adds tags.
@@ -10,4 +10,4 @@
 6. On save, the ATC is created and becomes available to chain into Tests.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:13.877Z_
+_Synced from Jira by sync-jira-issues_

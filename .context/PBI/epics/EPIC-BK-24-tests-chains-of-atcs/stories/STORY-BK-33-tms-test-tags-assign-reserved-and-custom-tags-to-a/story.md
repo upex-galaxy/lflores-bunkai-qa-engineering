@@ -3,9 +3,10 @@
 **Jira Key:** [BK-33](https://jira.upexgalaxy.com/browse/BK-33)
 **Epic:** [BK-24](https://jira.upexgalaxy.com/browse/BK-24) (Tests (chains of ATCs))
 **Type:** Story
-**Status:** Ready For Dev
+**Status:** Ready For Release
 **Priority:** Medium
 **Story Points:** 8
+**Web Link:** https://staging-upexbunkai.vercel.app/
 
 ---
 
@@ -91,20 +92,32 @@ Ready for Estimation after PO confirms the MVP reserved tag vocabulary and accep
 
 ---
 
+## Fields
+
+> Each rich-text field is a separate file in this folder.
+
+- [Acceptance Criteria](./acceptance-criteria.md)
+- [Business Rules](./business-rules.md)
+- [Scope](./scope.md)
+- [Out Of Scope](./out-of-scope.md)
+- [Workflow](./workflow.md)
+
+---
+
 ## Traceability
 
 ### Story (1)
 
-- [BK-27](https://jira.upexgalaxy.com/browse/BK-27): TMS-Test Builder | Assemble a test by chaining ATCs _(Ready For QA)_
+- [BK-27](https://jira.upexgalaxy.com/browse/BK-27): TMS-Test Builder | Assemble a test by chaining ATCs _(Ready For Release)_
 
 ---
 
 ## Metadata
 
 - **Created:** 5/28/2026
-- **Updated:** 6/9/2026
+- **Updated:** 7/24/2026
 - **Reporter:** Ely
-- **Assignee:** Ely
+- **Assignee:** jesusgpythondev
 - **Labels:** bk-70-child, shift-left-2026-06-06, shift-left-reviewed, test-tags, tms
 
 ---

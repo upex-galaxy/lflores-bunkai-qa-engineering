@@ -1,6 +1,6 @@
 # BK-43 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-43)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-43)
 
 - Sync runs automatically on filing only when the integration is enabled for the project
 - Sync is one-way: changes flow from Bunkai to the external tracker, never back
@@ -11,4 +11,4 @@
 - A defect filed while the integration is disabled is never sent and carries no sync state
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:18.676Z_
+_Synced from Jira by sync-jira-issues_

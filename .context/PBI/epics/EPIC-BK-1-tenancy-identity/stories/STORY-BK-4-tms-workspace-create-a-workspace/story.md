@@ -1,11 +1,12 @@
 # TMS-Workspace | Create a workspace
 
-**Jira Key:** [BK-4](https://upexgalaxy67.atlassian.net/browse/BK-4)
-**Epic:** [BK-1](https://upexgalaxy67.atlassian.net/browse/BK-1) (Tenancy & Identity)
+**Jira Key:** [BK-4](https://jira.upexgalaxy.com/browse/BK-4)
+**Epic:** [BK-1](https://jira.upexgalaxy.com/browse/BK-1) (Tenancy & Identity)
 **Type:** Story
-**Status:** Ready For QA
+**Status:** Ready For Release
 **Priority:** Medium
 **Story Points:** -
+**Web Link:** https://staging-upexbunkai.vercel.app/
 
 ---
 
@@ -70,10 +71,18 @@
 
 ---
 
+## Traceability
+
+### Story (1)
+
+- [BK-8](https://jira.upexgalaxy.com/browse/BK-8): TMS-Project | Create a project inside a workspace _(Ready For Release)_
+
+---
+
 ## Metadata
 
 - **Created:** 5/19/2026
-- **Updated:** 5/29/2026
+- **Updated:** 7/23/2026
 - **Reporter:** Ely
 - **Assignee:** Ely
 - **Labels:** mvp, shift-left-2026-05-27, shift-left-reviewed, tenancy, wave-1
@@ -81,4 +90,3 @@
 ---
 
 _Synced from Jira by sync-jira-issues_
-_Last sync: 2026-06-02T00:12:10.416Z_

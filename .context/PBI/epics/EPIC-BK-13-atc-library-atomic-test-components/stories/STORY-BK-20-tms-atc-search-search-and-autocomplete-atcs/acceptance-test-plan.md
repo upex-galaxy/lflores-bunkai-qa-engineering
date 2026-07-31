@@ -1,6 +1,6 @@
 # BK-20 — Acceptance Test Plan (QA)
 
-> Jira field: `customfield_10120` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-20)
+> Jira field: `customfield_10067` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-20)
 
 # Shift-Left Refinement: BK-20 — TMS-ATC Search
 
@@ -28,7 +28,7 @@
 
 - ***S1.1*** (Positive, High): query "expired" → returns ATC titled "Login with expired token". Response includes `atc*id, slug, title, module*path, layer, status_dot`.
 - ***S1.2*** (Positive, Medium): query matches multiple titles → all appear, ranked by relevance + recency.
-- ***S1.3*** (Negative, High): query matches no ATC → 200 `{items: []}`.
+- ***S1.3*** (Negative, High): query matches no ATC → 200 `{items: []`}.
 
 ### AC2 — Find by tag
 
@@ -62,20 +62,21 @@
 - ***SG2*** (Boundary): limit not specified → 20 results default.
 - ***SG3*** (Boundary): `?limit=100` → at most 50 results.
 - ***SG4*** (Functional) — IN scope: `?layer=UI` → only UI-layer ATCs in results.
-- ***SG5*** (Functional): zero matches → 200 `{items: []}`, NOT 404.
+- ***SG5*** (Functional): zero matches → 200 `{items: []`}, NOT 404.
 
 ---
 
 ## Test Outlines (DRAFT)
 
-| Type | Count |
-|------|-------|
-| Positive | 5 |
-| Negative | 7 |
-| Boundary | 4 |
-| Integration | 3 |
-| Security | 2 |
-| ***Total**** | ****21*** |
+| Type  | Count  |
+| --- | --- |
+| ------ | ------- |
+| Positive  | 5  |
+| Negative  | 7  |
+| Boundary  | 4  |
+| Integration  | 3  |
+| Security  | 2  |
+| ***Total****  | ****21***  |
 
 ***Positive***: title-word match (prefix) · tag match · multi-word AND · module subtree recursive · recency ranking
 
@@ -91,16 +92,17 @@
 
 ## PO Decisions Applied (2026-06-01)
 
-| Topic | Decision |
-|-------|----------|
-| FTS semantics | Prefix: `to*tsquery + :*` (single token) / `plainto*tsquery` (multi-word) |
-| Auth | `requireAuth()` — cookie OR Bearer PAT |
-| Layer filter | IN scope BK-20 — AC added (SG4) |
-| `search*tsv` implementation | Trigger-maintained (`atcs*tsv_trg`) |
-| Non-existent `module_id` | 200 `{items:[]}` — no 404 |
-| `updated_at` constraint | NOT NULL DEFAULT now() — required in migration |
-| `status_dot` | `draft / ready / automated / deprecated` |
-| Empty / absent / whitespace query | All → 400 `validation_failed` |
+| Topic  | Decision  |
+| --- | --- |
+| ------- | ---------- |
+| FTS semantics  | Prefix: `to*tsquery + :*` (single token) / `plainto*tsquery` (multi-word)  |
+| Auth  | `requireAuth()` — cookie OR Bearer PAT  |
+| Layer filter  | IN scope BK-20 — AC added (SG4)  |
+| `search*tsv` implementation  | Trigger-maintained (`atcs*tsv_trg`)  |
+| Non-existent `module_id`  | 200 `{items:[]`} — no 404  |
+| `updated_at` constraint  | NOT NULL DEFAULT now() — required in migration  |
+| `status_dot`  | `draft / ready / automated / deprecated`  |
+| Empty / absent / whitespace query  | All → 400 `validation_failed`  |
 
 ---
 
@@ -124,7 +126,7 @@
 - Integration: confirm `search_tsv` trigger fires after title PATCH; verify GIN index via EXPLAIN ANALYZE
 - Security: two-tenant workspace isolation; query param injection test
 
-**Full refinement file: **`.context/PBI/epics/EPIC-BK-13-atc-library-atomic-test-components/stories/STORY-BK-20-tms-atc-search-search-and-autocomplete-atcs/shift-left-refinement.md`
+**Full refinement file:** `.context/PBI/epics/EPIC-BK-13-atc-library-atomic-test-components/stories/STORY-BK-20-tms-atc-search-search-and-autocomplete-atcs/shift-left-refinement.md`
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:13.878Z_
+_Synced from Jira by sync-jira-issues_

@@ -1,8 +1,8 @@
 # BK-10 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-10)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-10)
 
-| Rule | Constraint |
+| ***Rule**** | ****Constraint*** |
 | --- | --- |
 | Name on rename | Required, 2–80 characters |
 | Delete type | Soft — the Module is archived, never physically removed |
@@ -11,4 +11,4 @@
 | Scope | Only members of the owning Workspace can rename or delete a Module |
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:11.834Z_
+_Synced from Jira by sync-jira-issues_

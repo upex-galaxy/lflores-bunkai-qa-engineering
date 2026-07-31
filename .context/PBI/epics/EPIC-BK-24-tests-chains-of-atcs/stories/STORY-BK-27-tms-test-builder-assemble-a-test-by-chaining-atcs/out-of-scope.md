@@ -1,6 +1,6 @@
 # BK-27 — Out Of Scope
 
-> Jira field: `customfield_10135` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-27)
+> Jira field: `customfield_10075` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-27)
 
 ## Out of scope
 
@@ -16,4 +16,4 @@
 - Live notification to teammates the moment a Test is created (covered when the Realtime epic lands)
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:15.289Z_
+_Synced from Jira by sync-jira-issues_

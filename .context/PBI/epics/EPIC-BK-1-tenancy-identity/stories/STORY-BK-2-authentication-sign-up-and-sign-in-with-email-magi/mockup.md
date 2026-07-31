@@ -1,6 +1,6 @@
 # BK-2 — Mockup
 
-> Jira field: `customfield_10186` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-2)
+> Jira field: `customfield_10137` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-2)
 
 | ***A**** | ****B**** | ****C*** |
 | --- | --- | --- |
@@ -8,4 +8,4 @@
 |  |  |  |
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:10.413Z_
+_Synced from Jira by sync-jira-issues_

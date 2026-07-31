@@ -1,6 +1,6 @@
 # BK-17 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-17)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-17)
 
 - import is one-way (Jira -> Bunkai); Bunkai never writes back to Jira in this story
 - external_id is the idempotency key (Project + uppercase Jira key)
@@ -11,4 +11,4 @@
 - the worker honors Jira rate limits (429 -> exponential backoff, max 5 retries)
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:12.487Z_
+_Synced from Jira by sync-jira-issues_

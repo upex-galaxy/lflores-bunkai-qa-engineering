@@ -1,8 +1,8 @@
 # BK-11 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-11)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-11)
 
-| Rule | Constraint |
+| ***Rule**** | ****Constraint*** |
 | --- | --- |
 | Same Project | A Module can only be moved within its own Project |
 | No cycles | A Module cannot be moved under itself or any of its own descendants |
@@ -11,4 +11,4 @@
 | Scope | Only members of the owning Workspace can move a Module |
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:11.835Z_
+_Synced from Jira by sync-jira-issues_

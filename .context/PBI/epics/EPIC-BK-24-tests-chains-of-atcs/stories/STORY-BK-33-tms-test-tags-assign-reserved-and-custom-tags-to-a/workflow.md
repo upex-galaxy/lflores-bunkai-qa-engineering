@@ -1,6 +1,6 @@
 # BK-33 — Workflow
 
-> Jira field: `customfield_10161` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-33)
+> Jira field: `customfield_10082` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-33)
 
 1. I open a Test such as "Checkout - Guest Purchase" and go to its tags.
 2. I type or pick tags — reserved suite tags like "smoke" or "regression" plus custom ones like "checkout-v2" — and save.
@@ -11,4 +11,4 @@
 7. If I filter by a tag no Test carries, I see a clear empty result and adjust my filter.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:15.291Z_
+_Synced from Jira by sync-jira-issues_

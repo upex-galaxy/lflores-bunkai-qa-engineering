@@ -1,6 +1,6 @@
 # BK-36 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-36)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-36)
 
 - Only a run that is still in progress can be aborted; already-closed runs are rejected
 - An abort requires a reason of at least 3 characters
@@ -10,4 +10,4 @@
 - The abort reason is recorded and remains visible on the run and in its history
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:17.666Z_
+_Synced from Jira by sync-jira-issues_

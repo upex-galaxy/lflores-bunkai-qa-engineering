@@ -1,6 +1,6 @@
 # BK-35 — Workflow
 
-> Jira field: `customfield_10161` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-35)
+> Jira field: `customfield_10082` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-35)
 
 1. Elena works down the run's checklist one step at a time.
 2. For each step she marks passed, failed, or blocked, optionally adding a note and an evidence link.
@@ -9,4 +9,4 @@
 5. If the run has already been finished or aborted, Elena's attempt to report a result is rejected with a message that the run is closed.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:17.665Z_
+_Synced from Jira by sync-jira-issues_

@@ -1,6 +1,6 @@
 # BK-28 — Workflow
 
-> Jira field: `customfield_10161` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-28)
+> Jira field: `customfield_10082` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-28)
 
 ## User flow
 
@@ -11,8 +11,8 @@
 5. She clicks "Save".
 6. The system checks for conflicts — has anyone else reordered this same Test since Elena opened it?
 
-   - If yes: the save is blocked with a message showing the current order; Elena reviews and decides whether to keep her change or accept the teammate's.
-   - If no: the new order is committed.
+- If yes: the save is blocked with a message showing the current order; Elena reviews and decides whether to keep her change or accept the teammate's.
+- If no: the new order is committed.
 
 1. If the order Elena submitted is identical to what was there before, the system saves no change — no activity log entry, no last-modified bump.
 2. If the order actually changed, the activity log of her workspace shows the new chain alongside her name and a timestamp.
@@ -23,4 +23,4 @@
 When an agent reorders a Test through the Bunkai headless surface instead of the UI, the same business rules apply: same permission gate, same no-op detection, same concurrent-edit guard, same activity-log entry. The agent provides the Test identifier + the new chain order + a retry-safe identifier. There is no "agent-only" reorder path.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:15.290Z_
+_Synced from Jira by sync-jira-issues_

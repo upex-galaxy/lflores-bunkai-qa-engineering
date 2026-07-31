@@ -1,6 +1,6 @@
 # BK-22 — Workflow
 
-> Jira field: `customfield_10161` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-22)
+> Jira field: `customfield_10082` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-22)
 
 1. Elena opens an ATC's detail page.
 2. She sees "Used in N tests".
@@ -8,4 +8,4 @@
 4. She uses this to judge impact before editing or removing the ATC.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:13.879Z_
+_Synced from Jira by sync-jira-issues_

@@ -1,6 +1,6 @@
 # BK-2 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-2)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-2)
 
 - Email must be unique in auth.users (Supabase enforces).
 
@@ -11,4 +11,4 @@
 - A user who accepted a workspace invite skips the personal-workspace auto-create.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:10.412Z_
+_Synced from Jira by sync-jira-issues_

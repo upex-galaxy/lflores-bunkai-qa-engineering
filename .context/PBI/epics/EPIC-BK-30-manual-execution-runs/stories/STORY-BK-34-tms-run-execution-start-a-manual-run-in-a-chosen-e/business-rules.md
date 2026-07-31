@@ -1,6 +1,6 @@
 # BK-34 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-34)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-34)
 
 - The chosen environment must be one already configured for the Project; others are rejected
 - The Test must contain at least one ATC before a run can start
@@ -10,4 +10,4 @@
 - A freshly started run begins in the running state with all steps pending and 0% progress
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:17.661Z_
+_Synced from Jira by sync-jira-issues_

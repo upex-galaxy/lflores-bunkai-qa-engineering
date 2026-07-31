@@ -1,12 +1,12 @@
 # Authentication | Sign up and sign in with email magic-link
 
-**Jira Key:** [BK-2](https://upexgalaxy67.atlassian.net/browse/BK-2)
-**Epic:** [BK-1](https://upexgalaxy67.atlassian.net/browse/BK-1) (Tenancy & Identity)
+**Jira Key:** [BK-2](https://jira.upexgalaxy.com/browse/BK-2)
+**Epic:** [BK-1](https://jira.upexgalaxy.com/browse/BK-1) (Tenancy & Identity)
 **Type:** Story
-**Status:** QA Approved
+**Status:** Ready For Release
 **Priority:** Medium
 **Story Points:** 5
-**Web Link:** https://upexbunkai.vercel.app
+**Web Link:** https://staging-upexbunkai.vercel.app/
 
 ---
 
@@ -126,13 +126,13 @@ For Design (2):
 
 - OAuth → BK-3
 - Invite acceptance + bypass branch → BK-5
-- Workspace switching → BK-6
+- Workspace switching → [https://jira.upexgalaxy.com/browse/BK-6#icft=BK-6](https://jira.upexgalaxy.com/browse/BK-6#icft=BK-6)
 - UX 5.2, 5.4, 5.6, 5.9, branded email template → "Auth UX Polish" follow-up Story
 - Token-invalidation-on-resend → separate security Story (if PO greenlights)
 
 ---
 
-**See custom field 🧪 Acceptance Test Plan (ATP) + Shift-Left comment for the complete refinement (****~****17 test outlines, full Gherkin scenarios, AC↔code reconciliation per divergence).**
+**See custom field 🧪 Acceptance Test Plan (ATP) + Shift-Left comment for the complete refinement (~17 test outlines, full Gherkin scenarios, AC↔code reconciliation per divergence).**
 
 ---
 
@@ -151,10 +151,18 @@ For Design (2):
 
 ---
 
+## Traceability
+
+### Story (1)
+
+- [BK-166](https://jira.upexgalaxy.com/browse/BK-166): Authentication | Sign up and sign in with email and password _(Ready For Release)_
+
+---
+
 ## Metadata
 
 - **Created:** 5/19/2026
-- **Updated:** 5/29/2026
+- **Updated:** 6/21/2026
 - **Reporter:** Ely
 - **Assignee:** Ely
 - **Labels:** auth, mvp, shift-left-2026-05-25, shift-left-reviewed, wave-1
@@ -162,4 +170,3 @@ For Design (2):
 ---
 
 _Synced from Jira by sync-jira-issues_
-_Last sync: 2026-06-02T00:12:10.414Z_

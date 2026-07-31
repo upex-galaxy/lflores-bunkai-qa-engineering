@@ -1,6 +1,6 @@
 # BK-36 — Workflow
 
-> Jira field: `customfield_10161` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-36)
+> Jira field: `customfield_10082` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-36)
 
 1. Elena is part-way through a run when something blocks her — the environment is down, or test data is missing.
 2. She clicks "Abort Run" and types a short reason explaining why.
@@ -9,4 +9,4 @@
 5. The aborted run, with its reason, stays in the Test's run history; trying to abort an already-closed run is rejected.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:17.666Z_
+_Synced from Jira by sync-jira-issues_

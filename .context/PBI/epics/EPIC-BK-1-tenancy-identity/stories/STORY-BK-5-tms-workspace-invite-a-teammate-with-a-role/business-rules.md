@@ -1,6 +1,6 @@
 # BK-5 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-5)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-5)
 
 - Caller's role MUST be ≥ admin to create an invite.
 
@@ -13,4 +13,4 @@
 - Acceptance idempotent: re-clicking accepted invite returns 200 with current membership, not a new row.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:10.416Z_
+_Synced from Jira by sync-jira-issues_

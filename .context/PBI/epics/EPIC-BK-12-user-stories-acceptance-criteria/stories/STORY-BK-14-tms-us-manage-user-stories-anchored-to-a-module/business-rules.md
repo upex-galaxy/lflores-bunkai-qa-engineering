@@ -1,8 +1,8 @@
 # BK-14 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-14)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-14)
 
-| Rule | Constraint |
+| ***Rule**** | ****Constraint*** |
 | --- | --- |
 | Title | Required, 3–200 characters |
 | Description | Optional Markdown, up to 50 KB |
@@ -13,4 +13,4 @@
 | Removal | Removal is a soft archive; archived Stories are hidden from default lists |
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:12.484Z_
+_Synced from Jira by sync-jira-issues_

@@ -1,6 +1,6 @@
 # BK-32 — Workflow
 
-> Jira field: `customfield_10161` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-32)
+> Jira field: `customfield_10082` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-32)
 
 1. From the list of Tests, I pick a Test such as "Checkout - Guest Purchase" and open it.
 2. The Test opens in an expanded view with a header showing its name and a count like "3 ATCs".
@@ -11,4 +11,4 @@
 7. Once I am satisfied with what the Test covers, I leave the view ready to start a run.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:15.290Z_
+_Synced from Jira by sync-jira-issues_

@@ -1,11 +1,12 @@
 # TMS-Workspace | Switch between workspaces
 
-**Jira Key:** [BK-6](https://upexgalaxy67.atlassian.net/browse/BK-6)
-**Epic:** [BK-1](https://upexgalaxy67.atlassian.net/browse/BK-1) (Tenancy & Identity)
+**Jira Key:** [BK-6](https://jira.upexgalaxy.com/browse/BK-6)
+**Epic:** [BK-1](https://jira.upexgalaxy.com/browse/BK-1) (Tenancy & Identity)
 **Type:** Story
-**Status:** Ready For QA
+**Status:** Ready For Release
 **Priority:** Medium
-**Story Points:** -
+**Story Points:** 5
+**Web Link:** https://staging-upexbunkai.vercel.app/
 
 ---
 
@@ -31,7 +32,7 @@ Implements ***FR-004***.
 1. User clicks the workspace switcher in the header.
 2. Dropdown shows the list from `GET /api/v1/me/workspaces`.
 3. User clicks Workspace B.
-4. UI POSTs `/api/v1/me/active-workspace` with `{ workspace_id: "B" }`.
+4. UI POSTs `/api/v1/me/active-workspace` with {{{ workspace_id: "B" }}}.
 5. Server validates membership + status.
 6. Server rotates session's `active*workspace*id`.
 7. Returns 200 with the new workspace context.
@@ -63,10 +64,18 @@ Implements ***FR-004***.
 
 ---
 
+## Traceability
+
+### Bug (1)
+
+- [BK-83](https://jira.upexgalaxy.com/browse/BK-83): WorkspaceSwitch: API: POST /api/v1/me/active-workspace response missing workspace fields (id, slug, name, role) _(Closed)_
+
+---
+
 ## Metadata
 
 - **Created:** 5/19/2026
-- **Updated:** 5/29/2026
+- **Updated:** 7/6/2026
 - **Reporter:** Ely
 - **Assignee:** Luis Eduardo Flores Villarroel
 - **Labels:** mvp, tenancy, wave-1
@@ -74,4 +83,3 @@ Implements ***FR-004***.
 ---
 
 _Synced from Jira by sync-jira-issues_
-_Last sync: 2026-06-02T00:12:10.417Z_

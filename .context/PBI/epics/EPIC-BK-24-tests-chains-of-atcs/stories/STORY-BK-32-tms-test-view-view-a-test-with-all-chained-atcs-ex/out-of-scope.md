@@ -1,6 +1,6 @@
 # BK-32 — Out Of Scope
 
-> Jira field: `customfield_10135` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-32)
+> Jira field: `customfield_10075` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-32)
 
 - Editing, adding, removing, or reordering ATCs, steps, or assertions from this view (reordering lives in the reorder-chain story)
 - Assembling or creating a new Test by chaining ATCs (covered by the Test-assembly story)
@@ -11,4 +11,4 @@
 - Viewing the acceptance criteria each ATC is anchored to from within this view
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:15.290Z_
+_Synced from Jira by sync-jira-issues_

@@ -1,8 +1,8 @@
 # BK-21 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-21)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-21)
 
-| Rule | Constraint |
+| ***Rule**** | ****Constraint*** |
 | --- | --- |
 | Propagation | Tests reference the ATC, so edits apply to all chaining Tests with no manual re-stitch |
 | Versioning | Each saved edit produces a new version of the ATC |
@@ -11,4 +11,4 @@
 | Scope | Only members of the owning Workspace can edit |
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:13.878Z_
+_Synced from Jira by sync-jira-issues_

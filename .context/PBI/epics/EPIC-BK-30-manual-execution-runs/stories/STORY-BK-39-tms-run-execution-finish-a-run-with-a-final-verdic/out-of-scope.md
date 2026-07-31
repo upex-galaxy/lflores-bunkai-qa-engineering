@@ -1,6 +1,6 @@
 # BK-39 — Out Of Scope
 
-> Jira field: `customfield_10135` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-39)
+> Jira field: `customfield_10075` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-39)
 
 - Starting a run (covered by BK-019)
 - Reporting individual step results (covered by BK-020)
@@ -10,4 +10,4 @@
 - Filing bugs from a finished run
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:17.668Z_
+_Synced from Jira by sync-jira-issues_

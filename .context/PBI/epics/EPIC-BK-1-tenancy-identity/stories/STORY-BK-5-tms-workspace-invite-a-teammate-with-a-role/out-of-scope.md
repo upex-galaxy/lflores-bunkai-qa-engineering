@@ -1,6 +1,6 @@
 # BK-5 — Out Of Scope
 
-> Jira field: `customfield_10135` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-5)
+> Jira field: `customfield_10075` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-5)
 
 - Invite revocation / resend — post-MVP (design partners will request this)
 - Bulk invite (CSV upload) — Phase 2
@@ -8,4 +8,4 @@
 - Role changes after acceptance — separate story, post-MVP
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:10.416Z_
+_Synced from Jira by sync-jira-issues_

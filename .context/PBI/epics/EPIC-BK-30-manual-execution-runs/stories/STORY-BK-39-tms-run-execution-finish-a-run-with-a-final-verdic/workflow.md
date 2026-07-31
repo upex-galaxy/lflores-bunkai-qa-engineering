@@ -1,6 +1,6 @@
 # BK-39 — Workflow
 
-> Jira field: `customfield_10161` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-39)
+> Jira field: `customfield_10082` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-39)
 
 1. Elena reaches the end of her execution and clicks "Finish Run".
 2. She chooses the final verdict — passed or failed.
@@ -9,4 +9,4 @@
 5. When an AI Test Agent or a CI pipeline finishes a run instead, the same verdict recording and skipped-step handling apply, producing identical run data.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:17.668Z_
+_Synced from Jira by sync-jira-issues_

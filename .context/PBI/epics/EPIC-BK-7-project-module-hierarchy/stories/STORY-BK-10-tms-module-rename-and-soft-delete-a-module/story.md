@@ -3,9 +3,10 @@
 **Jira Key:** [BK-10](https://jira.upexgalaxy.com/browse/BK-10)
 **Epic:** [BK-7](https://jira.upexgalaxy.com/browse/BK-7) (Project & Module Hierarchy)
 **Type:** Story
-**Status:** Ready For QA
+**Status:** Ready For Release
 **Priority:** Medium
 **Story Points:** 2
+**Web Link:** https://staging-upexbunkai.vercel.app/
 
 ---
 
@@ -28,12 +29,34 @@
 
 ---
 
+## Fields
+
+> Each rich-text field is a separate file in this folder.
+
+- [Acceptance Criteria](./acceptance-criteria.md)
+- [Business Rules](./business-rules.md)
+- [Scope](./scope.md)
+- [Out Of Scope](./out-of-scope.md)
+- [Workflow](./workflow.md)
+- [Implementation Plan (Dev)](./implementation-plan.md)
+- [Acceptance Test Plan (QA)](./acceptance-test-plan.md)
+
+---
+
+## Traceability
+
+### Story (1)
+
+- [BK-9](https://jira.upexgalaxy.com/browse/BK-9): TMS-Module | Create modules with nested sub-modules _(Ready For Release)_
+
+---
+
 ## Metadata
 
 - **Created:** 5/19/2026
-- **Updated:** 6/5/2026
+- **Updated:** 7/24/2026
 - **Reporter:** Ely
-- **Assignee:** Jorgelina Abdo
+- **Assignee:** Andrés Daniel Cumare Morales
 - **Labels:** hierarchy, mvp, shift-left-2026-06-01, shift-left-reviewed, wave-1
 
 ---

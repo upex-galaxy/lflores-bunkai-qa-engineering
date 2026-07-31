@@ -1,6 +1,6 @@
 # BK-3 — Workflow
 
-> Jira field: `customfield_10161` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-3)
+> Jira field: `customfield_10082` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-3)
 
 1. Visitor clicks "Continue with GitHub" (or Google).
 
@@ -19,4 +19,4 @@
 8. On any failure: redirect to /login with error code + magic-link fallback CTA.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:10.415Z_
+_Synced from Jira by sync-jira-issues_

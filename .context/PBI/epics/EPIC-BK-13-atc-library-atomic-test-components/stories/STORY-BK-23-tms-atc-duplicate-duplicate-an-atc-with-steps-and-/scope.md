@@ -1,6 +1,6 @@
 # BK-23 — Scope
 
-> Jira field: `customfield_10142` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-23)
+> Jira field: `customfield_10119` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-23)
 
 - Duplicate an existing ATC in one action
 - Include in the copy:
@@ -8,4 +8,4 @@
 - Keep the copy independent — editing it does not change the original
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:13.879Z_
+_Synced from Jira by sync-jira-issues_

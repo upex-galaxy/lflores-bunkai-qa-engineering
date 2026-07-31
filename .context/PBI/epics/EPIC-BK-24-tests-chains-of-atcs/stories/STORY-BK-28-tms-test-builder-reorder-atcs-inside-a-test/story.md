@@ -3,9 +3,10 @@
 **Jira Key:** [BK-28](https://jira.upexgalaxy.com/browse/BK-28)
 **Epic:** [BK-24](https://jira.upexgalaxy.com/browse/BK-24) (Tests (chains of ATCs))
 **Type:** Story
-**Status:** Ready For Dev
+**Status:** Ready For Release
 **Priority:** Medium
 **Story Points:** 5
+**Web Link:** https://staging-upexbunkai.vercel.app/
 
 ---
 
@@ -218,20 +219,33 @@ Pending confirmation: Delivery/PO confirms whether BK-28 is estimated now or hel
 
 ---
 
+## Fields
+
+> Each rich-text field is a separate file in this folder.
+
+- [Acceptance Criteria](./acceptance-criteria.md)
+- [Business Rules](./business-rules.md)
+- [Scope](./scope.md)
+- [Out Of Scope](./out-of-scope.md)
+- [Workflow](./workflow.md)
+- [Implementation Plan (Dev)](./implementation-plan.md)
+
+---
+
 ## Traceability
 
 ### Story (1)
 
-- [BK-27](https://jira.upexgalaxy.com/browse/BK-27): TMS-Test Builder | Assemble a test by chaining ATCs _(Ready For QA)_
+- [BK-27](https://jira.upexgalaxy.com/browse/BK-27): TMS-Test Builder | Assemble a test by chaining ATCs _(Ready For Release)_
 
 ---
 
 ## Metadata
 
 - **Created:** 5/27/2026
-- **Updated:** 6/9/2026
+- **Updated:** 7/24/2026
 - **Reporter:** Ely
-- **Assignee:** Ely
+- **Assignee:** jesusgpythondev
 - **Labels:** master-sprint-4, mvp, shift-left-2026-06-09, shift-left-reviewed, tests-epic
 
 ---

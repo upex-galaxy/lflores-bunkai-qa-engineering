@@ -1,10 +1,10 @@
 # BK-46 — Scope
 
-> Jira field: `customfield_10142` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-46)
+> Jira field: `customfield_10119` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-46)
 
-- A coverage view that lists acceptance criteria and modules with no linked test component.
+- A coverage view that lists acceptance criteria and modules with no linked ATC.
 - A "not run" filter for coverage that exists but has never been executed.
 - A clear "fully covered" state.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:19.283Z_
+_Synced from Jira by sync-jira-issues_

@@ -1,6 +1,6 @@
 # BK-8 — Workflow
 
-> Jira field: `customfield_10161` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-8)
+> Jira field: `customfield_10082` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-8)
 
 1. Workspace member navigates to Workspace Home, clicks "Create Project".
 
@@ -21,4 +21,4 @@
 9. UI navigates to /workspaces/{ws-slug}/projects/{project-slug}.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:11.833Z_
+_Synced from Jira by sync-jira-issues_

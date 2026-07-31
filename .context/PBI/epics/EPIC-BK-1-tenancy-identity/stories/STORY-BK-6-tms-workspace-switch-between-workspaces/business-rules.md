@@ -1,6 +1,6 @@
 # BK-6 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-6)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-6)
 
 - User MUST be an active member of the target workspace (status = "active"); suspended / removed members get 403.
 
@@ -11,4 +11,4 @@
 - All subsequent API responses MUST reflect data scoped to the new active workspace.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:10.416Z_
+_Synced from Jira by sync-jira-issues_

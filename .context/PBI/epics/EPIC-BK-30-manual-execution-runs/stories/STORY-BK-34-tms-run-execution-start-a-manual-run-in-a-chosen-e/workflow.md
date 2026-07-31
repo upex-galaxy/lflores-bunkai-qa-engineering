@@ -1,6 +1,6 @@
 # BK-34 — Workflow
 
-> Jira field: `customfield_10161` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-34)
+> Jira field: `customfield_10082` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-34)
 
 1. Elena opens the Test she wants to execute and clicks "Start Run".
 2. She picks an environment from the Project's configured list.
@@ -10,4 +10,4 @@
 6. Teammates viewing the Test see the new run appear in its history, tagged with its executor mode.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:17.662Z_
+_Synced from Jira by sync-jira-issues_

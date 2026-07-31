@@ -1,8 +1,8 @@
 # BK-20 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-20)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-20)
 
-| Rule | Constraint |
+| ***Rule**** | ****Constraint*** |
 | --- | --- |
 | Query | At least 1 character |
 | Match fields | Title and tags |
@@ -12,4 +12,4 @@
 | Scope | Only ATCs in the requester's workspace |
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:13.877Z_
+_Synced from Jira by sync-jira-issues_

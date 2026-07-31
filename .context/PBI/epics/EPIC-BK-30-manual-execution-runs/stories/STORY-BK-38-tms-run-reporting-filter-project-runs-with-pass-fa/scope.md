@@ -1,6 +1,6 @@
 # BK-38 — Scope
 
-> Jira field: `customfield_10142` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-38)
+> Jira field: `customfield_10119` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-38)
 
 - Review every Run across the Project in a single list
 - Filter by date range, module, status, and executor type, combinable together
@@ -10,4 +10,4 @@
 - Clear all filters to restore the full project-wide list and totals
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:17.667Z_
+_Synced from Jira by sync-jira-issues_

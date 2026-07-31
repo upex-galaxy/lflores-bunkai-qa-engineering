@@ -1,6 +1,6 @@
 # BK-2 — Workflow
 
-> Jira field: `customfield_10161` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-2)
+> Jira field: `customfield_10082` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-2)
 
 1. Visitor lands on /login.
 
@@ -17,4 +17,4 @@
 7. Redirect to /home (Workspace Home).
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:10.413Z_
+_Synced from Jira by sync-jira-issues_

@@ -1,6 +1,6 @@
 # BK-41 — Workflow
 
-> Jira field: `customfield_10161` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-41)
+> Jira field: `customfield_10082` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-41)
 
 1. Elena opens the defects view and picks the module she cares about, for example "Checkout".
 2. The list shows every defect under that module and all of its sub-modules, with summary counts by severity and by status.
@@ -9,4 +9,4 @@
 5. If nothing matches, she sees a clear "no defects match" message and zeroed counts, so she knows the area is clean rather than wondering if the view broke.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:18.675Z_
+_Synced from Jira by sync-jira-issues_

@@ -1,6 +1,6 @@
 # BK-4 — Acceptance Criteria
 
-> Jira field: `customfield_10141` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-4)
+> Jira field: `customfield_10063` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-4)
 
 ```gherkin
 Scenario: Successful workspace creation
@@ -33,4 +33,4 @@ Then a workspace.created event is emitted on the realtime channel for the owner
 ```
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:10.415Z_
+_Synced from Jira by sync-jira-issues_

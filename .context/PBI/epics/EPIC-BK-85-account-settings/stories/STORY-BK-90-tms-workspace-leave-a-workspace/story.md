@@ -33,20 +33,31 @@ Scenario 2 only describes the SOLE-owner block ("Mateo is the only owner of Acme
 
 ---
 
+## Fields
+
+> Each rich-text field is a separate file in this folder.
+
+- [Acceptance Criteria](./acceptance-criteria.md)
+- [Scope](./scope.md)
+- [Out Of Scope](./out-of-scope.md)
+- [Acceptance Test Plan (QA)](./acceptance-test-plan.md)
+
+---
+
 ## Traceability
 
 ### Story (1)
 
-- [BK-89](https://jira.upexgalaxy.com/browse/BK-89): TMS-Workspace | View the workspaces I belong to _(Shift-Left QA)_
+- [BK-89](https://jira.upexgalaxy.com/browse/BK-89): TMS-Workspace | View the workspaces I belong to _(In Review)_
 
 ---
 
 ## Metadata
 
 - **Created:** 6/8/2026
-- **Updated:** 6/10/2026
+- **Updated:** 7/30/2026
 - **Reporter:** Ely
-- **Assignee:** Andrés Daniel Cumare Morales
+- **Assignee:** Ely
 - **Labels:** shift-left-2026-06-10, shift-left-reviewed
 
 ---

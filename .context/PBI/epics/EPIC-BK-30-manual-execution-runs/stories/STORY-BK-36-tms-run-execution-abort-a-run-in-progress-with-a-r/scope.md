@@ -1,6 +1,6 @@
 # BK-36 — Scope
 
-> Jira field: `customfield_10142` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-36)
+> Jira field: `customfield_10119` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-36)
 
 - Abort a run that is currently in progress
 - Require a short reason of at least 3 characters for the abort
@@ -9,4 +9,4 @@
 - Close the run as aborted with the stated reason visible afterward
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:17.666Z_
+_Synced from Jira by sync-jira-issues_

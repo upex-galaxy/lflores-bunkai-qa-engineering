@@ -1,6 +1,6 @@
 # BK-34 — Out Of Scope
 
-> Jira field: `customfield_10135` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-34)
+> Jira field: `customfield_10075` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-34)
 
 - Reporting individual step results once the run is open (covered by BK-020)
 - Aborting a run in progress (covered by BK-021)
@@ -10,4 +10,4 @@
 - Editing the Test or its ATC chain
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:17.661Z_
+_Synced from Jira by sync-jira-issues_

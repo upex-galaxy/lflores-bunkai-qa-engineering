@@ -1,8 +1,8 @@
 # BK-19 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-19)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-19)
 
-| Rule | Constraint |
+| ***Rule**** | ****Constraint*** |
 | --- | --- |
 | Title | Required, 3–200 characters |
 | Provenance | Every ATC must anchor to one User Story and at least one of its Acceptance Criteria |
@@ -13,4 +13,4 @@
 | Tags | Up to 10 |
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:13.877Z_
+_Synced from Jira by sync-jira-issues_

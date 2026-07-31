@@ -1,9 +1,9 @@
 # BUG: Add activity_log audit writes for module rename/move/soft-delete
 
 **Jira Key:** [BK-59](https://jira.upexgalaxy.com/browse/BK-59)
-**Priority:** Medium
-**Status:** Ready For QA
-**Components:** None
+**Priority:** Low
+**Status:** Closed
+**Components:** Project & Module Hierarchy
 
 ---
 
@@ -16,7 +16,7 @@ Structural module operations (rename, move, soft-delete cascade) do not write to
 ## Metadata
 
 - **Created:** 6/5/2026
-- **Updated:** 6/10/2026
+- **Updated:** 7/6/2026
 - **Reporter:** Ely
 - **Assignee:** Ely
 

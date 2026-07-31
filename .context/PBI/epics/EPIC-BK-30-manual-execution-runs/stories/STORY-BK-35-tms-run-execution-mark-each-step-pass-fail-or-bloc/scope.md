@@ -1,6 +1,6 @@
 # BK-35 — Scope
 
-> Jira field: `customfield_10142` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-35)
+> Jira field: `customfield_10119` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-35)
 
 - Mark a pending step passed, failed, or blocked while executing a running run
 - Attach an optional note and an optional evidence link to a step result
@@ -9,4 +9,4 @@
 - Broadcast verdict and progress changes live to teammates watching the run
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:17.665Z_
+_Synced from Jira by sync-jira-issues_

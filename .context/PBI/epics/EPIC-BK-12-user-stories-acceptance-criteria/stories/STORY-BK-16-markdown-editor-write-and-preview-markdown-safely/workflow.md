@@ -1,6 +1,6 @@
 # BK-16 — Workflow
 
-> Jira field: `customfield_10161` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-16)
+> Jira field: `customfield_10082` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-16)
 
 1. Elena opens a User Story or Acceptance Criterion form.
 2. The Markdown editor appears: a text area with a thin toolbar and an optional live-preview pane.
@@ -9,4 +9,4 @@
 5. When the content is shown later, it is cleaned again and rendered the same way.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:12.486Z_
+_Synced from Jira by sync-jira-issues_

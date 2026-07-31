@@ -1,6 +1,6 @@
 # BK-4 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-4)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-4)
 
 - name MUST be 3-60 chars, contain ≥1 alphanumeric.
 
@@ -13,4 +13,4 @@
 - Creator inherits role owner; no other roles assignable at create-time.
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:10.415Z_
+_Synced from Jira by sync-jira-issues_

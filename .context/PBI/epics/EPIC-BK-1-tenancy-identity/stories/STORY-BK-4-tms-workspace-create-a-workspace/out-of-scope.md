@@ -1,6 +1,6 @@
 # BK-4 — Out Of Scope
 
-> Jira field: `customfield_10135` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-4)
+> Jira field: `customfield_10075` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-4)
 
 - Workspace rename — separate story, post-MVP
 - Workspace deletion — Phase 2
@@ -8,4 +8,4 @@
 - Workspace logo / branding — Phase 2
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:10.415Z_
+_Synced from Jira by sync-jira-issues_

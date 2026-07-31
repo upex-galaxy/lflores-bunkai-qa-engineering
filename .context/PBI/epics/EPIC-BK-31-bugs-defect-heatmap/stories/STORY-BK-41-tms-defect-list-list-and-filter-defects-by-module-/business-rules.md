@@ -1,6 +1,6 @@
 # BK-41 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-41)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-41)
 
 - A defect always belongs to exactly one module
 - Selecting a module includes defects belonging to that module and to every module nested beneath it
@@ -10,4 +10,4 @@
 - When no defects match the active filters, an explicit empty state is shown instead of a blank list
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:18.675Z_
+_Synced from Jira by sync-jira-issues_

@@ -1,6 +1,6 @@
 # BK-28 — Out Of Scope
 
-> Jira field: `customfield_10135` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-28)
+> Jira field: `customfield_10075` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-28)
 
 ## Out of scope
 
@@ -16,4 +16,4 @@
 - Diff visualization showing "before vs after" the reorder (nice-to-have, deferred until UX research)
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:15.290Z_
+_Synced from Jira by sync-jira-issues_

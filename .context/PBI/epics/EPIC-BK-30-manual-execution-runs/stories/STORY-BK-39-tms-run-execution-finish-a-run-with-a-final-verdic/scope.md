@@ -1,6 +1,6 @@
 # BK-39 — Scope
 
-> Jira field: `customfield_10142` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-39)
+> Jira field: `customfield_10119` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-39)
 
 - Finish a run that is in progress with a final verdict of passed or failed
 - Mark any still-pending steps as skipped at finish
@@ -9,4 +9,4 @@
 - Apply the same finish handling whether a human, an AI Test Agent, or a CI pipeline finishes the run
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:17.668Z_
+_Synced from Jira by sync-jira-issues_

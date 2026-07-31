@@ -1,6 +1,6 @@
 # BK-15 — Out Of Scope
 
-> Jira field: `customfield_10135` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-15)
+> Jira field: `customfield_10075` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-15)
 
 - Authoring the parent User Story (covered by BK-14)
 - The Markdown editor and safe-render path (covered by BK-16)
@@ -8,4 +8,4 @@
 - Change history / versioning of Acceptance Criteria
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:12.485Z_
+_Synced from Jira by sync-jira-issues_

@@ -1,6 +1,6 @@
 # BK-5 — Scope
 
-> Jira field: `customfield_10142` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-5)
+> Jira field: `customfield_10119` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-5)
 
 - POST /api/v1/workspaces/{id}/invites (create invite)
 - POST /api/v1/invites/{token}/accept (accept invite)
@@ -11,4 +11,4 @@
 - Invite list endpoint GET /api/v1/workspaces/{id}/invites (pending invites)
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:10.416Z_
+_Synced from Jira by sync-jira-issues_

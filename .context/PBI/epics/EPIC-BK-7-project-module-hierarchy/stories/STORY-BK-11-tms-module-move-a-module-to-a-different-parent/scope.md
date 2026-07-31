@@ -1,6 +1,6 @@
 # BK-11 — Scope
 
-> Jira field: `customfield_10142` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-11)
+> Jira field: `customfield_10119` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-11)
 
 - Move a Module to become a child of a different Module, or to the Project root
 - Carry the moved Module's entire sub-tree along with it
@@ -8,4 +8,4 @@
 - Block invalid moves with a clear, human-readable reason
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:11.835Z_
+_Synced from Jira by sync-jira-issues_

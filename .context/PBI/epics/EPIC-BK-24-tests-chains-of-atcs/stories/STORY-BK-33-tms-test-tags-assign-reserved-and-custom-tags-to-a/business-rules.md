@@ -1,6 +1,6 @@
 # BK-33 — Business Rules
 
-> Jira field: `customfield_10134` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-33)
+> Jira field: `customfield_10116` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-33)
 
 - Three tag values are reserved with special meaning for filtering: smoke, sanity, and regression
 - Custom tags are allowed freely and coexist with reserved tags on the same Test
@@ -13,4 +13,4 @@
 - Any workspace member who can edit the Test can change its tags; no extra permission is required
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:15.291Z_
+_Synced from Jira by sync-jira-issues_

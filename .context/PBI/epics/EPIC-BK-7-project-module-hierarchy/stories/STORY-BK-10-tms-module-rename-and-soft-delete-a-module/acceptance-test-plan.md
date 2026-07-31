@@ -1,12 +1,12 @@
 # BK-10 — Acceptance Test Plan (QA)
 
-> Jira field: `customfield_10120` · [View in Jira](https://upexgalaxy67.atlassian.net/browse/BK-10)
+> Jira field: `customfield_10067` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-10)
 
 ## ATP DRAFT — BK-10 | Module Rename & Soft-Delete
 
-***Status: ***Shift-Left reviewed · 28 outlines (DRAFT) · Risk: HIGH · Refined 2026-06-01
+***Status:*** Shift-Left reviewed · 28 outlines (DRAFT) · Risk: HIGH · Refined 2026-06-01
 
-***PO answers confirmed: ***min role = member+ (viewer → 403) · error messages specified · archived URL → 404 · sibling uniqueness → 409
+***PO answers confirmed:*** min role = member+ (viewer → 403) · error messages specified · archived URL → 404 · sibling uniqueness → 409
 
 | ***Type**** | ****Count**** | ****Focus*** |
 | --- | --- | --- |
@@ -60,7 +60,7 @@
 - DELETE /api/v1/modules/{id} → 200/204 + cascade summary on soft-delete
 - DELETE /api/v1/modules/{id} → 404 NOT_FOUND when id does not exist
 
-***Note: *****Parametrization tables, per-outline test-data JSON, numbered steps, and Faker recipes are deferred to /sprint-testing Stage 1 once the feature ships and reaches Ready For QA.**
+***Note:**** **Parametrization tables, per-outline test-data JSON, numbered steps, and Faker recipes are deferred to /sprint-testing Stage 1 once the feature ships and reaches Ready For QA.*
 
 ---
-_Synced from Jira by sync-jira-issues · 2026-06-02T00:12:11.835Z_
+_Synced from Jira by sync-jira-issues_
