@@ -25,6 +25,12 @@ export interface TestCredentials {
   password: string
 }
 
+/** Payload shape for POST /api/v1/tests — used by the reference ExampleApi component */
+export interface TestCasePayload {
+  title: string
+  atc_ids: string[]
+}
+
 // ============================================
 // Project-Specific Types (example structure)
 // ============================================

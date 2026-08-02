@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-05-21T08:28:54.468Z",
+  "generatedAt": "2026-08-02T18:53:24.308Z",
   "components": {
     "api": [
       {
@@ -28,17 +28,17 @@
           {
             "id": "PROJ-101",
             "method": "createResourceSuccessfully",
-            "line": 57
+            "line": 56
           },
           {
             "id": "PROJ-102",
             "method": "createResourceWithInvalidData",
-            "line": 88
+            "line": 82
           },
           {
             "id": "PROJ-103",
             "method": "getResourceSuccessfully",
-            "line": 113
+            "line": 105
           }
         ]
       }

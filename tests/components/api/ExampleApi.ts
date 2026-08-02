@@ -1,15 +1,15 @@
 /**
  * KATA Architecture - Layer 3: Example API Component
  *
- * ⚠️  REFERENCE ONLY - THIS COMPONENT USES FICTIONAL ENDPOINTS
+ * REFERENCE COMPONENT — wired to the real `POST /api/v1/tests` and
+ * `GET /api/v1/tests/{id}` endpoints so it type-checks and runs against
+ * this project's actual backend. Kept under the "Example" name as the
+ * structural guide for API components; copy this file to
+ * tests/components/api/YourApi.ts to start a new domain component.
  *
- * This file demonstrates the KATA pattern for API components.
- * Endpoints like '/api/example' don't exist - they are placeholders.
- * Use this as a structural guide, not as runnable code.
- *
- * To create your own functional component:
+ * To create your own component:
  * 1. Copy this file to tests/components/api/YourApi.ts
- * 2. Replace fictional endpoints with your real API endpoints
+ * 2. Point it at your own endpoints
  * 3. Update types to match your API's request/response schemas
  * 4. Register in ApiFixture.ts
  * 5. Run: bun run kata:manifest
@@ -46,54 +46,47 @@ export class ExampleApi extends ApiBase {
   // ============================================
 
   /**
-   * ATC: POST request with valid payload - expects success (200/201)
+   * ATC: POST /api/v1/tests with a valid payload - expects success (201)
    *
-   * Complete flow: POST data, validate response structure.
+   * Complete flow: POST data with a fresh Idempotency-Key, validate response structure.
    * Returns the response tuple for test assertions.
    *
    * TODO: Replace 'PROJ' with your Jira project key (e.g., @atc('UPEX-101'))
-   * TODO: Update endpoint path
    */
   @atc('PROJ-101')
   async createResourceSuccessfully(
     payload: CreateExampleRequest,
   ): Promise<[APIResponse, CreateExampleResponse, CreateExampleRequest]> {
-    // TODO: Update endpoint
     const [response, body, sentPayload] = await this.apiPOST<CreateExampleResponse, CreateExampleRequest>(
-      '/api/example',
+      '/api/v1/tests',
       payload,
+      { headers: { 'Idempotency-Key': crypto.randomUUID() } },
     );
 
     // Fixed assertions - validates the operation succeeded
     expect(response.status()).toBe(201);
-    expect(body.user).toBeDefined();
-    expect(body.user.id).toBeDefined();
-
-    // Optional: Store token for subsequent requests
-    if (body.token !== undefined && body.token !== '') {
-      this.setAuthToken(body.token);
-    }
+    expect(body.test).toBeDefined();
+    expect(body.test.id).toBeDefined();
 
     return [response, body, sentPayload];
   }
 
   /**
-   * ATC: POST request with invalid payload - expects error (400/401)
+   * ATC: POST /api/v1/tests with invalid payload - expects error (400)
    *
-   * Validates that invalid data returns appropriate error.
+   * Validates that an empty `atc_ids` chain (server requires >= 1) returns
+   * a `bad_request` error, not a 201.
    *
    * TODO: Replace 'PROJ' with your Jira project key (e.g., @atc('UPEX-102'))
-   * TODO: Update endpoint path
    */
   @atc('PROJ-102')
   async createResourceWithInvalidData(
     payload: CreateExampleRequest,
   ): Promise<[APIResponse, Record<string, unknown>, CreateExampleRequest]> {
-    // TODO: Update endpoint
     const [response, body, sentPayload] = await this.apiPOST<
       Record<string, unknown>,
       CreateExampleRequest
-    >('/api/example', payload);
+    >('/api/v1/tests', payload, { headers: { 'Idempotency-Key': crypto.randomUUID() } });
 
     // Fixed assertions - validates error response
     expect(response.status()).toBeGreaterThanOrEqual(400);
@@ -103,21 +96,19 @@ export class ExampleApi extends ApiBase {
   }
 
   /**
-   * ATC: GET request - expects success (200)
+   * ATC: GET /api/v1/tests/{id} - expects success (200)
    *
    * Example of a GET ATC for fetching resources.
    *
    * TODO: Replace 'PROJ' with your Jira project key (e.g., @atc('UPEX-103'))
-   * TODO: Update endpoint path
    */
   @atc('PROJ-103')
   async getResourceSuccessfully(resourceId: string): Promise<[APIResponse, GetExampleResponse]> {
-    // TODO: Update endpoint
-    const [response, body] = await this.apiGET<GetExampleResponse>(`/api/example/${resourceId}`);
+    const [response, body] = await this.apiGET<GetExampleResponse>(`/api/v1/tests/${resourceId}`);
 
     // Fixed assertions
     expect(response.status()).toBe(200);
-    expect(body.user).toBeDefined();
+    expect(body.test).toBeDefined();
 
     return [response, body];
   }

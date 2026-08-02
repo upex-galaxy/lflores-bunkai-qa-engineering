@@ -9,7 +9,7 @@
  *   - Import directo: import { DataFactory } from '@DataFactory'
  */
 
-import type { TestBooking, TestCredentials, TestHotel, TestUser } from './types';
+import type { TestBooking, TestCasePayload, TestCredentials, TestHotel, TestUser } from './types';
 
 import { faker } from '@faker-js/faker';
 
@@ -72,6 +72,19 @@ export class DataFactory {
    */
   static createTestId(prefix = 'test'): string {
     return `${prefix}-${this.uniqueId()}`;
+  }
+
+  /**
+   * Genera un payload de POST /api/v1/tests (title + atc_ids chain)
+   * Usado por el componente de referencia ExampleApi
+   * @param overrides - Propiedades a sobreescribir
+   */
+  static createTestCase(overrides?: Partial<TestCasePayload>): TestCasePayload {
+    return {
+      title: `Test Case ${faker.lorem.words(3)}`,
+      atc_ids: [faker.string.uuid()],
+      ...overrides,
+    };
   }
 
   // ============================================
