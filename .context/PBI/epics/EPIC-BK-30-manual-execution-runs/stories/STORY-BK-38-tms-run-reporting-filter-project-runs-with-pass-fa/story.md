@@ -3,10 +3,9 @@
 **Jira Key:** [BK-38](https://jira.upexgalaxy.com/browse/BK-38)
 **Epic:** [BK-30](https://jira.upexgalaxy.com/browse/BK-30) (Manual Execution & Runs)
 **Type:** Story
-**Status:** In Review
+**Status:** Ready For QA
 **Priority:** Medium
-**Story Points:** 3
-**Web Link:** https://staging-upexbunkai.vercel.app/
+**Story Points:** -
 
 ---
 
@@ -17,8 +16,8 @@
 ## Source
 
 Source spec: BK-023
-Parent/module: BK-70 Test Repository / Run Reporting
-Dependencies: BK-34 Start manual run; BK-39 final run verdict semantics
+Parent/module: [https://jira.upexgalaxy.com/browse/BK-70#icft=BK-70](https://jira.upexgalaxy.com/browse/BK-70#icft=BK-70) Test Repository / Run Reporting
+Dependencies: [https://jira.upexgalaxy.com/browse/BK-34#icft=BK-34](https://jira.upexgalaxy.com/browse/BK-34#icft=BK-34) Start manual run; [https://jira.upexgalaxy.com/browse/BK-39#icft=BK-39](https://jira.upexgalaxy.com/browse/BK-39#icft=BK-39) final run verdict semantics
 
 ## User Story
 
@@ -32,14 +31,14 @@ Expert story point recommendation: 3 points.
 
 ## Key Contract Decisions
 
-| Decision | Contract |
+| ***Decision**** | ****Contract*** |
 | --- | --- |
 | Reporting scope | Project-scoped Runs only. Cross-project and cross-workspace Runs never appear in rows or totals. |
 | Reporting endpoint | `GET /api/v1/projects/{projectId}/runs/report` returns rows, totals, applied filters, and pagination from the same query contract. |
 | Date filter | Filter by `started_at`. Date range is inclusive for start and end dates. Store timestamps in UTC; interpret date inputs in the Project timezone. |
 | Module filter | Each Run stores a `module_id` snapshot at creation time for reporting. This avoids ambiguous reports when a Test chain spans multiple ATC modules or changes later. |
 | Status / outcome model | Run status supports at least `running`, `passed`, `failed`, `blocked`, `skipped`, and `aborted`. Pass/fail totals count only final `passed` and `failed` Runs. |
-| Executor type | Executor type enum is `human`, `agent`, `ci`, aligned with BK-34. |
+| Executor type | Executor type enum is `human`, `agent`, `ci`, aligned with [https://jira.upexgalaxy.com/browse/BK-34#icft=BK-34](https://jira.upexgalaxy.com/browse/BK-34#icft=BK-34). |
 | Empty states | No Runs and no matching filters use distinct empty states, both with pass and fail totals set to 0. |
 | Access | Active members with Project access may read the report. Future PAT/API access requires `run:read` or equivalent read scope. |
 
@@ -57,16 +56,16 @@ Expert story point recommendation: 3 points.
 
 ### Out of Scope
 
-- Starting a Run; covered by BK-34.
+- Starting a Run; covered by [https://jira.upexgalaxy.com/browse/BK-34#icft=BK-34](https://jira.upexgalaxy.com/browse/BK-34#icft=BK-34).
 - Updating step results; covered by the Run execution/update story.
-- Aborting or cancelling Runs; covered outside BK-38.
-- Final run verdict rules beyond consuming final `passed` or `failed`; covered by BK-39.
-- Defect filing, listing, heatmap, or sync; covered by BK-40 through BK-43.
+- Aborting or cancelling Runs; covered outside [https://jira.upexgalaxy.com/browse/BK-38#icft=BK-38](https://jira.upexgalaxy.com/browse/BK-38#icft=BK-38).
+- Final run verdict rules beyond consuming final `passed` or `failed`; covered by [https://jira.upexgalaxy.com/browse/BK-39#icft=BK-39](https://jira.upexgalaxy.com/browse/BK-39#icft=BK-39).
+- Defect filing, listing, heatmap, or sync; covered by [https://jira.upexgalaxy.com/browse/BK-40#icft=BK-40](https://jira.upexgalaxy.com/browse/BK-40#icft=BK-40) through [https://jira.upexgalaxy.com/browse/BK-43#icft=BK-43](https://jira.upexgalaxy.com/browse/BK-43#icft=BK-43).
 - Exports, charts, dashboards, saved report views, or formal Jira/Xray test cases.
 
 ## Acceptance Criteria
 
-```gherkin
+```
 Background:
   Given an authenticated workspace member with access to the Project
     And Runs exist as execution instances of Tests in that Project
@@ -136,7 +135,7 @@ Scenario: Unauthorized or cross-project Runs are not exposed
 
 ## ATP Draft
 
-| ID | Type | Scenario | Coverage target | Priority | Automation hint |
+| ***ID**** | ****Type**** | ****Scenario**** | ****Coverage target**** | ****Priority**** | ****Automation hint*** |
 | --- | --- | --- | --- | --- | --- |
 | BK-38-ATC-01 | Happy | View all project Runs with row details and totals | Project report baseline | High | UI/API/DB |
 | BK-38-ATC-02 | Integration | Combined filters narrow rows and recompute totals | Filter contract | High | UI/API/DB |
@@ -149,7 +148,7 @@ Scenario: Unauthorized or cross-project Runs are not exposed
 
 ## Readiness Gates
 
-| Gate | Status | Evidence |
+| ***Gate**** | ****Status**** | ****Evidence*** |
 | --- | --- | --- |
 | PO contract | Pass | Expert panel resolved status totals, date semantics, and empty-state rules. |
 | Dev feasibility | Pass with dependency | Requires Runs schema/API implementation in this Story or prerequisite branch. |
@@ -164,22 +163,9 @@ AC, ATP, and Business Rules are included in this description because the Jira cu
 
 ## References
 
-- BK-34 Start manual run: creates the Run source this report consumes.
-- BK-70 Test Repository: Test foundation; current repo has `tests` and `test_steps` but not Run reporting tables yet.
+- [https://jira.upexgalaxy.com/browse/BK-34#icft=BK-34](https://jira.upexgalaxy.com/browse/BK-34#icft=BK-34) Start manual run: creates the Run source this report consumes.
+- [https://jira.upexgalaxy.com/browse/BK-70#icft=BK-70](https://jira.upexgalaxy.com/browse/BK-70#icft=BK-70) Test Repository: Test foundation; current repo has `tests` and `test_steps` but not Run reporting tables yet.
 - Repo evidence: `supabase/migrations/0024_tests.sql`, `app/api/v1/tests/route.ts`.
-
----
-
-## Fields
-
-> Each rich-text field is a separate file in this folder.
-
-- [Acceptance Criteria](./acceptance-criteria.md)
-- [Business Rules](./business-rules.md)
-- [Scope](./scope.md)
-- [Out Of Scope](./out-of-scope.md)
-- [Workflow](./workflow.md)
-- [Implementation Plan (Dev)](./implementation-plan.md)
 
 ---
 
@@ -187,8 +173,8 @@ AC, ATP, and Business Rules are included in this description because the Jira cu
 
 ### Storys (2)
 
-- [BK-34](https://jira.upexgalaxy.com/browse/BK-34): TMS-Run Execution | Start a manual run in a chosen environment _(Ready For Release)_
 - [BK-225](https://jira.upexgalaxy.com/browse/BK-225): TMS-Run Reporting | Filter runs by manual or automated execution mode _(Backlog)_
+- [BK-34](https://jira.upexgalaxy.com/browse/BK-34): TMS-Run Execution | Start a manual run in a chosen environment _(Ready For Release)_
 
 ---
 
@@ -197,7 +183,7 @@ AC, ATP, and Business Rules are included in this description because the Jira cu
 - **Created:** 5/28/2026
 - **Updated:** 7/31/2026
 - **Reporter:** Ely
-- **Assignee:** Ely
+- **Assignee:** jesusgpythondev
 - **Labels:** implementation-plan-ready, shift-left-2026-06-15, shift-left-reviewed
 
 ---

@@ -15,7 +15,7 @@
 
 ## Environment
 
-Staging — https://staging-upexbunkai.vercel.app · API `/api/v1` · 2026-06-04 · cookie-session auth as `bunkai-staging-user`.
+Staging — [https://staging-upexbunkai.vercel.app](https://staging-upexbunkai.vercel.app/) · API `/api/v1` · 2026-06-04 · cookie-session auth as `bunkai-staging-user`.
 
 ## Severity / Type
 
@@ -24,8 +24,8 @@ Severity: ***Major**** · Error type: ****functional*** (latent routing-collisio
 ## Steps to Reproduce
 
 1. Authenticate as an active workspace member.
-2. `POST /api/v1/workspaces/{workspaceId}/projects` with body `{ "name": "api" }`.
-3. Repeat with `{ "name": "new" }`, `{ "name": "settings" }`, `{ "name": "admin" }`, `{ "name": "null" }`, `{ "name": "docs" }`.
+2. `POST /api/v1/workspaces/{workspaceId}/projects` with body {{{ "name": "api" }}}.
+3. Repeat with {{{ "name": "new" }}}, {{{ "name": "settings" }}}, {{{ "name": "admin" }}}, {{{ "name": "null" }}}, {{{ "name": "docs" }}}.
 
 ## Expected Result
 
@@ -51,8 +51,8 @@ Reserved slugs collide with Next.js route segments under `app/(app)/projects/[pr
 
 ## Related Issues
 
-- created by: [BK-8](https://jira.upexgalaxy.com/browse/BK-8) - TMS-Project | Create a project inside a workspace
 - duplicates: [BK-51](https://jira.upexgalaxy.com/browse/BK-51) - BK-8: Reserved project slugs are not rejected (AC-11) — created with HTTP 201
+- created by: [BK-8](https://jira.upexgalaxy.com/browse/BK-8) - TMS-Project | Create a project inside a workspace
 
 ---
 

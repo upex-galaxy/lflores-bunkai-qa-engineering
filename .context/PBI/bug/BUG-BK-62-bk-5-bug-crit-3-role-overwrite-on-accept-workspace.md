@@ -11,7 +11,7 @@
 
 ## Severity: CRITICAL
 
-## Found during: BK-5 sprint-testing on staging (2026-06-05)
+## Found during: [https://jira.upexgalaxy.com/browse/BK-5#icft=BK-5](https://jira.upexgalaxy.com/browse/BK-5#icft=BK-5) sprint-testing on staging (2026-06-05)
 
 ### Repro
 
@@ -27,7 +27,7 @@ If user is already a member with a higher role, accept should preserve the highe
 
 `workspace_members.upsert` in `app/api/v1/invites/accept/route.ts:77-87` sets role=invite.role UNCONDITIONALLY.
 
-```typescript
+```
 // Current code (problematic):
 const { data: member, error } = await supabase
   .from("workspace_members")
@@ -53,7 +53,7 @@ Check existing role before upsert. If existing row has higher role, preserve it 
 
 ### Related
 
-- BK-5 (parent story)
+- [https://jira.upexgalaxy.com/browse/BK-5#icft=BK-5](https://jira.upexgalaxy.com/browse/BK-5#icft=BK-5) (parent story)
 - Requires manual DB fix on staging workspace aed86386
 
 ---

@@ -3,21 +3,20 @@
 **Jira Key:** [BK-40](https://jira.upexgalaxy.com/browse/BK-40)
 **Epic:** [BK-31](https://jira.upexgalaxy.com/browse/BK-31) (Bugs & Defect Heatmap)
 **Type:** Story
-**Status:** Ready For Dev
+**Status:** Ready For QA
 **Priority:** Medium
-**Story Points:** 5
-**Web Link:** https://staging-upexbunkai.vercel.app/
+**Story Points:** -
 
 ---
 
 ## Overview
 
-# BK-40: TMS-Defect Filing | File a defect from a failing run step
+# [https://jira.upexgalaxy.com/browse/BK-40#icft=BK-40](https://jira.upexgalaxy.com/browse/BK-40#icft=BK-40): TMS-Defect Filing | File a defect from a failing run step
 
 ## Metadata Snapshot
 
-- ***Jira key***: BK-40
-- ***Status***: 
+- ***Jira key***: [https://jira.upexgalaxy.com/browse/BK-40#icft=BK-40](https://jira.upexgalaxy.com/browse/BK-40#icft=BK-40)
+- ***Status****: ****[ READY FOR DEV ]***
 - ***Source spec***: BK-025
 - ***Parent epic/module***: BK Test Repository / TMS Defect Filing
 - ***Last updated***: 2026-06-17 shift-left formatting correction
@@ -29,7 +28,7 @@ As a QA Engineer, I want to file a defect directly from a failing step during a 
 ## Source & Evidence
 
 - ***Source spec***: BK-025
-- ***Evidence used***: BK-40 Jira fields, BK-40 previous shift-left package, BK-39 formatting reference, BK-91 ADF formatter capability reference, expert-panel-review findings.
+- ***Evidence used***: [https://jira.upexgalaxy.com/browse/BK-40#icft=BK-40](https://jira.upexgalaxy.com/browse/BK-40#icft=BK-40) Jira fields, [https://jira.upexgalaxy.com/browse/BK-40#icft=BK-40](https://jira.upexgalaxy.com/browse/BK-40#icft=BK-40) previous shift-left package, [https://jira.upexgalaxy.com/browse/BK-39#icft=BK-39](https://jira.upexgalaxy.com/browse/BK-39#icft=BK-39) formatting reference, [https://jira.upexgalaxy.com/browse/BK-91#icft=BK-91](https://jira.upexgalaxy.com/browse/BK-91#icft=BK-91) ADF formatter capability reference, expert-panel-review findings.
 - ***Evidence labels used***: Jira, Repo, Engram, Inference.
 
 ## Original Definition of Done
@@ -49,7 +48,7 @@ Added 2026-06-17 by Shift-Left QA. Full refined ACs live in `✅ Acceptance Crit
 
 ### Expert-panel decisions
 
-| Decision | Outcome |
+| ***Decision**** | ****Outcome*** |
 | --- | --- |
 | Primary entry path | `Report defect` appears only for failed run steps. |
 | Secondary entry path | Standalone defect filing from defects area remains in scope. |
@@ -68,29 +67,18 @@ Out of scope: marking a step failed, defect lifecycle beyond initial `open`, Jir
 
 ### Readiness
 
-Ready for estimation after expert-panel refinement. QA recommends 5 SP with confidence 0.82. Re-estimate if Jira sync, file upload, blocked/skipped-step filing, expanded permissions, or BK-35 failed-step contract changes enter scope.
-
----
-
-## Fields
-
-> Each rich-text field is a separate file in this folder.
-
-- [Acceptance Criteria](./acceptance-criteria.md)
-- [Business Rules](./business-rules.md)
-- [Scope](./scope.md)
-- [Out Of Scope](./out-of-scope.md)
-- [Workflow](./workflow.md)
+Ready for estimation after expert-panel refinement. QA recommends 5 SP with confidence 0.82. Re-estimate if Jira sync, file upload, blocked/skipped-step filing, expanded permissions, or [https://jira.upexgalaxy.com/browse/BK-35#icft=BK-35](https://jira.upexgalaxy.com/browse/BK-35#icft=BK-35) failed-step contract changes enter scope.
 
 ---
 
 ## Traceability
 
-### Storys (4)
+### Storys (5)
 
-- [BK-35](https://jira.upexgalaxy.com/browse/BK-35): TMS-Run Execution | Mark each step pass, fail, or block _(Ready For Dev)_
 - [BK-42](https://jira.upexgalaxy.com/browse/BK-42): TMS-Defect Heatmap | View count and week-over-week trend per module _(Ready For Dev)_
-- [BK-41](https://jira.upexgalaxy.com/browse/BK-41): TMS-Defect List | List and filter defects by module, status, severity _(Ready For Dev)_
+- [BK-41](https://jira.upexgalaxy.com/browse/BK-41): TMS-Defect List | List and filter defects by module, status, severity _(Ready For QA)_
+- [BK-258](https://jira.upexgalaxy.com/browse/BK-258): TMS-Home | Show open bug count and severity breakdown _(Backlog)_
+- [BK-35](https://jira.upexgalaxy.com/browse/BK-35): TMS-Run Execution | Mark each step pass, fail, or block _(Ready For QA)_
 - [BK-43](https://jira.upexgalaxy.com/browse/BK-43): TMS-Defect Sync | Sync defects one-way to the external tracker _(Ready For Dev)_
 
 ---
@@ -98,7 +86,7 @@ Ready for estimation after expert-panel refinement. QA recommends 5 SP with conf
 ## Metadata
 
 - **Created:** 5/28/2026
-- **Updated:** 7/30/2026
+- **Updated:** 8/1/2026
 - **Reporter:** Ely
 - **Assignee:** Ely
 - **Labels:** shift-left-2026-06-17, shift-left-reviewed

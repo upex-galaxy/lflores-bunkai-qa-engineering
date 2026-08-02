@@ -27,7 +27,7 @@ Test Plans organize what a cycle verifies; a Milestone anchors when it must be r
 
 ### Edge Cases Identified
 
-| # | Edge case | In original Story? | Criticality | Action |
+| ***#**** | ****Edge case**** | ****In original Story?**** | ****Criticality**** | ****Action*** |
 | --- | --- | --- | --- | --- |
 | 1 | Two users create a milestone with the same name at nearly the same time (race) | No | High | Add to AC (NEEDS PO/DEV CONFIRMATION) |
 | 2 | Editing an active milestone's name into a duplicate of another existing name | No | High | Add to AC (NEEDS PO/DEV CONFIRMATION) |
@@ -50,7 +50,7 @@ Test Plans organize what a cycle verifies; a Milestone anchors when it must be r
 
 ### Critical Questions for PO
 
-1. ***Should this Story's ACs be extended to cover milestone editing (****`scope.md`**** lists it as in-scope), or should editing be moved out of this Story's scope explicitly?***
+1. ***Should this Story's ACs be extended to cover milestone editing (****`scope.md` ****lists it as in-scope), or should editing be moved out of this Story's scope explicitly?***
 
 1. ***Should AC5 also state server-side enforcement (API rejects a direct viewer create request), not just UI-hiding?***
 
@@ -62,8 +62,8 @@ Test Plans organize what a cycle verifies; a Milestone anchors when it must be r
 
 1. ***Is the target date a pure calendar date (DATE column) or does it carry a time component?*** — affects the exact comparison basis for the "today or later" boundary.
 2. ***Is "today" evaluated in server UTC or the requesting user's local timezone at submit time?*** — affects correctness near midnight for users outside the server's timezone.
-3. ***Is uniqueness enforced by a DB-level constraint (e.g. unique index on ****`(project_id, lower(trim(name)))`****), or by an application-layer check-then-insert?*** — the latter is race-prone under concurrent creates of the same name (Phase 5 Edge Case #1).
-4. ***Is milestone-creation authorization gated purely by the existing ****`workspace*members`**** role, or is there also a project-level access check?*** — no `project*members` entity was found in `business-data-map.md`; confirming this shapes the RBAC decision table.
+3. ***Is uniqueness enforced by a DB-level constraint (e.g. unique index on**** `(project_id, lower(trim(name)))`****), or by an application-layer check-then-insert?*** — the latter is race-prone under concurrent creates of the same name (Phase 5 Edge Case #1).
+4. ***Is milestone-creation authorization gated purely by the existing**** `workspace*members` ****role, or is there also a project-level access check?*** — no `project*members` entity was found in `business-data-map.md`; confirming this shapes the RBAC decision table.
 5. ***Is there an intended upper bound on the target date?*** — lower-priority than the PO questions above, but still needs a stated Dev decision if PO does not weigh in.
 
 > Full refinement (Phases 1-5, outline DRAFT, risk + data feasibility) lives in the ATP DRAFT custom field and the canonical comment below.
@@ -84,7 +84,7 @@ Test Plans organize what a cycle verifies; a Milestone anchors when it must be r
 ### Dev Backend decisions
 
 1. ***Name uniqueness enforced via a DB-level unique index*** on `(project_id, lower(trim(name)))` — makes concurrent-duplicate creation structurally impossible rather than relying on an app-layer check-then-insert.
-2. `target_date`*** is a DATE column; "today" is evaluated in server UTC.***
+2. `target_date` ***is a DATE column; "today" is evaluated in server UTC.***
 3. ***Authorization is workspace-role-only*** (via `workspace_members`) — no project-level access layer exists in the data model, so none is introduced here.
 4. ***Edit reuses create's validation logic***, with one explicit exception: uniqueness must exclude the record's own current name.
 
@@ -97,9 +97,9 @@ Test Plans organize what a cycle verifies; a Milestone anchors when it must be r
 ### Design decisions
 
 1. ***Milestones list renders as a table***, not cards — matches the "scannable by date" intent already stated in `business-rules.md`.
-2. ***The days-remaining counter uses neutral styling in every state for this Story*** — no urgency/overdue color treatment. That belongs to BK-206 (readiness), so it is not built twice.
+2. ***The days-remaining counter uses neutral styling in every state for this Story*** — no urgency/overdue color treatment. That belongs to [https://jira.upexgalaxy.com/browse/BK-206#icft=BK-206](https://jira.upexgalaxy.com/browse/BK-206#icft=BK-206) (readiness), so it is not built twice.
 3. `mockup.md`***'s "inline edit" wording is corrected*** to reflect the modal-reuse approach agreed with Frontend.
-4. ***Empty state (list and detail)******:****** simple text + icon + one CTA.*** Low-stakes secondary state; no illustration investment needed for MVP.
+4. ***Empty state (list and detail):**** ****simple text + icon + one CTA.*** Low-stakes secondary state; no illustration investment needed for MVP.
 
 ### QA notes
 
@@ -119,12 +119,6 @@ Backend ≈5, Frontend ≈5, Design = small non-blocking spike — converged tea
 
 > Each rich-text field is a separate file in this folder.
 
-- [Acceptance Criteria](./acceptance-criteria.md)
-- [Business Rules](./business-rules.md)
-- [Scope](./scope.md)
-- [Out Of Scope](./out-of-scope.md)
-- [Workflow](./workflow.md)
-- [Mockup](./mockup.md)
 - [Acceptance Test Plan (QA)](./acceptance-test-plan.md)
 
 ---

@@ -21,25 +21,12 @@ The self-serve conversion path for Bunkai Cloud. From the Billing section (or fr
 
 ---
 
-## Fields
-
-> Each rich-text field is a separate file in this folder.
-
-- [Acceptance Criteria](./acceptance-criteria.md)
-- [Business Rules](./business-rules.md)
-- [Scope](./scope.md)
-- [Out Of Scope](./out-of-scope.md)
-- [Workflow](./workflow.md)
-- [Mockup](./mockup.md)
-
----
-
 ## Traceability
 
 ### Storys (3)
 
-- [BK-229](https://jira.upexgalaxy.com/browse/BK-229): Billing | View my workspace plan, seats, and usage _(Backlog)_
 - [BK-231](https://jira.upexgalaxy.com/browse/BK-231): Billing | Manage billing details and download invoices _(Backlog)_
+- [BK-229](https://jira.upexgalaxy.com/browse/BK-229): Billing | View my workspace plan, seats, and usage _(Backlog)_
 - [BK-233](https://jira.upexgalaxy.com/browse/BK-233): Billing | Downgrade or cancel the subscription _(Backlog)_
 
 ---

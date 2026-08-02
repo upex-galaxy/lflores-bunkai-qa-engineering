@@ -13,7 +13,7 @@ The 90% capacity warning threshold is not implemented in the Markdown editor des
 
 ## Steps to Reproduce
 
-1. Log in to Bunkai TMS staging (https://staging-upexbunkai.vercel.app)
+1. Log in to Bunkai TMS staging ([https://staging-upexbunkai.vercel.app](https://staging-upexbunkai.vercel.app/))
 2. Open any project and create or edit a user story
 3. In the Description field, inject 45,500 characters via JavaScript: `const el = document.querySelector('textarea[placeholder="Describe the story in Markdown."]'); const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set; setter.call(el, 'A'.repeat(45500)); el.dispatchEvent(new Event('input', { bubbles: true }))`
 4. Observe the size counter: `data-testid="markdown-size"`

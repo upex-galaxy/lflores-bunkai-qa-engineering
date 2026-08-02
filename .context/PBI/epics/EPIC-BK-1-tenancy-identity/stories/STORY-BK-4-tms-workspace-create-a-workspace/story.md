@@ -6,7 +6,6 @@
 **Status:** Ready For Release
 **Priority:** Medium
 **Story Points:** -
-**Web Link:** https://staging-upexbunkai.vercel.app/
 
 ---
 
@@ -18,7 +17,7 @@
 ***I want to*** create a Workspace, with a slug auto-derived from the name and myself enrolled as its owner
 ***So that*** I have a tenant to organize my team's projects and testing work
 
-## QA Refinements (Shift-Left Analysis) — BK-4
+## QA Refinements (Shift-Left Analysis) — [https://jira.upexgalaxy.com/browse/BK-4#icft=BK-4](https://jira.upexgalaxy.com/browse/BK-4#icft=BK-4)
 
 ### Story Quality: Needs Improvement
 
@@ -56,18 +55,6 @@
 ***Negative (8)***: Name too short/long, duplicate slug, reserved slug, no alphanumeric, empty name, unauthenticated, emoji-only, Unicode boundary
 ***Boundary (4)***: Exact 3/60 char name, slug approaching 60 char limit, accented boundary
 ***API (2)***: GET /workspaces/{id} returns workspace, 404 for non-existent
-
----
-
-## Fields
-
-> Each rich-text field is a separate file in this folder.
-
-- [Acceptance Criteria](./acceptance-criteria.md)
-- [Business Rules](./business-rules.md)
-- [Scope](./scope.md)
-- [Out Of Scope](./out-of-scope.md)
-- [Workflow](./workflow.md)
 
 ---
 

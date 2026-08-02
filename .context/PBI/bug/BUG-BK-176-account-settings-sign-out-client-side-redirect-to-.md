@@ -2,7 +2,7 @@
 
 **Jira Key:** [BK-176](https://jira.upexgalaxy.com/browse/BK-176)
 **Priority:** Low
-**Status:** Open
+**Status:** Ready For QA
 **Components:** Account & Settings
 
 ---
@@ -62,7 +62,7 @@ After successful sign-out, the user should be immediately redirected to `/login`
 
 ## Related Stories
 
-- Related: BK-86 (Account | View my identity, role, and sign out)
+- Related: [https://jira.upexgalaxy.com/browse/BK-86#icft=BK-86](https://jira.upexgalaxy.com/browse/BK-86#icft=BK-86) (Account | View my identity, role, and sign out)
 
 ---
 
@@ -75,7 +75,7 @@ After successful sign-out, the user should be immediately redirected to `/login`
 ## Metadata
 
 - **Created:** 6/23/2026
-- **Updated:** 7/6/2026
+- **Updated:** 7/31/2026
 - **Reporter:** Andrés Daniel Cumare Morales
 - **Assignee:** Andrés Daniel Cumare Morales
 - **Labels:** account-settings, bug, exploratory-testing

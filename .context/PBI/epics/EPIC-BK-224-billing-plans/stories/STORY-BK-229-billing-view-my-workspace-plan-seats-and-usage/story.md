@@ -17,20 +17,7 @@ As Mateo Silva (QA Lead / Quality Engineering Manager), I want to view my worksp
 
 ## Context
 
-Bunkai Cloud is onboarding paying teams. The Billing section is a new sub-view of the Settings hub. It shows the current tier (Free / Team / Enterprise), active seats against the seat limit, usage meters for plan-limited resources (for example projects and run history retention), and the renewal date for paid plans. This is the read-only foundation the rest of the Billing & Plans epic builds on. Activates when the Settings hub (BK-87) is live in the workspace.
-
----
-
-## Fields
-
-> Each rich-text field is a separate file in this folder.
-
-- [Acceptance Criteria](./acceptance-criteria.md)
-- [Business Rules](./business-rules.md)
-- [Scope](./scope.md)
-- [Out Of Scope](./out-of-scope.md)
-- [Workflow](./workflow.md)
-- [Mockup](./mockup.md)
+Bunkai Cloud is onboarding paying teams. The Billing section is a new sub-view of the Settings hub. It shows the current tier (Free / Team / Enterprise), active seats against the seat limit, usage meters for plan-limited resources (for example projects and run history retention), and the renewal date for paid plans. This is the read-only foundation the rest of the Billing & Plans epic builds on. Activates when the Settings hub ([https://jira.upexgalaxy.com/browse/BK-87#icft=BK-87](https://jira.upexgalaxy.com/browse/BK-87#icft=BK-87)) is live in the workspace.
 
 ---
 
@@ -39,8 +26,8 @@ Bunkai Cloud is onboarding paying teams. The Billing section is a new sub-view o
 ### Storys (3)
 
 - [BK-230](https://jira.upexgalaxy.com/browse/BK-230): Billing | Upgrade to a paid plan _(Backlog)_
-- [BK-232](https://jira.upexgalaxy.com/browse/BK-232): Billing | See plan-limit warnings with an upgrade path _(Backlog)_
 - [BK-87](https://jira.upexgalaxy.com/browse/BK-87): Settings | Open a settings hub and view my account _(Ready For QA)_
+- [BK-232](https://jira.upexgalaxy.com/browse/BK-232): Billing | See plan-limit warnings with an upgrade path _(Backlog)_
 
 ---
 

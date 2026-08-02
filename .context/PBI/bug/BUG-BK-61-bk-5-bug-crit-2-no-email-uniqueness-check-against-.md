@@ -11,7 +11,7 @@
 
 ## Severity: HIGH
 
-## Found during: BK-5 sprint-testing on staging (2026-06-05)
+## Found during: [https://jira.upexgalaxy.com/browse/BK-5#icft=BK-5](https://jira.upexgalaxy.com/browse/BK-5#icft=BK-5) sprint-testing on staging (2026-06-05)
 
 ### Repro
 
@@ -40,7 +40,7 @@ No DB unique constraint on (workspace_id, lower(email)) for pending invites, and
 
 ### Related
 
-- BK-5 (parent story)
+- [https://jira.upexgalaxy.com/browse/BK-5#icft=BK-5](https://jira.upexgalaxy.com/browse/BK-5#icft=BK-5) (parent story)
 - BUG-CRIT-1
 
 ---

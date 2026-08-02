@@ -5,8 +5,7 @@
 **Type:** Story
 **Status:** Ready For Dev
 **Priority:** Medium
-**Story Points:** 5
-**Web Link:** https://staging-upexbunkai.vercel.app/
+**Story Points:** -
 
 ---
 
@@ -22,9 +21,6 @@ As a QA Lead, I want to export a user story's assembled evidence chain as a shar
 
 > Each rich-text field is a separate file in this folder.
 
-- [Acceptance Criteria](./acceptance-criteria.md)
-- [Scope](./scope.md)
-- [Out Of Scope](./out-of-scope.md)
 - [Acceptance Test Plan (QA)](./acceptance-test-plan.md)
 
 ---

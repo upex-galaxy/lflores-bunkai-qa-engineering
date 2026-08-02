@@ -5,8 +5,7 @@
 **Type:** Story
 **Status:** Ready For Release
 **Priority:** Medium
-**Story Points:** 13
-**Web Link:** https://staging-upexbunkai.vercel.app/
+**Story Points:** -
 
 ---
 
@@ -63,26 +62,13 @@ Implements ***FR-003***.
 
 ---
 
-## Fields
-
-> Each rich-text field is a separate file in this folder.
-
-- [Acceptance Criteria](./acceptance-criteria.md)
-- [Business Rules](./business-rules.md)
-- [Scope](./scope.md)
-- [Out Of Scope](./out-of-scope.md)
-- [Workflow](./workflow.md)
-- [Acceptance Test Results (QA)](./acceptance-test-results.md)
-
----
-
 ## Traceability
 
 ### Bugs (3)
 
-- [BK-60](https://jira.upexgalaxy.com/browse/BK-60): [BK-5] BUG-CRIT-1: No email uniqueness check against active workspace members in POST /invites _(Closed)_
-- [BK-61](https://jira.upexgalaxy.com/browse/BK-61): [BK-5] BUG-CRIT-2: No email uniqueness check against pending invites — duplicate invites allowed _(Closed)_
 - [BK-62](https://jira.upexgalaxy.com/browse/BK-62): [BK-5] BUG-CRIT-3: Role overwrite on accept — workspace_members.upsert demotes existing owner/member _(Closed)_
+- [BK-61](https://jira.upexgalaxy.com/browse/BK-61): [BK-5] BUG-CRIT-2: No email uniqueness check against pending invites — duplicate invites allowed _(Closed)_
+- [BK-60](https://jira.upexgalaxy.com/browse/BK-60): [BK-5] BUG-CRIT-1: No email uniqueness check against active workspace members in POST /invites _(Closed)_
 
 ---
 

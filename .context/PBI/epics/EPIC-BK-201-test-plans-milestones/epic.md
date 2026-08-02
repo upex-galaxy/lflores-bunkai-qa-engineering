@@ -15,20 +15,20 @@ Bunkai already lets teams execute Tests through ad-hoc manual Runs. What QA Lead
 
 ## User Stories
 
-| # | Story | Persona |
+| ***#**** | ****Story**** | ****Persona*** |
 | --- | --- | --- |
-| BK-202 | TMS-Test Plan | Create a test plan grouping tests for a goal | Mateo Silva, QA Lead |
-| BK-203 | TMS-Test Plan | Add and remove tests from a plan | Elena Vargas, Senior QA Engineer |
-| BK-204 | TMS-Test Plan | Track plan progress from run outcomes | Mateo Silva, QA Lead |
-| BK-205 | TMS-Milestone | Create a milestone with a target date | Mateo Silva, QA Lead |
-| BK-206 | TMS-Milestone | Assign test plans and track milestone readiness | Mateo Silva, QA Lead |
-| BK-207 | TMS-Test Plan | Close a plan with an outcome summary | Mateo Silva, QA Lead |
+| [https://jira.upexgalaxy.com/browse/BK-202#icft=BK-202](https://jira.upexgalaxy.com/browse/BK-202#icft=BK-202) | TMS-Test Plan  | Create a test plan grouping tests for a goal | Mateo Silva, QA Lead |
+| [https://jira.upexgalaxy.com/browse/BK-203#icft=BK-203](https://jira.upexgalaxy.com/browse/BK-203#icft=BK-203) | TMS-Test Plan  | Add and remove tests from a plan | Elena Vargas, Senior QA Engineer |
+| [https://jira.upexgalaxy.com/browse/BK-204#icft=BK-204](https://jira.upexgalaxy.com/browse/BK-204#icft=BK-204) | TMS-Test Plan  | Track plan progress from run outcomes | Mateo Silva, QA Lead |
+| [https://jira.upexgalaxy.com/browse/BK-205#icft=BK-205](https://jira.upexgalaxy.com/browse/BK-205#icft=BK-205) | TMS-Milestone  | Create a milestone with a target date | Mateo Silva, QA Lead |
+| [https://jira.upexgalaxy.com/browse/BK-206#icft=BK-206](https://jira.upexgalaxy.com/browse/BK-206#icft=BK-206) | TMS-Milestone  | Assign test plans and track milestone readiness | Mateo Silva, QA Lead |
+| [https://jira.upexgalaxy.com/browse/BK-207#icft=BK-207](https://jira.upexgalaxy.com/browse/BK-207#icft=BK-207) | TMS-Test Plan  | Close a plan with an outcome summary | Mateo Silva, QA Lead |
 
 ## Traceability
 
 - Builds directly on epic ***BK-24 Tests (chains of ATCs)**** — plans group the Tests that epic delivers — and on epic ****BK-30 Manual Execution & Runs*** — plan progress and milestone readiness read the run outcomes that epic records.
 - Post-MVP roadmap feature: the PRD Phase 2 scope lists Test Plans (saved subsets of tests). Milestones extend that same planning capability to release goals.
-- Closed plans become read-only history, feeding the audit-evidence narrative of epic BK-44 Coverage & Traceability.
+- Closed plans become read-only history, feeding the audit-evidence narrative of epic [https://jira.upexgalaxy.com/browse/BK-44#icft=BK-44](https://jira.upexgalaxy.com/browse/BK-44#icft=BK-44) Coverage & Traceability.
 
 ---
 

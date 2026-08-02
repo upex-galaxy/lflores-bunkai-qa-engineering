@@ -2,7 +2,7 @@
 
 **Jira Key:** [BK-181](https://jira.upexgalaxy.com/browse/BK-181)
 **Priority:** High
-**Status:** Open
+**Status:** Ready For QA
 **Components:** Tenancy & Identity
 
 ---
@@ -17,16 +17,19 @@ On the email-verification screen of BK-166's signup flow, the "Request a new cod
 **STEPS TO REPRODUCE**
 
 #### Step 1 - Precondition: no active session, on staging (`https://staging-upexbunkai.vercel.app`)
+
 #### Step 2 - Navigation: complete the sign-up form (email + password) and reach the email-verification / enter-code screen
+
 #### Step 3 - Action: click "Request a new code"
+
 #### Step 4 - Observe: the app fires `POST /api/v1/auth/signup` (not a resend-code endpoint); response is 422 with a raw validation message, rendered verbatim in the UI alert
 
 ---
 
 **TECHNICAL ANALYSIS**
 
-- **Network****:** `POST /api/v1/auth/signup` -> `422 {"error":{"code":"validation_failed","details":[{"path":["password"],"message":"Invalid input"}],"message":"Request body failed validation."}}`
-- **Console****:** raw backend validation message surfaced directly in the UI alert, no user-friendly wrapping
+- **Network:** `POST /api/v1/auth/signup` -> `422 {"error":{"code":"validation_failed","details":[{"path":["password"],"message":"Invalid input"}],"message":"Request body failed validation."`}}
+- **Console:** raw backend validation message surfaced directly in the UI alert, no user-friendly wrapping
 
 ---
 
@@ -40,16 +43,16 @@ On the email-verification screen of BK-166's signup flow, the "Request a new cod
 
 **RELATED STORIES**
 
-- Related: BK-166
+- Related: [https://jira.upexgalaxy.com/browse/BK-166#icft=BK-166](https://jira.upexgalaxy.com/browse/BK-166#icft=BK-166)
 
 ---
 
 ## Metadata
 
 - **Created:** 6/25/2026
-- **Updated:** 7/30/2026
+- **Updated:** 8/2/2026
 - **Reporter:** Benjamin Segovia
-- **Assignee:** Ely
+- **Assignee:** Benjamin Segovia
 - **Labels:** auth, bug, exploratory-testing
 
 ---

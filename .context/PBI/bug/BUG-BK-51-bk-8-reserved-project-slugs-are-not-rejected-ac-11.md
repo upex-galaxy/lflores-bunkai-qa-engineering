@@ -15,7 +15,7 @@
 
 ## Environment
 
-Staging — https://staging-upexbunkai.vercel.app · API `/api/v1` · 2026-06-04 · cookie-session auth as `bunkai-staging-user`.
+Staging — [https://staging-upexbunkai.vercel.app](https://staging-upexbunkai.vercel.app/) · API `/api/v1` · 2026-06-04 · cookie-session auth as `bunkai-staging-user`.
 
 ## Severity / Type
 
@@ -24,8 +24,8 @@ Severity: ***Major**** · Error type: ****functional*** (latent routing-collisio
 ## Steps to Reproduce
 
 1. Authenticate as an active workspace member.
-2. `POST /api/v1/workspaces/{workspaceId}/projects` with body `{ "name": "api" }`.
-3. Repeat with `{ "name": "new" }`, `{ "name": "settings" }`, `{ "name": "admin" }`, `{ "name": "null" }`, `{ "name": "docs" }`.
+2. `POST /api/v1/workspaces/{workspaceId}/projects` with body {{{ "name": "api" }}}.
+3. Repeat with {{{ "name": "new" }}}, {{{ "name": "settings" }}}, {{{ "name": "admin" }}}, {{{ "name": "null" }}}, {{{ "name": "docs" }}}.
 
 ## Expected Result
 

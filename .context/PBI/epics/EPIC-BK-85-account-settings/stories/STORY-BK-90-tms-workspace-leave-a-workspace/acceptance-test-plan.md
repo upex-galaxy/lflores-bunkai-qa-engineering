@@ -2,7 +2,7 @@
 
 > Jira field: `customfield_10067` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-90)
 
-# BK-90 — Acceptance Test Plan (QA)
+# [https://jira.upexgalaxy.com/browse/BK-90#icft=BK-90](https://jira.upexgalaxy.com/browse/BK-90#icft=BK-90) — Acceptance Test Plan (QA)
 
 > Jira field: `customfield_10067` · [View in Jira](https://jira.upexgalaxy.com/browse/BK-90)
 
@@ -30,14 +30,14 @@
 
 ### Coverage Estimate
 
-| Type | Count | Notes |
+| ***Type**** | ****Count**** | ****Notes*** |
 | --- | --- | --- |
 | Positive | 3 | Outlines 1, 2, 3 — confirmation + fallback flow, co-owner leave, non-cascade content check |
 | Negative | 1 | Outline 4 — sole-owner block with reason |
 | Boundary | 1 | Outline 5 — leaving the only workspace |
 | Integration | 1 | Outline 6 — active-workspace resolution re-run after leave |
 
-********Total******:****** 6 outlines**** across 2 refined existing scenarios + 3 new inferred scenarios + 7 identified edge cases (folded into outlines above rather than each spawning a dedicated outline).
+******Total:**** ****6 outlines**** across 2 refined existing scenarios + 3 new inferred scenarios + 7 identified edge cases (folded into outlines above rather than each spawning a dedicated outline).
 
 ---
 _Synced from Jira by sync-jira-issues_

@@ -30,17 +30,17 @@ Monetize Bunkai Cloud. Workspace owners understand which plan their workspace is
 
 ## Stories
 
-| Key | Story | Persona |
+| ***Key**** | ****Story**** | ****Persona*** |
 | --- | --- | --- |
-| BK-229 | Billing | View my workspace plan, seats, and usage | Mateo Silva |
-| BK-230 | Billing | Upgrade to a paid plan | Mateo Silva |
-| BK-231 | Billing | Manage billing details and download invoices | Mateo Silva |
-| BK-232 | Billing | See plan-limit warnings with an upgrade path | Elena Vargas |
-| BK-233 | Billing | Downgrade or cancel the subscription | Mateo Silva |
+| [https://jira.upexgalaxy.com/browse/BK-229#icft=BK-229](https://jira.upexgalaxy.com/browse/BK-229#icft=BK-229) | Billing  | View my workspace plan, seats, and usage | Mateo Silva |
+| [https://jira.upexgalaxy.com/browse/BK-230#icft=BK-230](https://jira.upexgalaxy.com/browse/BK-230#icft=BK-230) | Billing  | Upgrade to a paid plan | Mateo Silva |
+| [https://jira.upexgalaxy.com/browse/BK-231#icft=BK-231](https://jira.upexgalaxy.com/browse/BK-231#icft=BK-231) | Billing  | Manage billing details and download invoices | Mateo Silva |
+| [https://jira.upexgalaxy.com/browse/BK-232#icft=BK-232](https://jira.upexgalaxy.com/browse/BK-232#icft=BK-232) | Billing  | See plan-limit warnings with an upgrade path | Elena Vargas |
+| [https://jira.upexgalaxy.com/browse/BK-233#icft=BK-233](https://jira.upexgalaxy.com/browse/BK-233#icft=BK-233) | Billing  | Downgrade or cancel the subscription | Mateo Silva |
 
 ## Traceability
 
-- Builds on BK-1 (Tenancy & Identity — workspaces and the owner / admin / member / viewer role ladder) and BK-87 (Settings hub — the Billing section renders as a Settings sub-view).
+- Builds on [https://jira.upexgalaxy.com/browse/BK-1#icft=BK-1](https://jira.upexgalaxy.com/browse/BK-1#icft=BK-1) (Tenancy & Identity — workspaces and the owner / admin / member / viewer role ladder) and [https://jira.upexgalaxy.com/browse/BK-87#icft=BK-87](https://jira.upexgalaxy.com/browse/BK-87#icft=BK-87) (Settings hub — the Billing section renders as a Settings sub-view).
 - Plan-limit warnings surface across the whole app wherever a plan-limited resource is created, not only inside Settings.
 - Source: business model, Revenue Streams (open-core tiers: Community self-hosted, Cloud per-seat subscription, Enterprise license) and Key Activities (operating Bunkai Cloud: billing).
 
