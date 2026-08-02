@@ -58,7 +58,10 @@ const {
   ATLASSIAN_EMAIL = '',
   ATLASSIAN_API_TOKEN = '',
   // === Jira-specific operational params (NOT credentials) ===
-  JIRA_TEST_STATUS_FIELD = 'customfield_10100', // Used: config.tms.jira.testStatusField
+  // Verified against live Jira (upexgalaxy71.atlassian.net) 2026-08-02 — matches
+  // .agents/jira-fields.json -> test_status. Re-verify if Jira reassigns field IDs
+  // (regenerate catalog with `bun run jira:sync-fields --force`).
+  JIRA_TEST_STATUS_FIELD = 'customfield_10082', // Used: config.tms.jira.testStatusField
 
   // === Browser Configuration ===
   HEADLESS = 'true', // Used: config.browser.headless (playwright.config)
