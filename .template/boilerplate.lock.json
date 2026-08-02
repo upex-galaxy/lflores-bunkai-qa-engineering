@@ -3,27 +3,28 @@
   "templateRepo": "upex-galaxy/agentic-qa-boilerplate",
   "templateCommit": "",
   "perComponentCommit": {
-    "skills": "b23ad9c79f5716bcc6ac1935369711f06538588b",
-    "commands": "b23ad9c79f5716bcc6ac1935369711f06538588b",
-    "scripts": "b23ad9c79f5716bcc6ac1935369711f06538588b",
-    "docs": "b23ad9c79f5716bcc6ac1935369711f06538588b",
+    "skills": "afd97f38ec5ba102bc97478fd4b04dda33c80521",
+    "commands": "afd97f38ec5ba102bc97478fd4b04dda33c80521",
+    "scripts": "afd97f38ec5ba102bc97478fd4b04dda33c80521",
+    "docs": "afd97f38ec5ba102bc97478fd4b04dda33c80521",
     "cli": "57a2dfdfc1ecaf50b569114e328908e14e211aea",
     "vscode": "c7605d0eec5ba9cd53d8960f130a879524e58ea1",
     "husky": "194c5be6bb2d9fbf04eb865688f60839a0dc849d",
     "agents-docs": "194c5be6bb2d9fbf04eb865688f60839a0dc849d",
     "claude-config": "5a07dfc9a19ae042b3072a58acc4ed652ee70132",
     "tooling": "57a2dfdfc1ecaf50b569114e328908e14e211aea",
-    "env-template": "e6308736aeb99e0511f18219602a8747261a199d"
+    "env-template": "afd97f38ec5ba102bc97478fd4b04dda33c80521"
   },
   "syncedComponents": [],
   "ignoreFileSync": {
     ".gitignore": {
-      "lastSyncedSha": "f52255194b1b13012d8dbafc6dcaf20d7ce49ccd",
+      "lastSyncedSha": "36a1a683d89bb8c2c9376a25ec204cbbdfd4c5a4",
       "appendedLines": [
         "**/evidence/",
         ".template/claude-md.upstream.sha",
         "/.allure/",
-        "/.agents/prompts/"
+        "/.agents/prompts/",
+        ".template/upstream-sha/"
       ]
     },
     ".prettierignore": {
@@ -60,6 +61,6 @@
     }
   },
   "cliVersion": "7.0",
-  "lastSyncedAt": "2026-07-29T10:33:42.969Z",
+  "lastSyncedAt": "2026-08-02T16:43:49.746Z",
   "variableSystemVersion": 1
 }

@@ -152,3 +152,6 @@ dbhub.local.toml
 # ----- 2026-07-29 (sync) -----
 /.allure/
 /.agents/prompts/
+
+# ----- 2026-08-02 (sync) -----
+.template/upstream-sha/
