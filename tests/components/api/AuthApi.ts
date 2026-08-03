@@ -10,8 +10,8 @@
  * TODO: Replace 'PROJ' in @atc IDs with your Jira project key (e.g., @atc('UPEX-101'))
  *
  * Endpoints:
- * - POST /api/auth/login - Authenticate and get JWT token
- * - GET /api/auth/me - Get current user info (requires auth)
+ * - POST /api/v1/auth/signin - Password sign-in; returns session + a freshly-minted Bearer PAT
+ * - GET /api/v1/me - Introspect the authenticated principal (requires auth)
  */
 
 import type { APIResponse } from '@playwright/test';
@@ -82,12 +82,12 @@ export class AuthApi extends ApiBase {
 
     // Fixed assertions - validates successful authentication
     expect(response.status()).toBe(200);
-    expect(body.access_token).toBeDefined();
-    expect(body.token_type).toBe('Bearer');
-    expect(body.expires_in).toBeGreaterThan(0);
+    expect(body.session.access_token).toBeDefined();
+    expect(body.pat.token).toBeDefined();
 
-    // Store token for subsequent requests
-    this.setAuthToken(body.access_token);
+    // Store the Bearer PAT for subsequent requests (session cookie is
+    // captured automatically by Playwright's request context via Set-Cookie)
+    this.setAuthToken(body.pat.token);
 
     // VERIFICATION: Confirm the session is valid via GET /auth/me
     const [meResponse, meBody] = await this.getCurrentUser();

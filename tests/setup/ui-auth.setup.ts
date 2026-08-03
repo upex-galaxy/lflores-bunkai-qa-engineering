@@ -72,9 +72,9 @@ setup('UI Setup: authenticate via UI', async ({ ui, page }) => {
     requestBody: { email: credentials.email, password: '***' },
   });
 
-  // Verify token was obtained
-  if (!tokenData?.access_token) {
-    throw new Error('Token response missing access_token');
+  // Verify the PAT was obtained
+  if (!tokenData?.pat?.token) {
+    throw new Error('Signin response missing PAT token');
   }
 
   console.log('[UI Setup] Token intercepted successfully');
@@ -83,12 +83,13 @@ setup('UI Setup: authenticate via UI', async ({ ui, page }) => {
   await page.context().storageState({ path: storageStateFile });
   console.log(`[UI Setup] Storage state saved to ${storageStateFile}`);
 
-  // Save the token for API calls within E2E tests
+  // Save the Bearer PAT for API calls within E2E tests
+  const nowSeconds = Math.floor(Date.now() / 1000);
   const apiState: ApiState = {
-    token: tokenData.access_token,
-    tokenType: tokenData.token_type,
-    expiresIn: tokenData.expires_in,
-    refreshToken: tokenData.refresh_token ?? null,
+    token: tokenData.pat.token,
+    tokenType: tokenData.session.token_type ?? 'bearer',
+    expiresIn: tokenData.session.expires_at ? tokenData.session.expires_at - nowSeconds : config.auth.tokenLifetimeSeconds,
+    refreshToken: tokenData.session.refresh_token,
     source: 'ui-login',
     createdAt: new Date().toISOString(),
   };
