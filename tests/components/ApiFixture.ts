@@ -19,6 +19,7 @@ import type { TestContextOptions } from '@TestContext';
 import { ApiBase } from '@api/ApiBase';
 import { AuthApi } from '@api/AuthApi';
 import { ExampleApi } from '@api/ExampleApi';
+import { WorkspaceApi } from '@api/WorkspaceApi';
 
 // ============================================
 // API Fixture Class
@@ -31,12 +32,16 @@ export class ApiFixture extends ApiBase {
   /** Example component - reference only */
   readonly example: ExampleApi;
 
+  /** Workspace component - active-workspace switch operations */
+  readonly workspace: WorkspaceApi;
+
   constructor(options: TestContextOptions) {
     super(options);
 
     // All components receive the same options (same request context)
     this.auth = new AuthApi(options);
     this.example = new ExampleApi(options);
+    this.workspace = new WorkspaceApi(options);
   }
 
   // ============================================
@@ -51,6 +56,7 @@ export class ApiFixture extends ApiBase {
     super.setAuthToken(token);
     this.auth.setAuthToken(token);
     this.example.setAuthToken(token);
+    this.workspace.setAuthToken(token);
   }
 
   /**
@@ -60,5 +66,6 @@ export class ApiFixture extends ApiBase {
     super.clearAuthToken();
     this.auth.clearAuthToken();
     this.example.clearAuthToken();
+    this.workspace.clearAuthToken();
   }
 }

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-02T18:53:24.308Z",
+  "generatedAt": "2026-08-06T11:26:37.570Z",
   "components": {
     "api": [
       {
@@ -39,6 +39,18 @@
             "id": "PROJ-103",
             "method": "getResourceSuccessfully",
             "line": 105
+          }
+        ]
+      },
+      {
+        "name": "WorkspaceApi",
+        "file": "WorkspaceApi.ts",
+        "relativePath": "tests/components/api/WorkspaceApi.ts",
+        "atcs": [
+          {
+            "id": "BK-250",
+            "method": "switchToActiveWorkspace",
+            "line": 53
           }
         ]
       }
@@ -82,9 +94,9 @@
   },
   "preconditions": [],
   "summary": {
-    "totalComponents": 4,
-    "totalATCs": 9,
-    "apiComponents": 2,
+    "totalComponents": 5,
+    "totalATCs": 10,
+    "apiComponents": 3,
     "uiComponents": 2,
     "preconditionModules": 0
   }
