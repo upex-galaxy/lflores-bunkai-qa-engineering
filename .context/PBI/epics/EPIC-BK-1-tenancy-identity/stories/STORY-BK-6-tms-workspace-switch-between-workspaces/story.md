@@ -5,7 +5,8 @@
 **Type:** Story
 **Status:** Ready For Release
 **Priority:** Medium
-**Story Points:** -
+**Story Points:** 5
+**Web Link:** https://staging-upexbunkai.vercel.app/
 
 ---
 
@@ -55,7 +56,13 @@ Implements ***FR-004***.
 
 > Each rich-text field is a separate file in this folder.
 
+- [Acceptance Criteria](./acceptance-criteria.md)
+- [Business Rules](./business-rules.md)
+- [Scope](./scope.md)
+- [Out Of Scope](./out-of-scope.md)
+- [Workflow](./workflow.md)
 - [Acceptance Test Plan (QA)](./acceptance-test-plan.md)
+- [Acceptance Test Results (QA)](./acceptance-test-results.md)
 
 ---
 
@@ -68,6 +75,10 @@ Implements ***FR-004***.
 - [BK-252](https://jira.upexgalaxy.com/browse/BK-252): BK-6: TC3: should reject the switch with 403 given the user's membership in the target workspace is suspended _(Candidate)_
 - [BK-250](https://jira.upexgalaxy.com/browse/BK-250): BK-6: TC1: should update active workspace context when switching to a workspace given the user is an active member _(Candidate)_
 
+### Defect (1)
+
+- [BK-316](https://jira.upexgalaxy.com/browse/BK-316): WorkspaceSwitch: API: active-workspace switch not reflected in Bearer/PAT-authenticated GET /me _(Open)_
+
 ### Bug (1)
 
 - [BK-83](https://jira.upexgalaxy.com/browse/BK-83): WorkspaceSwitch: API: POST /api/v1/me/active-workspace response missing workspace fields (id, slug, name, role) _(Closed)_
@@ -77,7 +88,7 @@ Implements ***FR-004***.
 ## Metadata
 
 - **Created:** 5/19/2026
-- **Updated:** 7/31/2026
+- **Updated:** 8/6/2026
 - **Reporter:** Ely
 - **Assignee:** Luis Eduardo Flores Villarroel
 - **Labels:** mvp, tenancy, wave-1
