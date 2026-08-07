@@ -86,18 +86,30 @@ ATCs called: `WorkspaceApi.switchToActiveWorkspace({ workspace_id: workspaceTo.i
 Test-level assertions: `GET /me` (via `getCurrentUser()`) reflects `active_workspace_id === workspaceTo.id` — this is the cross-ATC flow assertion, not a fixed assertion inside the ATC (rule #7).
 Teardown: none — switching back is not required (each test authenticates fresh; no shared mutable state across tests per KATA rule #13).
 
-#### Scenario 2 (BK-251 — pending, next TC)
+#### Scenario 2 (BK-251 — this session)
+
+Test: `"BK-6: should reject workspace switch given the user has no active membership"`
+Preconditions: login via `auth.authenticateSuccessfully()`; target workspace is a fixed
+reference constant `WORKSPACE_NOT_MEMBER_ID` (`bunkai1-qa`) — see
+`atc/BK-251-switch-non-member-workspace.md` §7 for why this deviates from the original
+"DB SELECT Discover" strategy (no runtime DB client exists in this framework) and why
+Generate (signup+email+confirm+create-workspace) was rejected as disproportionate.
+ATCs called: `WorkspaceApi.switchToNonMemberWorkspace({ workspace_id: WORKSPACE_NOT_MEMBER_ID })`
+Test-level assertions: `GET /me` `active_workspace_id` unchanged from before the attempt
+(session did not partially rotate on a rejected request).
+Teardown: none — no mutation occurred (403 rejected before any state change).
+
 #### Scenario 3 (BK-252 — pending, next TC)
 
 ## 6. Implementation Order
 
 - [x] ~~Fix `AuthApi.ts` auth bootstrap~~ (done as prerequisite, commit `03f181b`)
-- [ ] **Step 1 (this session)**: Add `api/schemas/workspace.types.ts` (type facade)
-- [ ] **Step 2 (this session)**: Create `tests/components/api/WorkspaceApi.ts` with `switchToActiveWorkspace` ATC (`BK-250`)
-- [ ] **Step 3 (this session)**: Register `WorkspaceApi` in `tests/components/ApiFixture.ts`
-- [ ] **Step 4 (this session)**: Create `tests/integration/workspace/switchActiveWorkspace.test.ts` with the BK-250 scenario
-- [ ] **Step 5 (this session)**: Run + validate (`bun run test`, `types:check`, `lint:check`), regenerate `kata-manifest.json`
-- [ ] Step 6 (next TC): Add `switchToNonMemberWorkspace` (BK-251) — same file, same component
+- [x] **Step 1**: Add `api/schemas/workspace.types.ts` (type facade) — commit `deea5f4`
+- [x] **Step 2**: Create `tests/components/api/WorkspaceApi.ts` with `switchToActiveWorkspace` ATC (`BK-250`) — commit `9be08a9`
+- [x] **Step 3**: Register `WorkspaceApi` in `tests/components/ApiFixture.ts` — commit `9be08a9`
+- [x] **Step 4**: Create `tests/integration/workspace/switchActiveWorkspace.test.ts` with the BK-250 scenario — commit `9be08a9`
+- [x] **Step 5**: Run + validate (`bun run test`, `types:check`, `lint:check`), regenerate `kata-manifest.json` — done; run is RED on a real product defect (BK-316), not a code/test bug — see progress.md
+- [ ] **Step 6 (this session)**: Add `switchToNonMemberWorkspace` (BK-251) — same file, same component
 - [ ] Step 7 (next TC): Add `switchToSuspendedWorkspace` (BK-252) — needs the DB Modify fixture (`beforeAll`/`afterAll`)
 - [ ] Step 8 (blocked): BK-253 — needs real `data-testid`s captured from the frontend source first
 
