@@ -24,6 +24,21 @@ import { config, expect, test } from '@TestFixture';
  */
 const WORKSPACE_NOT_MEMBER_ID = '047c106e-5334-4a80-8b66-d99ef4c474b4'; // bunkai1-qa
 
+/**
+ * Fixed reference workspace where the BK-6 test user HAS a `workspace_members` row but
+ * its `status` is `suspended` — hand-mutated once via `QA_INSPECTOR_RW_URL` (direct psql,
+ * RW credential; the `staging-dbhub` MCP connection used elsewhere in this project is
+ * READ-ONLY) on 2026-08-07, verified via SELECT immediately after. No runtime DB client
+ * exists in this framework, so a permanent documented fixture is the only viable strategy
+ * — same convention as WORKSPACE_NOT_MEMBER_ID above. See
+ * atc/BK-252-switch-suspended-workspace.md §7 for the full decision trail.
+ *
+ * RESERVED FIXTURE — do not reactivate this membership, do not delete the workspace or the
+ * row. Doing so breaks this TC with a false result, not a real regression. This workspace
+ * is also therefore excluded from BK-250's active-membership discovery pool.
+ */
+const WORKSPACE_SUSPENDED_ID = 'c828d131-f1c7-413c-9ba4-723fa1c45c00'; // BK5 Test Workspace
+
 test.describe('BK-6: Workspace Switch API', { tag: ['@critical'] }, () => {
   /**
    * ATC: BK-250
@@ -83,6 +98,36 @@ test.describe('BK-6: Workspace Switch API', { tag: ['@critical'] }, () => {
       // ACTION: attempt switch to a workspace with zero membership rows for the caller
       // (ATC handles fixed assertions — 403, error.code === 'forbidden')
       await api.workspace.switchToNonMemberWorkspace({ workspace_id: WORKSPACE_NOT_MEMBER_ID });
+
+      // Test-level assertion: the session did NOT partially rotate on a rejected
+      // request — active_workspace_id stays exactly what it was before the attempt.
+      const [, meAfter] = await api.auth.getCurrentUser();
+      expect(meAfter.active_workspace_id).toBe(meBefore.active_workspace_id);
+    },
+  );
+
+  /**
+   * ATC: BK-252
+   *
+   * Precondition: fresh login + a fixed reference workspace where the caller HAS a
+   * membership row but its status is `suspended` (WORKSPACE_SUSPENDED_ID — see the
+   * file-level comment above for the hand-mutated-fixture decision trail).
+   */
+  test(
+    'BK-6: should reject workspace switch given the user has a suspended membership',
+    async ({ api }) => {
+      // Precondition: authenticate fresh
+      const credentials = {
+        email: config.testUser.email,
+        password: config.testUser.password,
+      };
+      await api.auth.authenticateSuccessfully(credentials);
+
+      const [, meBefore] = await api.auth.getCurrentUser();
+
+      // ACTION: attempt switch to a workspace where the caller's membership is suspended
+      // (ATC handles fixed assertions — 403, error.code === 'forbidden')
+      await api.workspace.switchToSuspendedWorkspace({ workspace_id: WORKSPACE_SUSPENDED_ID });
 
       // Test-level assertion: the session did NOT partially rotate on a rejected
       // request — active_workspace_id stays exactly what it was before the attempt.

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-07T01:10:01.422Z",
+  "generatedAt": "2026-08-07T10:56:38.164Z",
   "components": {
     "api": [
       {
@@ -56,6 +56,11 @@
             "id": "BK-251",
             "method": "switchToNonMemberWorkspace",
             "line": 85
+          },
+          {
+            "id": "BK-252",
+            "method": "switchToSuspendedWorkspace",
+            "line": 115
           }
         ]
       }
@@ -100,7 +105,7 @@
   "preconditions": [],
   "summary": {
     "totalComponents": 5,
-    "totalATCs": 11,
+    "totalATCs": 12,
     "apiComponents": 3,
     "uiComponents": 2,
     "preconditionModules": 0

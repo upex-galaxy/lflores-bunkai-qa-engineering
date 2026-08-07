@@ -98,4 +98,34 @@ export class WorkspaceApi extends ApiBase {
 
     return [response, body, sentPayload];
   }
+
+  /**
+   * ATC: Switch active workspace to one where the caller's membership is suspended - expects rejection (403)
+   *
+   * Complete flow:
+   * 1. POST target workspace_id to /me/active-workspace (ACTION)
+   * 2. Validate the request is rejected with the canonical error envelope (fixed assertions)
+   *
+   * The follow-up "did the session stay on the pre-switch workspace?" check (GET /me) is a
+   * test-level assertion — it composes two different endpoints and belongs in the test file.
+   *
+   * @param payload - Target workspace id (real workspace, caller has a `status = 'suspended'` membership row)
+   * @returns Tuple with response, error envelope, and sent payload
+   */
+  @atc('BK-252')
+  async switchToSuspendedWorkspace(
+    payload: ActiveWorkspaceBody,
+  ): Promise<[APIResponse, ActiveWorkspaceError, ActiveWorkspaceBody]> {
+    // ACTION: POST a workspace_id where the caller's membership is suspended
+    const [response, body, sentPayload] = await this.apiPOST<ActiveWorkspaceError, ActiveWorkspaceBody>(
+      '/me/active-workspace',
+      payload,
+    );
+
+    // Fixed assertions - validates the switch was rejected with the canonical error code
+    expect(response.status()).toBe(403);
+    expect(body.error.code).toBe('forbidden');
+
+    return [response, body, sentPayload];
+  }
 }

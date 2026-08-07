@@ -99,7 +99,19 @@ Test-level assertions: `GET /me` `active_workspace_id` unchanged from before the
 (session did not partially rotate on a rejected request).
 Teardown: none — no mutation occurred (403 rejected before any state change).
 
-#### Scenario 3 (BK-252 — pending, next TC)
+#### Scenario 3 (BK-252 — this session)
+
+Test: `"BK-6: should reject workspace switch given the user has a suspended membership"`
+Preconditions: login via `auth.authenticateSuccessfully()`; target workspace is a fixed
+reference constant `WORKSPACE_SUSPENDED_ID` (`BK5 Test Workspace`) — see
+`atc/BK-252-switch-suspended-workspace.md` §7 for why this deviates from the original
+"DB Modify in beforeAll/afterAll" strategy (no runtime DB client exists in this framework)
+and why the fixture is hand-mutated once (permanent) rather than mutate-and-restore per run.
+ATCs called: `WorkspaceApi.switchToSuspendedWorkspace({ workspace_id: WORKSPACE_SUSPENDED_ID })`
+Test-level assertions: `GET /me` `active_workspace_id` unchanged from before the attempt
+(session did not partially rotate on a rejected request).
+Teardown: none — no mutation occurred by the test itself (403 rejected before any state
+change); the fixture's suspended status is permanent, not per-run.
 
 ## 6. Implementation Order
 
@@ -110,7 +122,7 @@ Teardown: none — no mutation occurred (403 rejected before any state change).
 - [x] **Step 4**: Create `tests/integration/workspace/switchActiveWorkspace.test.ts` with the BK-250 scenario — commit `9be08a9`
 - [x] **Step 5**: Run + validate (`bun run test`, `types:check`, `lint:check`), regenerate `kata-manifest.json` — done; run is RED on a real product defect (BK-316), not a code/test bug — see progress.md
 - [ ] **Step 6 (this session)**: Add `switchToNonMemberWorkspace` (BK-251) — same file, same component
-- [ ] Step 7 (next TC): Add `switchToSuspendedWorkspace` (BK-252) — needs the DB Modify fixture (`beforeAll`/`afterAll`)
+- [x] **Step 7**: Add `switchToSuspendedWorkspace` (BK-252) — same file, same component; fixture hand-mutated once via `QA_INSPECTOR_RW_URL` instead of a runtime `beforeAll`/`afterAll` DB Modify (no DB client wired into `tests/`)
 - [ ] Step 8 (blocked): BK-253 — needs real `data-testid`s captured from the frontend source first
 
 Each checked box maps to one commit (rule of thumb from the playbook — "new types" and "new ATC" never share a commit).
