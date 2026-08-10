@@ -1,0 +1,7 @@
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/auth/signin
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
+✅ [PROJ-101] authenticateSuccessfully - PASS (686ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
+---- API NOK: 403 - https://staging-upexbunkai.vercel.app/api/v1/me/active-workspace
+✅ [BK-252] switchToSuspendedWorkspace - PASS (258ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
