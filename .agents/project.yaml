@@ -29,7 +29,7 @@ issue_tracker:
 
 testing:
   default_env: staging # Default testing environment — must match a key under `environments:` (e.g. staging)
-  tms_cli: bun xray # Test management CLI command (e.g. bun xray)
+  tms_cli: acli # Test management CLI command (e.g. bun xray). Set to acli (== issue_tracker_cli) -> Modality jira-native, no Xray on Jira.
 
 qa:
   formal_blocked_gate: true # When true and the substrate exposes a `blocked` story status, FAILED stories dispatch `defect_reported` (in_test -> blocked). When false (or no `blocked` slug), the skill leaves the story in `in_test` with the linked bug — non-strict fallback. See sprint-testing/references/sprint-orchestration.md Briefing 4 Step 5.
