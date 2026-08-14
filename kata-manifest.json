@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-07T10:56:38.164Z",
+  "generatedAt": "2026-08-14T00:42:57.808Z",
   "components": {
     "api": [
       {
@@ -50,17 +50,17 @@
           {
             "id": "BK-250",
             "method": "switchToActiveWorkspace",
-            "line": 53
+            "line": 80
           },
           {
             "id": "BK-251",
             "method": "switchToNonMemberWorkspace",
-            "line": 85
+            "line": 109
           },
           {
             "id": "BK-252",
             "method": "switchToSuspendedWorkspace",
-            "line": 115
+            "line": 138
           }
         ]
       }

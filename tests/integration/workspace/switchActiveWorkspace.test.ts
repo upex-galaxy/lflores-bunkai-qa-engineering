@@ -70,6 +70,11 @@ test.describe('BK-6: Workspace Switch API', { tag: ['@critical'] }, () => {
       // Test-level assertion: the session scope actually rotated, not just
       // that the switch endpoint itself answered 200 — a follow-up GET /me
       // proves the change is session-wide, not a response that "lied".
+      // Per BK-316, GET /me's Bearer branch resolves from an immutable,
+      // mint-time-bound field and never reflects a switch — cookie-session
+      // is the only rail where a switch is observable, so the verification
+      // call must drop Bearer to check the real invariant.
+      api.auth.clearAuthToken();
       const [, meAfter] = await api.auth.getCurrentUser();
       expect(meAfter.active_workspace_id).toBe(workspaceTo.id);
       expect(switchBody.id).toBe(workspaceTo.id);

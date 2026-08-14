@@ -33,6 +33,33 @@ export class WorkspaceApi extends ApiBase {
   }
 
   // ============================================
+  // Helpers
+  // ============================================
+
+  /**
+   * POST /me/active-workspace using cookie-session auth only.
+   *
+   * Per BK-316's fix, this endpoint unconditionally rejects any caller that sends
+   * an `Authorization: Bearer` header (403) — it is cookie-session-only by design;
+   * Bearer/PAT callers must pass `workspace_id` explicitly per request instead.
+   * This repo's `api` fixture attaches a Bearer token to every request once
+   * authenticated (`ApiBase.buildHeaders`), so this endpoint specifically must
+   * suspend it for the call, then restore it for whatever the test does next.
+   */
+  private async postActiveWorkspace<TBody>(
+    payload: ActiveWorkspaceBody,
+  ): Promise<[APIResponse, TBody, ActiveWorkspaceBody]> {
+    const savedToken = this.authToken;
+    this.clearAuthToken();
+    try {
+      return await this.apiPOST<TBody, ActiveWorkspaceBody>('/me/active-workspace', payload);
+    }
+    finally {
+      if (savedToken) { this.setAuthToken(savedToken); }
+    }
+  }
+
+  // ============================================
   // ATCs - Complete Test Cases (ACTION + VERIFICATION)
   // ============================================
 
@@ -40,7 +67,7 @@ export class WorkspaceApi extends ApiBase {
    * ATC: Switch active workspace to one where the caller is an active member - expects success (200)
    *
    * Complete flow:
-   * 1. POST target workspace_id to /me/active-workspace (ACTION)
+   * 1. POST target workspace_id to /me/active-workspace, cookie-session only (ACTION)
    * 2. Validate response body reflects the target workspace (fixed assertions)
    *
    * The follow-up "did the session scope actually rotate?" check (GET /me) is a
@@ -54,11 +81,8 @@ export class WorkspaceApi extends ApiBase {
   async switchToActiveWorkspace(
     payload: ActiveWorkspaceBody,
   ): Promise<[APIResponse, ActiveWorkspaceResponse, ActiveWorkspaceBody]> {
-    // ACTION: POST target workspace_id
-    const [response, body, sentPayload] = await this.apiPOST<ActiveWorkspaceResponse, ActiveWorkspaceBody>(
-      '/me/active-workspace',
-      payload,
-    );
+    // ACTION: POST target workspace_id (cookie-session only — see postActiveWorkspace)
+    const [response, body, sentPayload] = await this.postActiveWorkspace<ActiveWorkspaceResponse>(payload);
 
     // Fixed assertions - validates the switch succeeded and returned the target context
     expect(response.status()).toBe(200);
@@ -86,11 +110,10 @@ export class WorkspaceApi extends ApiBase {
   async switchToNonMemberWorkspace(
     payload: ActiveWorkspaceBody,
   ): Promise<[APIResponse, ActiveWorkspaceError, ActiveWorkspaceBody]> {
-    // ACTION: POST a workspace_id the caller has no membership row for
-    const [response, body, sentPayload] = await this.apiPOST<ActiveWorkspaceError, ActiveWorkspaceBody>(
-      '/me/active-workspace',
-      payload,
-    );
+    // ACTION: POST a workspace_id the caller has no membership row for (cookie-session only —
+    // see postActiveWorkspace; a Bearer call would 403 unconditionally and never exercise
+    // the membership check this ATC is meant to cover)
+    const [response, body, sentPayload] = await this.postActiveWorkspace<ActiveWorkspaceError>(payload);
 
     // Fixed assertions - validates the switch was rejected with the canonical error code
     expect(response.status()).toBe(403);
@@ -116,11 +139,10 @@ export class WorkspaceApi extends ApiBase {
   async switchToSuspendedWorkspace(
     payload: ActiveWorkspaceBody,
   ): Promise<[APIResponse, ActiveWorkspaceError, ActiveWorkspaceBody]> {
-    // ACTION: POST a workspace_id where the caller's membership is suspended
-    const [response, body, sentPayload] = await this.apiPOST<ActiveWorkspaceError, ActiveWorkspaceBody>(
-      '/me/active-workspace',
-      payload,
-    );
+    // ACTION: POST a workspace_id where the caller's membership is suspended (cookie-session
+    // only — see postActiveWorkspace; a Bearer call would 403 unconditionally and never
+    // exercise the membership check this ATC is meant to cover)
+    const [response, body, sentPayload] = await this.postActiveWorkspace<ActiveWorkspaceError>(payload);
 
     // Fixed assertions - validates the switch was rejected with the canonical error code
     expect(response.status()).toBe(403);
