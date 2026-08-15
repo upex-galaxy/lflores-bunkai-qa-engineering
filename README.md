@@ -380,7 +380,7 @@ bun run test:ui
 # Run specific test types
 bun run test:e2e           # E2E tests only
 bun run test:integration   # API tests only
-bun run test:e2e:critical  # Tests marked @critical
+bun run test:smoke         # Tests marked @critical
 ```
 
 <br />
@@ -394,21 +394,25 @@ bun run test:e2e:critical  # Tests marked @critical
 │   │   ├── TestFixture.ts        # Layer 4: Unified test fixture
 │   │   ├── api/                  # API components
 │   │   │   ├── ApiBase.ts        # Layer 2: HTTP client base
-│   │   │   └── ExampleApi.ts     # Layer 3: Domain component
+│   │   │   ├── AuthApi.ts        # Layer 3: Domain component
+│   │   │   ├── BugsApi.ts        # Layer 3: Domain component
+│   │   │   ├── WorkspaceApi.ts   # Layer 3: Domain component
+│   │   │   └── NotificationsApi.ts # Layer 3: Domain component
 │   │   ├── ui/                   # UI components
 │   │   │   ├── UiBase.ts         # Layer 2: Page base
-│   │   │   └── ExamplePage.ts    # Layer 3: Domain component
+│   │   │   └── LoginPage.ts      # Layer 3: Domain component
 │   │   └── steps/                # Reusable ATC chains (preconditions)
 │   │
 │   ├── e2e/                      # E2E test specs
-│   │   └── module-example/       # Example module
+│   │   └── dashboard/            # Dashboard session bootstrap
 │   ├── integration/              # API integration tests
-│   │   └── module-example/       # Example module
+│   │   ├── auth/                 # Auth + session
+│   │   ├── bugs/                 # Bug lifecycle
+│   │   └── workspace/            # Workspace switching
 │   ├── setup/                    # Test setup files
 │   │   ├── global.setup.ts       # Global setup
 │   │   └── ui-auth.setup.ts      # UI authentication
 │   ├── data/
-│   │   ├── fixtures/             # Static test data (JSON)
 │   │   ├── types.ts              # Test data types
 │   │   └── DataFactory.ts        # Dynamic data generation
 │   └── utils/                    # Test utilities
@@ -499,16 +503,26 @@ Test Files ← Orchestrate ATCs
 
 ### Example Test
 
+The ATC (a mini-flow, e.g. `loginSuccessfully`) lives on the component, anchored to a real TMS Test issue via `@atc(...)`. The spec file just orchestrates ATCs and asserts:
+
 ```typescript
-import { test, expect } from '@TestFixture';
+// tests/components/ui/LoginPage.ts
+class LoginPage extends UiBase {
+  @atc('BK-313')
+  async loginSuccessfully(credentials: TestCredentials) {
+    await this.page.locator('[data-testid="email"]').fill(credentials.email);
+    await this.page.locator('[data-testid="password"]').fill(credentials.password);
+    await this.page.locator('[data-testid="submit"]').click();
+  }
+}
 
-test.describe('User Dashboard', () => {
-  test('@atc:UPEX-101 should display user profile', async ({ dashboardPage }) => {
-    await dashboardPage.navigateToDashboard();
-    await dashboardPage.openUserProfile();
+// tests/e2e/auth/login.test.ts
+import { expect, test } from '@TestFixture';
 
-    await expect(dashboardPage.profileCard).toBeVisible();
-    await expect(dashboardPage.userName).toContainText('John');
+test.describe('User Login', () => {
+  test('should log in with valid credentials', async ({ ui }) => {
+    await ui.login.loginSuccessfully({ email: 'user@example.com', password: 'pass' });
+    await expect(ui.page).not.toHaveURL(/.*\/login.*/);
   });
 });
 ```
@@ -529,7 +543,7 @@ See the `/test-automation` skill (`references/kata-architecture.md`) for complet
 | `bun run test:headed`       | Run with browser visible |
 | `bun run test:e2e`          | Run E2E tests only       |
 | `bun run test:integration`  | Run API tests only       |
-| `bun run test:e2e:critical` | Run @critical tests      |
+| `bun run test:smoke`        | Run @critical tests      |
 | `bun run test:retries`      | Run with 2 retries       |
 | `bun run test:last-failed`  | Re-run failed tests      |
 
@@ -538,9 +552,9 @@ See the `/test-automation` skill (`references/kata-architecture.md`) for complet
 | Script                         | Description              |
 | ------------------------------ | ------------------------ |
 | `bun run test:report`          | Open Playwright report   |
-| `bun run test:allure`          | Generate and open Allure |
-| `bun run test:allure:generate` | Generate Allure only     |
-| `bun run test:allure:open`     | Open existing Allure     |
+| `bun run allure:run`           | Run tests + open Allure  |
+| `bun run allure:generate`      | Generate Allure only     |
+| `bun run allure:open`          | Open existing Allure     |
 | `bun run test:sync`            | Sync results to TMS      |
 
 ### Code Quality
@@ -549,8 +563,12 @@ See the `/test-automation` skill (`references/kata-architecture.md`) for complet
 | ----------------------- | -------------------- |
 | `bun run lint:check`    | Run ESLint           |
 | `bun run lint:fix`      | Fix linting issues   |
+| `bun run format:check`  | Check Prettier format |
 | `bun run format:fix`    | Format with Prettier |
 | `bun run types:check`   | TypeScript check     |
+| `bun run vars:env:check`| Check variable manifest ⇄ `.env.example` parity |
+| `bun run repo:check`    | Run the full gate: format + lint + types + vars + skills + skills:registry + vars:env |
+| `bun run repo:fix`      | Same gate, auto-fixing format + lint first |
 
 ### Utilities
 
@@ -571,8 +589,11 @@ See the `/test-automation` skill (`references/kata-architecture.md`) for complet
 | `bun run agents:setup`        | Interactive walkthrough to populate `.agents/project.yaml`                   |
 | `bun run vars:check`          | Lint `.agents/` files for missing required values                            |
 | `bun run skills:check`        | Validate T1-T4 skill tier coherence (frontmatter, categories, anti-leak)     |
+| `bun run skills:registry`     | Rebuild `.claude/skills/REGISTRY.md` from disk                               |
+| `bun run skills:registry:check` | Verify `.claude/skills/REGISTRY.md` is up to date                          |
 | `bun run jira:sync-fields`    | Sync Jira custom-field catalog into `.agents/jira-fields.json`               |
 | `bun run jira:sync-workflows` | Sync Jira workflow statuses + transitions into `.agents/jira-workflows.json` |
+| `bun run jira:sync-link-types`| Sync Jira issue-link types into `.agents/jira-link-types.json`               |
 | `bun run jira:sync-issues`    | Pull Jira Epics/Stories into `.context/PBI/` markdown files                  |
 | `bun run jira:check`          | Verify Jira workspace has required custom fields configured                  |
 
@@ -794,10 +815,11 @@ AUTO_SYNC=true bun run test
 ### Link Tests to Test Cases
 
 ```typescript
-// Use @atc decorator with Jira key
-test('@atc:UPEX-101 should validate login', async ({ loginPage }) => {
-  // Test implementation
-});
+// @atc decorates the component method (not the test) with the real Jira Test key
+@atc('BK-313')
+async loginSuccessfully(credentials: TestCredentials) {
+  // ATC implementation
+}
 ```
 
 <br />
@@ -823,7 +845,7 @@ touch tests/components/ui/YourPage.ts
 touch tests/components/api/YourApi.ts
 ```
 
-Follow patterns in `ExamplePage.ts` and `ExampleApi.ts`.
+Follow patterns in `LoginPage.ts` and `AuthApi.ts`.
 
 ### 3. Add Tests
 

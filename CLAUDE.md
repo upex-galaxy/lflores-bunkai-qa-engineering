@@ -127,6 +127,7 @@ Example: ❌ "Added `waitForResponse('**/api/auth/login')` before toast assertio
 | Test-architecture decision (record/supersede) | "record an ADR", "document our fixture/runner/isolation decision", "architecture decision record" | — (see `.context/ADR/README.md`) | `.context/ADR/`, `agentic-qa-core/references/adr-doctrine.md` | Read + Write |
 | Sync AI memory | "sync memory", `/sync-ai-memory` | `/sync-ai-memory` | `README.md`, this file, `.context/`, `package.json` | Edit |
 | Git / PR work | any git intent | `/git-flow-master` (auto) | `git status`, `git log` | `git` + `gh` |
+| Review a PR's test-automation work | "review this PR", "revisa este PR", "actúa de QA lead" | `pr-review-lead` | KATA doctrine (this repo's or target's), the PR diff | `gh` |
 | Browser action | "screenshot", "trace", "record" | `/playwright-cli` | — | Playwright CLI |
 | Jira / Xray operation | "Jira issue", "Xray import" | `/acli` or `/xray-cli` | `.agents/jira-required.yaml`, `.agents/jira-fields.json` | CLI |
 | Any script / build / test command question | "what command runs X", "how do I run tests" | — | **READ `package.json` FIRST** | — |
@@ -183,6 +184,7 @@ Full contract: `.claude/skills/agentic-qa-core/references/skill-composition-stra
 | `acli` | `/acli` | Atlassian CLI. Resolves `[ISSUE_TRACKER_TOOL]` and `[TMS_TOOL]` (Modality jira-native). |
 | `git-flow-master` | (auto on git/PR intents) | End-to-end Git operator. Auto-detects branching strategy. Owns branch / commit / push / PR / conflict / chained-PR. |
 | `judgment-day` | `/judgment-day`, `juzgar`, `dual review` | T2 vendored from gentle-ai (Apache-2.0). Adversarial dual-judge review (2 blind judges in parallel, synthesis, fix loop, re-judge). Cited as optional gate by `/test-automation` Phase 3 + `/git-flow-master` pre-PR. Never auto-invoked. |
+| `pr-review-lead` | `revisa este PR`, `review this PR`, `actúa de QA lead`, `pr-review-lead` | QA Lead / QA Architect review of a PR's test-automation work against KATA doctrine (this repo's own, or the target repo's), citing a concrete doctrine reference or code location per finding. Works on PRs in this repo or an external repo (`owner/repo#PR` via `gh`). Runs a strictness preflight (Flexible/Standard/Strict) first; never posts to GitHub without explicit final OK. Not for reviewing your own uncommitted diff (default code-review flow), blind dual-adversarial review (`/judgment-day`), or opening/merging the PR (`/git-flow-master`). |
 
 ### Commands (single-file utilities in `.claude/commands/`)
 
