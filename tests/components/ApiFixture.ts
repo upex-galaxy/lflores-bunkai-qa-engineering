@@ -18,6 +18,7 @@ import type { TestContextOptions } from '@TestContext';
 
 import { ApiBase } from '@api/ApiBase';
 import { AuthApi } from '@api/AuthApi';
+import { BugsApi } from '@api/BugsApi';
 import { ExampleApi } from '@api/ExampleApi';
 import { WorkspaceApi } from '@api/WorkspaceApi';
 
@@ -35,6 +36,9 @@ export class ApiFixture extends ApiBase {
   /** Workspace component - active-workspace switch operations */
   readonly workspace: WorkspaceApi;
 
+  /** Bugs component - defect filing + assignment operations */
+  readonly bugs: BugsApi;
+
   constructor(options: TestContextOptions) {
     super(options);
 
@@ -42,6 +46,7 @@ export class ApiFixture extends ApiBase {
     this.auth = new AuthApi(options);
     this.example = new ExampleApi(options);
     this.workspace = new WorkspaceApi(options);
+    this.bugs = new BugsApi(options);
   }
 
   // ============================================
@@ -57,6 +62,7 @@ export class ApiFixture extends ApiBase {
     this.auth.setAuthToken(token);
     this.example.setAuthToken(token);
     this.workspace.setAuthToken(token);
+    this.bugs.setAuthToken(token);
   }
 
   /**
@@ -67,5 +73,6 @@ export class ApiFixture extends ApiBase {
     this.auth.clearAuthToken();
     this.example.clearAuthToken();
     this.workspace.clearAuthToken();
+    this.bugs.clearAuthToken();
   }
 }

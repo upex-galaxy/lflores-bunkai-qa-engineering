@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-14T00:42:57.808Z",
+  "generatedAt": "2026-08-15T13:45:04.281Z",
   "components": {
     "api": [
       {
@@ -17,6 +17,18 @@
             "id": "PROJ-102",
             "method": "loginWithInvalidCredentials",
             "line": 112
+          }
+        ]
+      },
+      {
+        "name": "BugsApi",
+        "file": "BugsApi.ts",
+        "relativePath": "tests/components/api/BugsApi.ts",
+        "atcs": [
+          {
+            "id": "BK-477",
+            "method": "assignBugToEligibleMember",
+            "line": 85
           }
         ]
       },
@@ -104,9 +116,9 @@
   },
   "preconditions": [],
   "summary": {
-    "totalComponents": 5,
-    "totalATCs": 12,
-    "apiComponents": 3,
+    "totalComponents": 6,
+    "totalATCs": 13,
+    "apiComponents": 4,
     "uiComponents": 2,
     "preconditionModules": 0
   }
