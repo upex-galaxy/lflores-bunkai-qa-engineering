@@ -1,6 +1,6 @@
 > Generated: 2026-08-15
 > Project: Bunkai
-> Status: APPROVED
+> Status: COMPLETED (2026-08-15) — see CLAUDE.md § "Framework Adaptation — /adapt-framework Closing Loop" for the closing summary
 
 # Adapt Framework — Plan (closing-the-loop run)
 
@@ -159,14 +159,14 @@ Remove the `module-example` `testIgnore` line (§5).
 
 ## 13. Approval Checklist
 
-- [ ] Delete `Example*` components + `module-example/` specs + `example.json`
-- [ ] Strip `TestHotel`/`TestBooking`/`createHotel`/`createBooking`/`createTestCase` from `tests/data/`
-- [ ] Rename 4 ATC decorators to `BK-311`/`BK-312`/`BK-313`/`BK-314`
-- [ ] Remove `ExampleApi`/`ExamplePage` fixture registrations + `testIgnore` line
-- [ ] Fix MCP dual-file naming (`staging-openapi`, `local-openapi`) + remove `API_HEADERS`/`API_TOKEN` injection from the OpenAPI MCP servers
-- [ ] Approve `local-dbhub` → alias to `staging-dbhub` in `project.yaml` (no new MCP entry, single shared DB)
-- [ ] Approve Allure name `Bunkai QA` (or provide alternative)
-- [ ] Regenerate `kata-manifest.json`
+- [x] Delete `Example*` components + `module-example/` specs + `example.json`
+- [x] Strip `TestHotel`/`TestBooking`/`createHotel`/`createBooking`/`createTestCase` from `tests/data/`
+- [x] Rename 4 ATC decorators to `BK-311`/`BK-312`/`BK-313`/`BK-314`
+- [x] Remove `ExampleApi`/`ExamplePage` fixture registrations + `testIgnore` line
+- [x] Fix MCP dual-file naming (`staging-openapi`, `local-openapi`) + remove `API_HEADERS`/`API_TOKEN` injection from the OpenAPI MCP servers
+- [x] Approve `local-dbhub` → alias to `staging-dbhub` in `project.yaml` (no new MCP entry, single shared DB)
+- [x] Approve Allure name `Bunkai QA` (or provide alternative)
+- [x] Regenerate `kata-manifest.json`
 
 ---
 

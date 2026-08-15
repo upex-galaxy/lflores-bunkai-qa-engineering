@@ -14,14 +14,14 @@
 
 import { expect, test } from '@TestFixture';
 
-test.describe('UPEX-200: Dashboard', { tag: ['@critical'] }, () => {
+test.describe('Session Bootstrap: Dashboard Access', { tag: ['@critical'] }, () => {
   /**
    * @critical - Validates Global Setup authentication
    *
    * This test verifies that the authenticated session from e2e-setup
    * is correctly loaded and allows access to protected pages.
    */
-  test('UPEX-200: should load dashboard with authenticated session', async ({ page }) => {
+  test('should load dashboard with authenticated session', async ({ page }) => {
     // Navigate to home/dashboard - should work because we're authenticated
     await page.goto('/');
 
@@ -38,7 +38,7 @@ test.describe('UPEX-200: Dashboard', { tag: ['@critical'] }, () => {
    * Validates that the test user info is accessible via API.
    * Uses the same session from the browser to verify API access.
    */
-  test('UPEX-200: should access user info via API with session token', async ({ test: fixture }) => {
+  test('should access user info via API with session token', async ({ test: fixture }) => {
     // Use helper (not ATC) — this is a read-only verification
     const [response, userInfo] = await fixture.api.auth.getCurrentUser();
 

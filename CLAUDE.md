@@ -556,4 +556,20 @@ Progress Date: 2026-08-15
 
 ---
 
+## Framework Adaptation — `/adapt-framework` Closing Loop (COMPLETED)
+
+> Plan: `.context/reports/adapt-framework-plan.md` — status `COMPLETED` as of 2026-08-15. Repo was already substantially adapted going in (real `AuthApi`/`LoginPage`/`BugsApi`/`WorkspaceApi`/`NotificationsApi`); this run closed the remaining GENERIC leftovers and ran the full Phase 8 validation gate.
+
+**Auth strategy (resolved)**: `POST /api/v1/auth/signin` (Bunkai staging) returns `{ user, session: { access_token, refresh_token, expires_at }, pat: { token, expires_at, scopes }, warning }`. The Bearer token used by tests, MCP tools, and CI is **`pat.token`**, not `session.access_token` — Bunkai issues a long-lived PAT alongside the Supabase session on every sign-in (BK-166 coexistence rule: Bearer PAT + session cookie are both valid concurrently, no auto-refresh, per-run mint accepted). `scripts/api-login.ts`'s `extractTokenFromResponse()` was still reading the boilerplate-default `body.access_token` shape — fixed to read `body.pat.token` / `body.pat.expires_at` (PATs have no `refresh_token`).
+
+**Entity strategy (resolved)**: 4 real entities wired — Auth, Bugs, Workspace, Notifications (`tests/components/api/{Auth,Bugs,Workspace,Notifications}Api.ts`, `tests/components/ui/LoginPage.ts`). `@atc` decorators anchor to real Jira Test issues (`BK-311`–`BK-314`, `BK-252`, `BK-251`, `BK-264`, `BK-6`, …) — no `PROJ-*`/`UPEX-*` placeholders remain in any `@atc(...)` decorator. Descriptive `test.describe`/`test` title strings in `tests/integration/auth/user-session.test.ts` and `tests/e2e/dashboard/dashboard.test.ts` (unrelated to `@atc` anchoring, just report-grouping labels) still said `UPEX-100`/`UPEX-200` — renamed to `BK-166` (the real login/session story) and a plain descriptive title respectively.
+
+**OpenAPI strategy (resolved)**: source spec synced to `api/openapi-types.ts` (real, 7.8k+ lines); `api/schemas/*.types.ts` facades are real, 0 `@openapi` imports leak into `tests/components/`.
+
+**Validation gate (Phase 8) — all green**: `types:check`, `lint:check`, `vars:check`, `vars:env:check`, `kata:manifest:check`, `test --project=api-setup`, `test --project=ui-setup`, `api:login staging`, `test --project=smoke` (×2, confirmed `api-setup`/`ui-setup` each run exactly once per invocation — not once per test — so within-run session reuse holds; a fresh `playwright test` invocation re-authenticating is expected Playwright behavior, not a gap), `repo:check` (format/lint/types/vars/skills/skills:registry/vars:env bundle).
+
+**Non-obvious gotcha found + fixed during the gate**: `tests/integration/auth/user-session.test.ts`'s "should fail without token" test called `api.clearAuthToken()` and expected `401`, but the `smoke` Playwright project sets `storageState` (session cookie from `ui-setup`) at the project level — and Playwright's `request.newContext()` inherits that `storageState` by default even when constructed standalone (outside a `page` context), not just when accessed via the `page`/`request` fixtures. Combined with BK-166's Bearer+cookie coexistence, clearing the local JS token left the request still cookie-authenticated → `200` instead of `401`. Fix: pass an explicit empty `storageState: { cookies: [], origins: [] }` to `request.newContext()` to force a truly anonymous context. Relevant if any future test needs a guaranteed-unauthenticated request under a project that sets `storageState`.
+
+---
+
 *AI persistent memory. Update when behaviors / skills / rules change.*
