@@ -41,6 +41,17 @@ const {
   STAGING_USER_EMAIL, // Required if TEST_ENV=staging
   STAGING_USER_PASSWORD, // Required if TEST_ENV=staging
 
+  // === Secondary role identities (optional — only needed by TCs that must
+  // log in as a non-owner actor, e.g. BK-486/TC7, BK-487/TC13) ===
+  LOCAL_MEMBER_EMAIL = '',
+  LOCAL_MEMBER_PASSWORD = '',
+  LOCAL_VIEWER_EMAIL = '',
+  LOCAL_VIEWER_PASSWORD = '',
+  STAGING_MEMBER_EMAIL = '',
+  STAGING_MEMBER_PASSWORD = '',
+  STAGING_VIEWER_EMAIL = '',
+  STAGING_VIEWER_PASSWORD = '',
+
   // === TMS Configuration ===
   TMS_PROVIDER = 'xray', // Used: config.tms.provider (jiraSync) - 'xray' | 'jira'
   AUTO_SYNC = 'false', // Used: config.tms.autoSync (jiraSync, global.teardown)
@@ -101,6 +112,17 @@ const userCredentialsMap: Record<Environment, { email: string, password: string 
   },
 };
 
+// Secondary role identities — optional, empty string when not provisioned
+// for the current TEST_ENV (only staging has them provisioned as of BK-264).
+const memberCredentialsMap: Record<Environment, { email: string, password: string }> = {
+  local: { email: LOCAL_MEMBER_EMAIL, password: LOCAL_MEMBER_PASSWORD },
+  staging: { email: STAGING_MEMBER_EMAIL, password: STAGING_MEMBER_PASSWORD },
+};
+const viewerCredentialsMap: Record<Environment, { email: string, password: string }> = {
+  local: { email: LOCAL_VIEWER_EMAIL, password: LOCAL_VIEWER_PASSWORD },
+  staging: { email: STAGING_VIEWER_EMAIL, password: STAGING_VIEWER_PASSWORD },
+};
+
 // ============================================
 // ENV DATA Mapping (hardcoded - not secrets because these are not sensitive data like credentials)
 // ============================================
@@ -144,6 +166,12 @@ export const config = {
 
   // Test User (configure in .env)
   testUser: envData.user,
+
+  // Secondary role identities (configure in .env) — empty email/password
+  // when not provisioned for the current TEST_ENV; consumers must check
+  // before use (e.g. skip/fixme the TC rather than logging in with '').
+  testMember: memberCredentialsMap[env.current],
+  testViewer: viewerCredentialsMap[env.current],
 
   // TMS
   tms: {
