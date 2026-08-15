@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-15T13:45:04.281Z",
+  "generatedAt": "2026-08-15T14:32:58.020Z",
   "components": {
     "api": [
       {
@@ -28,7 +28,12 @@
           {
             "id": "BK-477",
             "method": "assignBugToEligibleMember",
-            "line": 85
+            "line": 107
+          },
+          {
+            "id": "BK-486",
+            "method": "rejectWriteActionForViewer",
+            "line": 144
           }
         ]
       },
@@ -117,7 +122,7 @@
   "preconditions": [],
   "summary": {
     "totalComponents": 6,
-    "totalATCs": 13,
+    "totalATCs": 14,
     "apiComponents": 4,
     "uiComponents": 2,
     "preconditionModules": 0
