@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-15T15:20:32.784Z",
+  "generatedAt": "2026-08-15T19:53:42.663Z",
   "components": {
     "api": [
       {
@@ -9,14 +9,14 @@
         "relativePath": "tests/components/api/AuthApi.ts",
         "atcs": [
           {
-            "id": "PROJ-101",
+            "id": "BK-311",
             "method": "authenticateSuccessfully",
-            "line": 73
+            "line": 71
           },
           {
-            "id": "PROJ-102",
+            "id": "BK-312",
             "method": "loginWithInvalidCredentials",
-            "line": 112
+            "line": 110
           }
         ]
       },
@@ -88,28 +88,6 @@
         ]
       },
       {
-        "name": "ExampleApi",
-        "file": "ExampleApi.ts",
-        "relativePath": "tests/components/api/ExampleApi.ts",
-        "atcs": [
-          {
-            "id": "PROJ-101",
-            "method": "createResourceSuccessfully",
-            "line": 56
-          },
-          {
-            "id": "PROJ-102",
-            "method": "createResourceWithInvalidData",
-            "line": 82
-          },
-          {
-            "id": "PROJ-103",
-            "method": "getResourceSuccessfully",
-            "line": 105
-          }
-        ]
-      },
-      {
         "name": "NotificationsApi",
         "file": "NotificationsApi.ts",
         "relativePath": "tests/components/api/NotificationsApi.ts",
@@ -140,34 +118,17 @@
     ],
     "ui": [
       {
-        "name": "ExamplePage",
-        "file": "ExamplePage.ts",
-        "relativePath": "tests/components/ui/ExamplePage.ts",
-        "atcs": [
-          {
-            "id": "PROJ-101",
-            "method": "submitFormWithValidData",
-            "line": 99
-          },
-          {
-            "id": "PROJ-102",
-            "method": "submitFormWithInvalidEmail",
-            "line": 122
-          }
-        ]
-      },
-      {
         "name": "LoginPage",
         "file": "LoginPage.ts",
         "relativePath": "tests/components/ui/LoginPage.ts",
         "atcs": [
           {
-            "id": "PROJ-101",
+            "id": "BK-313",
             "method": "loginSuccessfully",
             "line": 91
           },
           {
-            "id": "PROJ-102",
+            "id": "BK-314",
             "method": "loginWithInvalidCredentials",
             "line": 108
           }
@@ -177,10 +138,10 @@
   },
   "preconditions": [],
   "summary": {
-    "totalComponents": 7,
-    "totalATCs": 24,
-    "apiComponents": 5,
-    "uiComponents": 2,
+    "totalComponents": 5,
+    "totalATCs": 19,
+    "apiComponents": 4,
+    "uiComponents": 1,
     "preconditionModules": 0
   }
 }

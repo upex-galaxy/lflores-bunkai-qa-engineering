@@ -7,8 +7,6 @@
  * ATCs follow flow-based design: each ATC is an ACTION + VERIFICATION,
  * not a simple GET. Read-only operations are helpers (no @atc).
  *
- * TODO: Replace 'PROJ' in @atc IDs with your Jira project key (e.g., @atc('UPEX-101'))
- *
  * Endpoints:
  * - POST /api/v1/auth/signin - Password sign-in; returns session + a freshly-minted Bearer PAT
  * - GET /api/v1/me - Introspect the authenticated principal (requires auth)
@@ -70,7 +68,7 @@ export class AuthApi extends ApiBase {
    * @param credentials - Email and password
    * @returns Tuple with response, token data, and sent payload
    */
-  @atc('PROJ-101')
+  @atc('BK-311')
   async authenticateSuccessfully(
     credentials: LoginPayload,
   ): Promise<[APIResponse, TokenResponse, LoginPayload]> {
@@ -109,7 +107,7 @@ export class AuthApi extends ApiBase {
    * @param credentials - Invalid email or password
    * @returns Tuple with error response and sent payload
    */
-  @atc('PROJ-102')
+  @atc('BK-312')
   async loginWithInvalidCredentials(
     credentials: LoginPayload,
   ): Promise<[APIResponse, AuthErrorResponse, LoginPayload]> {

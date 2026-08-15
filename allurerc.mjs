@@ -1,7 +1,7 @@
 import { defineConfig } from 'allure';
 
 export default defineConfig({
-  name: 'Agentic QA Boilerplate',
+  name: 'Bunkai Test Report',
   output: './allure-report',
   plugins: {
     awesome: {

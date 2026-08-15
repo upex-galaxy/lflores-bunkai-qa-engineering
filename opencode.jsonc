@@ -54,19 +54,27 @@
       ],
       "enabled": true
     },
-    "dbhub": {
+    "staging-dbhub": {
       "type": "local",
       "command": ["bunx", "-y", "@bytebase/dbhub@latest", "--config", "dbhub.toml"],
       "enabled": true
     },
-    "openapi": {
+    "staging-openapi": {
       "type": "local",
       "command": ["bunx", "-y", "@ivotoby/openapi-mcp-server", "--tools", "dynamic"],
       "enabled": true,
       "environment": {
         "API_BASE_URL": "{env:API_BASE_URL}",
-        "OPENAPI_SPEC_PATH": "{env:OPENAPI_SPEC_PATH}",
-        "API_HEADERS": "Authorization:Bearer {env:API_TOKEN}"
+        "OPENAPI_SPEC_PATH": "{env:OPENAPI_SPEC_PATH}"
+      }
+    },
+    "local-openapi": {
+      "type": "local",
+      "command": ["bunx", "-y", "@ivotoby/openapi-mcp-server", "--tools", "dynamic"],
+      "enabled": true,
+      "environment": {
+        "API_BASE_URL": "http://localhost:3000/api/v1",
+        "OPENAPI_SPEC_PATH": "{env:OPENAPI_SPEC_PATH}"
       }
     },
     "postman": {

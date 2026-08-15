@@ -19,7 +19,6 @@ import type { TestContextOptions } from '@TestContext';
 import { ApiBase } from '@api/ApiBase';
 import { AuthApi } from '@api/AuthApi';
 import { BugsApi } from '@api/BugsApi';
-import { ExampleApi } from '@api/ExampleApi';
 import { NotificationsApi } from '@api/NotificationsApi';
 import { WorkspaceApi } from '@api/WorkspaceApi';
 
@@ -30,9 +29,6 @@ import { WorkspaceApi } from '@api/WorkspaceApi';
 export class ApiFixture extends ApiBase {
   /** Auth component - handles login and token management */
   readonly auth: AuthApi;
-
-  /** Example component - reference only */
-  readonly example: ExampleApi;
 
   /** Workspace component - active-workspace switch operations */
   readonly workspace: WorkspaceApi;
@@ -48,7 +44,6 @@ export class ApiFixture extends ApiBase {
 
     // All components receive the same options (same request context)
     this.auth = new AuthApi(options);
-    this.example = new ExampleApi(options);
     this.workspace = new WorkspaceApi(options);
     this.bugs = new BugsApi(options);
     this.notifications = new NotificationsApi(options);
@@ -65,7 +60,6 @@ export class ApiFixture extends ApiBase {
   override setAuthToken(token: string) {
     super.setAuthToken(token);
     this.auth.setAuthToken(token);
-    this.example.setAuthToken(token);
     this.workspace.setAuthToken(token);
     this.bugs.setAuthToken(token);
     this.notifications.setAuthToken(token);
@@ -77,7 +71,6 @@ export class ApiFixture extends ApiBase {
   override clearAuthToken() {
     super.clearAuthToken();
     this.auth.clearAuthToken();
-    this.example.clearAuthToken();
     this.workspace.clearAuthToken();
     this.bugs.clearAuthToken();
     this.notifications.clearAuthToken();

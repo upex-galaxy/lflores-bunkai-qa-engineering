@@ -35,13 +35,20 @@
       "command": "/home/lflores/.bun/bin/dbhub",
       "args": ["--config", "dbhub.toml"]
     },
-    "openapi": {
+    "staging-openapi": {
       "command": "bunx",
       "args": ["-y", "@ivotoby/openapi-mcp-server", "--tools", "dynamic"],
       "env": {
         "API_BASE_URL": "${API_BASE_URL}",
-        "OPENAPI_SPEC_PATH": "${OPENAPI_SPEC_PATH}",
-        "API_HEADERS": "Authorization:Bearer ${API_TOKEN}"
+        "OPENAPI_SPEC_PATH": "${OPENAPI_SPEC_PATH}"
+      }
+    },
+    "local-openapi": {
+      "command": "bunx",
+      "args": ["-y", "@ivotoby/openapi-mcp-server", "--tools", "dynamic"],
+      "env": {
+        "API_BASE_URL": "http://localhost:3000/api/v1",
+        "OPENAPI_SPEC_PATH": "${OPENAPI_SPEC_PATH}"
       }
     },
     "postman": {

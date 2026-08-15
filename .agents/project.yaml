@@ -65,7 +65,7 @@ environments:
   local:
     web_url: 'http://localhost:3000' # Frontend URL for local env (e.g. http://localhost:3000)
     api_url: 'http://localhost:3000/api/v1' # API base URL for local env (e.g. http://localhost:3000/api)
-    db_mcp: local-dbhub # MCP server name for local DB (e.g. myproject-local-db)
+    db_mcp: staging-dbhub # No separate local Postgres — local dev shares the same Supabase project as staging (single dbhub.toml source)
     api_mcp: local-openapi # MCP server name for local API (e.g. myproject-local-api)
   qa:
     web_url: null # TODO: Frontend URL for qa env (e.g. https://qa.myproject.com)
