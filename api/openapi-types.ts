@@ -767,7 +767,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Caller is not a member of the target workspace. */
+                /** @description Caller is not a member of the target workspace, or is a Personal Access Token — PATs have no switchable active workspace and must pass `workspace_id` explicitly per request (BK-316). */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -1438,6 +1438,338 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workspaces/{id}/recent-projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a workspace's projects by most recent activity, with their module and ATC counts
+         * @description Bearer `atc:read` (or cookie session) — every row carries an exact per-project ATC count, so it is gated like the other ATC reads. Runs entirely under the caller's own RLS, so a foreign, nonexistent, or lost-membership workspace id returns the SAME `200 {"projects": []}` an empty workspace does — never an existence echo. A read that FAILS answers 500, never an empty list, so a caller can always tell a quiet workspace from a broken one.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description How many projects to return, 1..20 (default 5 — the Home widget's page size). Out of range is rejected with 422, never silently clamped. */
+                    limit?: number;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The workspace's most recently active projects (possibly empty). */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RecentProjects"];
+                    };
+                };
+                /** @description The workspace id in the path is not a UUID (`bad_request`). */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Not authenticated. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:read scope. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description `limit` is not an integer in 1..20 (`validation_failed`, `details.reason = limit_out_of_range`). */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description The rollup could not be read (`internal_error`). Deliberately not collapsed into an empty list. */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{id}/active-runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the runs currently in progress across a whole workspace, with their step progress
+         * @description Bearer `atc:read` (or cookie session) — rows carry project names, run identifiers and executor identities, so it is gated like the sibling workspace inventory read. `run:execute` is deliberately NOT the gate: it is a write capability. Active means `runs.status = 'running'`; finished and aborted runs are excluded, and a blocked run is still running (there is no `blocked` run status — blocking lives on the steps, and is surfaced per row as `state`). Runs entirely under the caller's own RLS, so a foreign, nonexistent, or lost-membership workspace id returns the SAME empty `200` an idle workspace does — never an existence echo. A read that FAILS answers 500, never an empty list.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description How many runs to return, 1..20 (default 5 — the Home widget's page size). Out of range is rejected with 422, never silently clamped. Does not affect `active_count`. */
+                    limit?: number;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The workspace's active runs (possibly empty) and the exact count of them. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ActiveRuns"];
+                    };
+                };
+                /** @description The workspace id in the path is not a UUID (`bad_request`). */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Not authenticated. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:read scope. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description `limit` is not an integer in 1..20 (`validation_failed`, `details.reason = limit_out_of_range`). */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description The rollup could not be read (`internal_error`). Deliberately not collapsed into an empty list. */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{id}/open-bugs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Count the open bugs across a whole workspace, broken down by severity
+         * @description Bearer `atc:read` (or cookie session) — the response is a workspace-wide defect posture, the same class of workspace inventory the sibling Home reads (`/recent-projects`, `/active-runs`) are gated on. OPEN means UNRESOLVED: `bugs.status in ('open', 'in_progress')`, the two states before a fix exists; `resolved` and `closed` are excluded. The counted statuses are echoed back as `open_statuses` so the definition travels with the numbers. Bugs filed against an ARCHIVED module are excluded, the same rule the bug lists and the defect heatmap apply, so this figure never claims defects a caller cannot enumerate. `open_count` is the sum of `by_severity` by construction, never an independent count, so the total always reconciles with the breakdown. Runs entirely under the caller's own RLS, so a foreign, nonexistent, or lost-membership workspace id returns the SAME zeroed `200` a workspace with no open bugs does — never an existence echo. A read that FAILS answers 500, never zeroes.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The workspace's open-bug count and its severity breakdown (possibly all zero). */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["OpenBugs"];
+                    };
+                };
+                /** @description The workspace id in the path is not a UUID (`bad_request`). */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Not authenticated. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:read scope. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description The rollup could not be read (`internal_error`). Deliberately not collapsed into zeroes. */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{id}/coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Summarize test coverage across a whole workspace
+         * @description Bearer `atc:read` (or cookie session) — coverage is a workspace-wide inventory of test assets, the same class of read the sibling Home endpoints (`/recent-projects`, `/active-runs`, `/open-bugs`) are gated on. Computed by summing `bunkai_report_project_coverage` — the SAME rollup behind `GET /api/v1/projects/{id}/coverage` and the project Metrics screen — over every project in the workspace, so the two endpoints can never disagree about whether an acceptance criterion is covered. The workspace figure is AC-weighted (`sum(ac_bound) / sum(ac_total)`), not an average of per-project percentages. The shortfall is reported as TWO separate figures on purpose: `ac_not_run` (test cases bound, awaiting execution) and `ac_uncovered` (nothing bound at all) are different problems and a single percentage conflates them. Execution state is POINT-IN-TIME, not cumulative — each ATC counts by its most recent run only, and joining a new run resets it to pending — so `ac_executed` and `executed_coverage_percent` fall when a regression run opens and are not a history of what has ever been tested; `ac_coverage_percent` is the figure that only moves when coverage itself does. A successful response may be up to 60 seconds stale (the rollup is memoized per workspace to keep this off the hot path of every landing-page load); adding or removing a project invalidates it at once. NO trend or prior-period delta is returned: nothing in the schema records when an ATC was bound to an acceptance criterion or when a step was executed, so a historical coverage figure cannot be sourced without inventing one. Runs entirely under the caller's own RLS, so a foreign, nonexistent, or lost-membership workspace id returns the SAME zeroed `200` (with null percentages) that an empty workspace does — never an existence echo. A read that FAILS answers 500, never zeroes.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The workspace's coverage rollup. Percentages are null when the workspace holds no acceptance criteria. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceCoverage"];
+                    };
+                };
+                /** @description The workspace id in the path is not a UUID (`bad_request`). */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Not authenticated. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:read scope. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description The rollup could not be read (`internal_error`). Deliberately not collapsed into zeroes — one unreadable project fails the whole figure rather than silently shrinking the denominator. Also returned, for the same reason, when the workspace holds more projects than one pass may roll up (60): a percentage over some of a workspace's projects is a wrong number that looks like a right one, so the endpoint refuses instead of approximating. */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{id}/modules": {
         parameters: {
             query?: never;
@@ -1818,6 +2150,238 @@ export interface paths {
                     };
                 };
                 /** @description Validation failed (name empty or > 50 chars). */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/projects/{id}/milestones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a project's milestones
+         * @description Lists the project's milestones ordered by target date (ascending), id ascending as the tie-break. Visible to any workspace member; a non-member receives an empty list.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Milestones listed. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MilestoneListResponse"];
+                    };
+                };
+                /** @description Malformed project id. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Caller is not signed in. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Create a milestone in a project
+         * @description Member-only (role >= member). Normalizes the name (collapses internal whitespace, then trims) and enforces 1–100 chars; description is capped at 500 chars. The target date must be today or later and within 5 years of the write date — both server UTC. The name is unique per project (case-insensitive, whitespace-normalized); a duplicate returns 409. Non-members return 403.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MilestoneCreateBody"];
+                };
+            };
+            responses: {
+                /** @description Milestone created. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MilestoneCreateResponse"];
+                    };
+                };
+                /** @description Malformed project id or invalid JSON body. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Caller is not signed in. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Caller is not a member of the project's workspace. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description A milestone with this name already exists in the project. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Validation failed (name/description length, or target date out of bounds). */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/milestones/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Edit a milestone
+         * @description Member-only (role >= member). Same normalize/length rules as create. The target-date bounds (today-or-later, within 5 years) are enforced ONLY when the submitted date differs from the milestone's current stored value — an unchanged past-dated milestone stays editable (e.g. a description-only edit). Non-members receive a non-disclosing 404; a member with only the viewer role receives 403.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MilestoneUpdateBody"];
+                };
+            };
+            responses: {
+                /** @description Milestone updated. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MilestoneUpdateResponse"];
+                    };
+                };
+                /** @description Malformed milestone id or invalid JSON body. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Caller is not signed in. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Caller is a member but holds only the viewer role. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Milestone not found (or not visible to the caller). */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description A milestone with this name already exists in the project. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Validation failed (name/description length, or target date out of bounds when changed). */
                 422: {
                     headers: {
                         [name: string]: unknown;
@@ -4484,7 +5048,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Validation failed — status is not one of passed, failed, or blocked, note/evidence_url exceed 2000 characters, or evidence_url is not a valid URL (`validation_failed`). */
+                /** @description Validation failed — status is not one of passed, failed, or blocked, note/evidence_url exceed 2000 characters, or evidence_url is not an http:// or https:// URL (`validation_failed`). */
                 422: {
                     headers: {
                         [name: string]: unknown;
@@ -4597,7 +5161,7 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            bug: components["schemas"]["Bug"];
+                            bug: components["schemas"]["BugDetail"];
                         };
                     };
                 };
@@ -4638,6 +5202,260 @@ export interface paths {
                     };
                 };
                 /** @description Validation failed (title 5–200 chars, severity P1–P4, evidence links ≤10, module outside project, or the run-linked step is not `failed`). */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bugs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read a single defect's full record
+         * @description Cookie session or Bearer PAT; no scope requirement — any active workspace role, viewers included, may read (`bugs_select_workspace_member`, migration 0046). `bunkai_bug_json` is SECURITY INVOKER — it runs under the caller's own RLS, so a bug outside the caller's workspaces returns the same 404 as an unknown id (non-disclosing). A bug filed against a since-archived module still renders in full, with `module.archived_at` set — this read does NOT apply the archived-module exclusion the list endpoints use.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The defect's full record. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            bug: components["schemas"]["BugDetail"];
+                        };
+                    };
+                };
+                /** @description Malformed id — not a UUID (`bad_request`). Computed from the string alone, no database access. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Not authenticated. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Bug not found — also returned for a well-formed id in a workspace the caller is not a member of (non-disclosing). */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bugs/{id}/assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Assign, reassign, or unassign a bug
+         * @description Bearer `atc:write` (or cookie session); member+ write access. `bunkai_assign_bug` (migration 0054) is a no-op (no new activity row) when the requested assignee is already the current one. Emits `bug.assigned` / `bug.reassigned` / `bug.unassigned` depending on the prior state.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BugAssignBody"];
+                };
+            };
+            responses: {
+                /** @description Bug assignment updated. Returns the updated Bug. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            bug: components["schemas"]["BugDetail"];
+                        };
+                    };
+                };
+                /** @description Malformed id (not a UUID) or malformed JSON body (`bad_request`). */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Not authenticated. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:write scope, or a workspace member without write access (`forbidden`). */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Bug not found — also returned for a caller who is not even a member of the bug's workspace (non-disclosing). */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Validation failed — the requested assignee is not an active member of this workspace (`assignee_not_workspace_member`), or is a view-only member (`assignee_view_only`). */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bugs/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Advance a bug's status one lifecycle stage at a time
+         * @description Bearer `atc:write` (or cookie session); member+ write access. `bunkai_transition_bug_status` (migration 0054) enforces the lifecycle order open -> in_progress -> resolved -> closed: exactly one stage forward per call, never backward, never skipping a stage. Emits `bug.status_changed` with the previous status, new status, and current assignee.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BugStatusTransitionBody"];
+                };
+            };
+            responses: {
+                /** @description Bug status updated. Returns the updated Bug. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            bug: components["schemas"]["BugDetail"];
+                        };
+                    };
+                };
+                /** @description Malformed id (not a UUID) or malformed JSON body (`bad_request`). */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Not authenticated. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:write scope, or a workspace member without write access (`forbidden`). */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Bug not found — also returned for a caller who is not even a member of the bug's workspace (non-disclosing). */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Validation failed — the target status skips a lifecycle stage (`status_transition_skipped`), or moves backward / stays the same (`status_transition_backward`). */
                 422: {
                     headers: {
                         [name: string]: unknown;
@@ -4773,6 +5591,443 @@ export interface paths {
                     };
                 };
                 /** @description Project not found (also returned for a Project outside the caller's workspaces — no existence leak). */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{id}/bugs/heatmap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Compute a per-module defect heatmap (count + week-over-week trend) for a chosen window
+         * @description Cookie session or Bearer PAT; no scope requirement — mirrors GET /api/v1/projects/{id}/metrics/recovery-cycles. One SECURITY DEFINER RPC (`bunkai_report_project_defect_heatmap`) resolves the Project's workspace and re-checks ACTIVE membership in-band; any role reads, viewers included. No pagination or filters: the whole-project rollup is small and bounded. Each module's defect_count rolls up its full descendant subtree (path-prefix match); archived modules are excluded from the heatmap by default but a filed defect against a since-archived descendant still counts toward an active ancestor. A Project with zero bugs returns every active module at Clean/0 (never a 404) — a 404 means the Project itself is missing, foreign, or unreadable.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description The rollup window for defect_count. Defaults to 30d. An unsupported value is a 400 bad_request (not the repo's usual validation_failed/422 — AC-11's explicit wording for this error). */
+                    window?: "7d" | "30d" | "90d";
+                };
+                header?: never;
+                path: {
+                    /** @description The Project whose defect heatmap to read. */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The defect heatmap report. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DefectHeatmapReport"];
+                    };
+                };
+                /** @description Malformed Project id (not a UUID), or an unsupported window value (`bad_request`). */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Not authenticated. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Project not found (also returned for a Project outside the caller's workspaces — no existence leak). */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{id}/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the caller's notification inbox for one workspace, newest first
+         * @description Cookie session or Bearer PAT; no scope requirement — a personal read, not a `workspace:admin` operation. `bunkai_list_notifications` is SECURITY INVOKER — it runs under the caller's own RLS, so a foreign/inaccessible workspace id silently returns an empty page rather than leaking existence. Pagination is KEYSET on `(created_at desc, id desc)`. `unread_count` is independent of pagination. An empty `items` is always a valid 200 — this endpoint never answers 404.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Page size, 1..50 (default 30). Out of range is rejected (422); the RPC additionally clamps for direct callers. */
+                    limit?: number;
+                    /** @description Opaque page token taken verbatim from the previous response's `next_cursor`. A malformed token returns 400 — it never silently falls back to the first page. */
+                    cursor?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description One page of the notification inbox (possibly empty). */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotificationsPage"];
+                    };
+                };
+                /** @description An undecodable `cursor` (`bad_request`). */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Not authenticated. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Validation failed — workspace id not a UUID, or `limit` outside 1..50 (`validation_failed`). */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark one notification read
+         * @description Marks one of the caller's own notifications read. Plain RLS-scoped update, no RPC — `notifications_update_recipient_member` (migration 0053_notifications.sql) is the entire authorization surface, so a foreign id or another recipient's row is indistinguishable from a nonexistent one (404, non-disclosing). Idempotent: marking an already-read notification succeeds again rather than erroring.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The notification is now marked read. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MarkNotificationReadResponse"];
+                    };
+                };
+                /** @description The id is not a UUID (`bad_request`). */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Not authenticated. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Notification not found, not the caller's own, or the caller lost workspace membership (`not_found`, non-disclosing). */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{id}/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark every visible unread notification read, for one workspace
+         * @description Marks all of the caller's own unread notifications in one workspace read. Plain RLS-scoped bulk update, no RPC — `notifications_update_recipient_member` (migration 0053_notifications.sql) is the entire authorization surface. Scoped to exactly ONE workspace (the path `id`) — never cross-workspace, per the PO-ratified business rule. Idempotent: a repeat call updates zero rows and still returns 200 with `updated_count: 0`.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Every visible unread notification in this workspace is now marked read. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MarkAllNotificationsReadResponse"];
+                    };
+                };
+                /** @description The workspace id is not a UUID (`bad_request`). */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Not authenticated. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notification-preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List my notification preferences
+         * @description Returns the caller's own notification preferences grid (BK-213): 4 editable cells (`run_lifecycle` / `bug_lifecycle` x `in_app` / `email`, `enabled: true` when never touched) plus 2 structurally-locked `mentions` cells (`locked: true`, always `enabled: false`, immutable until Team Chat ships). Personal and GLOBAL — no workspace scoping.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The caller's preferences grid. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotificationPreferencesListResponse"];
+                    };
+                };
+                /** @description Not authenticated. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update one notification preference cell
+         * @description Instant-save toggle for one (event_type, channel) cell — last-write-wins, no lock (QA Refinement Decision 2). `mentions` is deliberately excluded from `event_type` — a request naming it fails validation (`validation_failed`, 422), on top of migration 0062's own DB-level lock.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["NotificationPreferencePatchBody"];
+                };
+            };
+            responses: {
+                /** @description The cell is now persisted with this value. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotificationPreferencePatchResponse"];
+                    };
+                };
+                /** @description Not authenticated. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Invalid body — including an `event_type` of `mentions` (`validation_failed`). */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/projects/{id}/traceability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Render a User Story's full acceptance-criteria-to-defect evidence chain in one read
+         * @description Cookie session or Bearer PAT; no scope requirement — mirrors `GET /api/v1/projects/{id}/coverage`. One SECURITY DEFINER RPC (`bunkai_report_story_traceability`) resolves the User Story's Project via its Module (never the nullable `user_stories.project_id`) and re-checks ACTIVE membership in-band; any role reads, viewers included. No pagination: one story's own chain is small and bounded, and round trips never scale with AC/ATC/Test/Run counts. Archived acceptance criteria and ATCs (including under an archived ancestor Module) are excluded from the chain; an archived STORY itself still renders in full.
+         */
+        get: {
+            parameters: {
+                query: {
+                    /** @description The User Story whose evidence chain to read. */
+                    story: string;
+                };
+                header?: never;
+                path: {
+                    /** @description The Project the User Story belongs to. This is a consistency assertion on the URL itself, never the scope parameter: it is checked against the Story's real Project (resolved via module_id, under the caller's own RLS) and a mismatched pair is rejected — see the 404 response below and route.ts. */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The User Story's evidence chain. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StoryTraceabilityPayload"];
+                    };
+                };
+                /** @description Malformed Project id or missing/malformed `story` query parameter (`bad_request`). */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Not authenticated. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description User Story not found. Also returned, byte-identical, for a Story outside the caller's workspaces, or for a Story that does not belong to the `{id}` Project asserted in the URL — no existence leak, never a 403. */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -5188,6 +6443,111 @@ export interface components {
             /** @description Optional Markdown, max 5KB. */
             description?: string;
         };
+        RecentProjects: {
+            /** @description Ordered by `last_activity_at` descending, name ascending as the tie-break. At most `limit` entries. */
+            projects: components["schemas"]["RecentProject"][];
+        };
+        RecentProject: {
+            /** Format: uuid */
+            id: string;
+            /** @description URL slug, unique per workspace — the project route is `/projects/{slug}`. */
+            slug: string;
+            name: string;
+            /** @description Active (non-archived) modules in the project. An exact count, not a scan-derived floor. */
+            module_count: number;
+            /** @description Active (non-archived) ATCs in the project. An exact count, not a scan-derived floor. */
+            atc_count: number;
+            /**
+             * Format: date-time
+             * @description The newest of: an ATC written or revised, a module added, a run started/finished/aborted, and — as the floor — the project's own creation. Never null: a project that has never been touched still reports when it was created. Three things do NOT advance it: module renames and moves (`modules` carries no `updated_at`), marking a step inside an in-progress run (step marking does not write the `runs` row), and bug activity (deliberately excluded — that surface belongs to the Home open-bugs widget).
+             */
+            last_activity_at: string;
+        };
+        ActiveRuns: {
+            /** @description How many runs are in progress across the WHOLE workspace. Exact, and deliberately NOT capped by `limit` — a workspace with eight running runs reports 8 while returning at most `limit` rows. This is the same predicate (`runs.status = 'running'`) the Home welcome banner counts, so the two numbers on that screen agree by construction. */
+            active_count: number;
+            /** @description Ordered by `last_activity_at` descending (id descending as the tie-break), so the first entry is the run to resume. At most `limit` entries. NOTE the two-stage boundary: `started_at` descending decides WHICH runs make the page (that is what the database can order cheaply), and `last_activity_at` orders the page. A run old enough to fall outside `limit` by start date is not pulled back in by recent step activity. When `active_count` exceeds this array's length the remainder is NOT reachable from here — there is no cursor and no workspace-wide runs index; read the missing runs from each project's own run report. */
+            runs: components["schemas"]["ActiveRun"][];
+        };
+        ActiveRun: {
+            /**
+             * Format: uuid
+             * @description The run's id. The run opens at `/projects/{project_slug}/runs/{id}`.
+             */
+            id: string;
+            /** @description URL slug of the run's project, unique per workspace. */
+            project_slug: string;
+            project_name: string;
+            /** @description The Test title as snapshotted when the run started, not as it reads today. */
+            test_title: string;
+            /**
+             * @description How the run is being executed (`runs.executor_mode`).
+             * @enum {string}
+             */
+            executor_mode: "human" | "agent" | "ci";
+            /** @description Who started the run. Falls back to the neutral copy "a workspace member" when the executor cannot be resolved (departed member, or no executor on the row) — never a raw user id. */
+            executor: string;
+            /**
+             * @description DERIVED, not a column: `blocked` when at least one of the run's steps is blocked, `running` otherwise. Both are active — `runs.status` is `running` for every row this endpoint returns, since a blocked run has not terminated. It is a display sub-state, so it never changes `active_count`.
+             * @enum {string}
+             */
+            state: "running" | "blocked";
+            /** @description Steps snapshotted into the run at start. An exact count, not a scan-derived floor. */
+            total_steps: number;
+            /** @description Steps that are no longer `pending` — passed, failed, blocked or skipped. Exact. */
+            done_steps: number;
+            blocked_steps: number;
+            /** @description Failed steps do NOT end a run: it stays active until it is explicitly finished or aborted. */
+            failed_steps: number;
+            /** Format: date-time */
+            started_at: string;
+            /**
+             * Format: date-time
+             * @description When the run was last worked on: the newest `executed_at` among its steps, falling back to `started_at` when no step has been marked yet. This is the ordering key. It is NOT `runs.updated_at` — marking a step locks that row but never updates it, so that column is frozen at the run's start for a run in flight. `last_activity_at == started_at` therefore means "nothing has happened since this run began".
+             */
+            last_activity_at: string;
+        };
+        OpenBugs: {
+            /** @description How many bugs are OPEN across the WHOLE workspace, where open means UNRESOLVED: `bugs.status` is one of the values in `open_statuses` (`open` or `in_progress`). Both are pre-resolution states — a defect somebody is actively fixing is still outstanding — so triaging a bug from `open` to `in_progress` deliberately does NOT decrease this number; only resolving or closing it does. `resolved` and `closed` are both excluded. Bugs whose own module is ARCHIVED are excluded too, matching every surface that lists bugs (`GET /api/v1/bugs` and the defect heatmap both drop them), so this total always reconciles with what a caller can actually enumerate. DERIVED as the sum of `by_severity` rather than counted separately, so the total and the breakdown can never contradict each other. */
+            open_count: number;
+            by_severity: components["schemas"]["OpenBugsBySeverity"];
+            /** @description The exact `bugs.status` values counted above, published so the rule is machine-readable rather than inferred. This is the same list the Home stat card renders from and the same one the supporting partial index is built on, so the three cannot drift apart. */
+            open_statuses: ("open" | "in_progress")[];
+        };
+        /** @description Open bugs per severity. The four keys are exhaustive — `bugs.severity` is CHECK-constrained to exactly P1..P4 — so these always sum to `open_count`. */
+        OpenBugsBySeverity: {
+            /** @description Critical. */
+            P1: number;
+            /** @description Major. */
+            P2: number;
+            /** @description Minor. */
+            P3: number;
+            /** @description Trivial. */
+            P4: number;
+        };
+        /** @description A workspace-wide coverage rollup. THE ROLL-UP RULE: every acceptance criterion in the workspace counts exactly once, whichever project it belongs to (`sum(ac_bound) / sum(ac_total)` over the projects) — NOT the average of the per-project percentages, which would weight a 3-criteria project the same as a 300-criteria one. Both percentages are derived from the counts in the same payload, so a caller can recompute them instead of trusting them. */
+        WorkspaceCoverage: {
+            /** @description Every non-archived acceptance criterion, under a non-archived user story, in a non-archived module, across every project in the workspace. The denominator of both percentages below. */
+            ac_total: number;
+            /** @description How many of `ac_total` have at least one non-archived ATC linked to them, executed or not. Always <= `ac_total`. */
+            ac_bound: number;
+            /** @description How many of `ac_bound` are currently verified: at least one ATC is linked AND no linked ATC is still pending in its most recent run. POINT-IN-TIME, NOT CUMULATIVE — this is not a count of criteria that have ever been executed. Each ATC resolves to the status of its most recent run only, and adding an ATC to a newly created run resets it to pending, so this figure legitimately falls when a team opens a regression run and rises again as they work through it. Always <= `ac_bound`. */
+            ac_executed: number;
+            /** @description Bound but not currently verified — `ac_bound - ac_executed`: at least one linked ATC is pending in its most recent run. Kept as its own figure because "test cases exist but are not verified right now" is a different problem from "no test cases exist", and a single coverage percentage hides the difference. Note this does NOT mean "never executed": an ATC with a long execution history returns to this bucket as soon as it joins a new run. */
+            ac_not_run: number;
+            /** @description Nothing bound at all — `ac_total - ac_bound`. `ac_executed`, `ac_not_run` and `ac_uncovered` are an exhaustive three-way partition of `ac_total` and always sum back to it. */
+            ac_uncovered: number;
+            /** @description `ac_bound / ac_total` as a whole percent, rounded half-up. This is the figure the Home Coverage card prints, and it is the same quantity the per-project Metrics screen shows as "AC coverage". NULL — never 0 — when `ac_total` is 0, because a workspace with no acceptance criteria has nothing to measure rather than a failing score. */
+            ac_coverage_percent: number | null;
+            /** @description `ac_executed / ac_total` as a whole percent, rounded half-up — the stricter reading, counting only acceptance criteria whose coverage is verified right now. Matches the per-project Metrics screen's "Executed coverage" tile. Inherits `ac_executed`'s point-in-time semantics, so do NOT treat a drop in this figure as lost coverage: opening a regression run over already-tested criteria lowers it by design. `ac_coverage_percent` is the stable one. NULL when `ac_total` is 0. */
+            executed_coverage_percent: number | null;
+            /** @description Non-archived modules across every project in the workspace. */
+            modules_total: number;
+            /** @description Modules where every acceptance criterion is currently verified — none uncovered and none awaiting execution. Modules with no acceptance criteria at all are not counted as fully covered. */
+            modules_fully_covered: number;
+            /** @description How many projects were rolled up. Zero for a workspace with no projects, and also for a workspace the caller cannot read — see the non-disclosure note on the operation. */
+            project_count: number;
+        };
         ModuleCreateResponse: {
             module: components["schemas"]["Module"];
             /** @description Present only when the resulting nesting depth is >= 5. */
@@ -5260,6 +6620,48 @@ export interface components {
                 /** Format: uuid */
                 id: string;
             };
+        };
+        MilestoneListResponse: {
+            /** @description Ordered by target_date ascending, id ascending. */
+            milestones: components["schemas"]["Milestone"][];
+        };
+        Milestone: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            project_id: string;
+            /** @description 1–100 chars after normalize (internal whitespace collapsed, then trimmed). Unique per project, case-insensitive. */
+            name: string;
+            /** @description Calendar date (YYYY-MM-DD). Today or later at create; within 5 years of the write date. */
+            target_date: string;
+            /** @description 0–500 chars. */
+            description: string;
+            /** Format: uuid */
+            created_by: string | null;
+            /** Format: date-time */
+            created_at: string;
+        };
+        MilestoneCreateResponse: {
+            milestone: components["schemas"]["Milestone"];
+        };
+        MilestoneCreateBody: {
+            /** @description 1–100 chars after normalize. Unique per project, case-insensitive. */
+            name: string;
+            /** @description Calendar date (YYYY-MM-DD). Must be today or later, and within 5 years of today. */
+            target_date: string;
+            /** @description 0–500 chars. Defaults to empty. */
+            description?: string;
+        };
+        MilestoneUpdateResponse: {
+            milestone: components["schemas"]["Milestone"];
+        };
+        MilestoneUpdateBody: {
+            /** @description 1–100 chars after normalize. Unique per project, case-insensitive. */
+            name: string;
+            /** @description Calendar date (YYYY-MM-DD). Bounds (today-or-later, within 5 years) apply ONLY when this differs from the milestone's current stored value. */
+            target_date: string;
+            /** @description 0–500 chars. Defaults to empty. */
+            description?: string;
         };
         ModuleUpdateResponse: {
             module: components["schemas"]["ModuleDetail"];
@@ -6052,10 +7454,125 @@ export interface components {
             note?: string | null;
             /**
              * Format: uri
-             * @description Optional evidence link. An empty or whitespace-only string normalizes to null rather than being rejected; a non-empty value must be a valid URL.
+             * @description Optional evidence link. An empty or whitespace-only string normalizes to null rather than being rejected; a non-empty value must be an http:// or https:// URL — any other scheme (javascript:, data:, etc.) is rejected (BK-466).
              */
             evidence_url?: string | null;
         };
+        BugDetail: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            workspace_id: string;
+            /** Format: uuid */
+            project_id: string;
+            /** Format: uuid */
+            module_id: string;
+            /**
+             * Format: uuid
+             * @description Provenance link to the source Run; null for a standalone bug.
+             */
+            run_id: string | null;
+            /**
+             * Format: uuid
+             * @description Provenance link to the source run step; null for a standalone bug.
+             */
+            run_step_id: string | null;
+            /**
+             * Format: uuid
+             * @description Provenance link to the source ATC; null for a standalone bug.
+             */
+            atc_id: string | null;
+            title: string;
+            /** @enum {string} */
+            severity: "P1" | "P2" | "P3" | "P4";
+            /**
+             * @description BK-40 always creates `open`; the other states are the lifecycle this table already supports for later stories. BK-264 adds POST /api/v1/bugs/{id}/status to advance it one stage at a time.
+             * @enum {string}
+             */
+            status: "open" | "in_progress" | "resolved" | "closed";
+            description: string | null;
+            steps_to_reproduce: string;
+            evidence_urls: string[];
+            /**
+             * Format: uuid
+             * @description BK-264 — the workspace member currently assigned to this bug, or null if unassigned. Always null immediately after creation (BK-40 never accepts an assignee at filing time). Set via POST /api/v1/bugs/{id}/assign.
+             */
+            assignee_user_id: string | null;
+            /** Format: uuid */
+            created_by: string | null;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+            module: components["schemas"]["BugDetailModule"];
+            origin: components["schemas"]["BugOrigin"];
+        };
+        BugDetailModule: components["schemas"]["BugModule"] & {
+            /**
+             * Format: date-time
+             * @description Set when this defect's module was archived after filing. The single-bug read does NOT exclude archived-module defects the way the list endpoints do (PO ruling — render the record, tag the module, never 404 it).
+             */
+            archived_at: string | null;
+        };
+        BugModule: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            path: string;
+        };
+        /** @description Provenance for a run-linked defect (originating Run + failed step position + ATC), or null for a standalone one — the page reads null as "Filed manually" (PO ruling). */
+        BugOrigin: {
+            /** Format: uuid */
+            run_id: string;
+            run_step_position: number | null;
+            /** Format: uuid */
+            atc_id: string | null;
+            atc_title: string | null;
+            /** @enum {string|null} */
+            atc_layer: "UI" | "API" | "Unit" | null;
+        } | null;
+        BugRunLinkedCreateBody: {
+            /**
+             * Format: uuid
+             * @description The failed run step this bug is filed from. project_id/module_id/run_id/atc_id are ALWAYS derived server-side from this — never accept them from the client on this path.
+             */
+            run_step_id: string;
+            title: string;
+            /** @enum {string} */
+            severity: "P1" | "P2" | "P3" | "P4";
+            description?: string;
+            steps_to_reproduce?: string;
+            evidence_urls?: string[];
+        };
+        BugStandaloneCreateBody: {
+            /** Format: uuid */
+            project_id: string;
+            /** Format: uuid */
+            module_id: string;
+            title: string;
+            /** @enum {string} */
+            severity: "P1" | "P2" | "P3" | "P4";
+            description?: string;
+            steps_to_reproduce?: string;
+            evidence_urls?: string[];
+        };
+        BugsListPage: {
+            /** @description The page, ordered severity ascending (P1..P4) then created_at desc, id desc (Decision 5). Each item carries a resolved `assignee` (BK-264), the same way GET /api/v1/activity resolves actor display info. */
+            data: components["schemas"]["BugListItem"][];
+            aggregates: components["schemas"]["BugsAggregates"];
+            /** @description Opaque token for the next page, or null when this is the last page. base64url — echo it back verbatim as `?cursor=`; never construct or parse one. */
+            next_cursor: string | null;
+        };
+        BugListItem: components["schemas"]["Bug"] & {
+            assignee: components["schemas"]["BugAssignee"];
+        };
+        /** @description Resolved display info for `assignee_user_id`, or null when unassigned. */
+        BugAssignee: {
+            /** Format: uuid */
+            user_id: string;
+            /** Format: email */
+            email: string | null;
+        } | null;
         Bug: {
             /** Format: uuid */
             id: string;
@@ -6085,57 +7602,24 @@ export interface components {
             /** @enum {string} */
             severity: "P1" | "P2" | "P3" | "P4";
             /**
-             * @description BK-40 always creates `open`; the other states are the lifecycle this table already supports for later stories.
+             * @description BK-40 always creates `open`; the other states are the lifecycle this table already supports for later stories. BK-264 adds POST /api/v1/bugs/{id}/status to advance it one stage at a time.
              * @enum {string}
              */
             status: "open" | "in_progress" | "resolved" | "closed";
             description: string | null;
             steps_to_reproduce: string;
             evidence_urls: string[];
+            /**
+             * Format: uuid
+             * @description BK-264 — the workspace member currently assigned to this bug, or null if unassigned. Always null immediately after creation (BK-40 never accepts an assignee at filing time). Set via POST /api/v1/bugs/{id}/assign.
+             */
+            assignee_user_id: string | null;
             /** Format: uuid */
             created_by: string | null;
             /** Format: date-time */
             created_at: string;
             /** Format: date-time */
             updated_at: string;
-        };
-        BugModule: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            path: string;
-        };
-        BugRunLinkedCreateBody: {
-            /**
-             * Format: uuid
-             * @description The failed run step this bug is filed from. project_id/module_id/run_id/atc_id are ALWAYS derived server-side from this — never accept them from the client on this path.
-             */
-            run_step_id: string;
-            title: string;
-            /** @enum {string} */
-            severity: "P1" | "P2" | "P3" | "P4";
-            description?: string;
-            steps_to_reproduce?: string;
-            evidence_urls?: string[];
-        };
-        BugStandaloneCreateBody: {
-            /** Format: uuid */
-            project_id: string;
-            /** Format: uuid */
-            module_id: string;
-            title: string;
-            /** @enum {string} */
-            severity: "P1" | "P2" | "P3" | "P4";
-            description?: string;
-            steps_to_reproduce?: string;
-            evidence_urls?: string[];
-        };
-        BugsListPage: {
-            /** @description The page, ordered severity ascending (P1..P4) then created_at desc, id desc (Decision 5). */
-            data: components["schemas"]["Bug"][];
-            aggregates: components["schemas"]["BugsAggregates"];
-            /** @description Opaque token for the next page, or null when this is the last page. base64url — echo it back verbatim as `?cursor=`; never construct or parse one. */
-            next_cursor: string | null;
         };
         BugsAggregates: {
             by_severity: {
@@ -6150,6 +7634,17 @@ export interface components {
                 resolved: number;
                 closed: number;
             };
+        };
+        BugAssignBody: {
+            /**
+             * Format: uuid
+             * @description The workspace member to assign this bug to, or null to unassign. Must be an active, non-viewer member of the bug's own workspace.
+             */
+            assignee_user_id: string | null;
+        };
+        BugStatusTransitionBody: {
+            /** @enum {string} */
+            status: "open" | "in_progress" | "resolved" | "closed";
         };
         BugListResponse: {
             /** @description Newest first (created_at desc). */
@@ -6194,6 +7689,197 @@ export interface components {
             /** Format: uuid */
             module_id: string;
             module_name: string;
+        };
+        DefectHeatmapReport: {
+            /** @enum {string} */
+            window: "7d" | "30d" | "90d";
+            /**
+             * Format: date-time
+             * @description Freshness timestamp for this read — a live, unpaginated query, not a cached snapshot.
+             */
+            generated_at: string;
+            /** @description One cell per ACTIVE (non-archived) module, ordered by module path then id. */
+            items: components["schemas"]["DefectHeatmapItem"][];
+        };
+        DefectHeatmapItem: {
+            /** Format: uuid */
+            module_id: string;
+            module_name: string;
+            /** @description Full slash-separated module path, so identically-named nested modules stay distinguishable. */
+            module_path: string;
+            /** @description Defect count for this module (including its full descendant subtree) within the selected window. */
+            defect_count: number;
+            /**
+             * @description Clean: 0. Low: 1-2. Elevated: 3-4. Hotspot: 5+ (master-design-plan §4.6).
+             * @enum {string}
+             */
+            heat: "clean" | "low" | "elevated" | "hotspot";
+            /** @description Defect count in the latest rolling 7-day UTC bucket (independent of the selected window). */
+            current_week_count: number;
+            /** @description Defect count in the immediately preceding 7-day UTC bucket. */
+            previous_week_count: number;
+            /** @enum {string} */
+            trend_direction: "rising" | "falling" | "flat";
+            /** @description current_week_count - previous_week_count. Always present, always finite. */
+            trend_delta: number;
+            /** @description Signed percent change. Null exactly when previous_week_count is 0 and current_week_count is positive (never Infinity) — a 0/0 pair reads 0, not null. */
+            trend_pct: number | null;
+        };
+        NotificationsPage: {
+            /** @description The page, ordered newest first (created_at desc, id desc). */
+            items: components["schemas"]["NotificationItem"][];
+            /** @description Count of unread notifications visible to the caller in this workspace — independent of pagination, NOT capped here (the UI applies the "99+" display cap, business-rules.md). */
+            unread_count: number;
+            /** @description Opaque token for the next (older) page, or null when this is the last page. base64url — echo it back verbatim as `?cursor=`; never construct or parse one. */
+            next_cursor: string | null;
+        };
+        NotificationItem: {
+            /**
+             * Format: uuid
+             * @description notifications row id — stable React key.
+             */
+            id: string;
+            /** Format: uuid */
+            workspace_id: string;
+            /** @description Producer-defined event key (e.g. a future "run.finished"). Open text — no fixed enum yet in this slice. */
+            event_type: string;
+            /** @description The kind of entity this notification is about (e.g. "run", "test", "bug"). */
+            entity_type: string;
+            /**
+             * Format: uuid
+             * @description The target entity id, or null when the notification has no single target.
+             */
+            entity_id: string | null;
+            /** @description Producer-defined snapshot captured at write time — shape is not yet fixed (no producer story lands in this slice). */
+            payload: {
+                [key: string]: unknown;
+            };
+            /**
+             * Format: date-time
+             * @description null = unread. Set once, via mark-one-read or mark-all-read.
+             */
+            read_at: string | null;
+            /** Format: date-time */
+            created_at: string;
+            /** @description false when the target entity was deleted, or is no longer visible to the caller (e.g. lost workspace/project access) — the client shows "This item is no longer available." instead of navigating. Always false for entity_type "bug" in this slice (no bug detail route exists yet). */
+            entity_available: boolean;
+        };
+        MarkNotificationReadResponse: {
+            notification: {
+                /** Format: uuid */
+                id: string;
+                /** Format: date-time */
+                read_at: string | null;
+            };
+        };
+        MarkAllNotificationsReadResponse: {
+            /** @description How many previously-unread notifications were just marked read. 0 is a valid, successful result (e.g. a repeat call, or an already-empty inbox) — never an error. */
+            updated_count: number;
+        };
+        NotificationPreferencesListResponse: {
+            preferences: {
+                event_type: string;
+                /** @enum {string} */
+                channel: "in_app" | "email";
+                enabled: boolean;
+                locked: boolean;
+            }[];
+        };
+        NotificationPreferencePatchResponse: {
+            preference: {
+                event_type: string;
+                /** @enum {string} */
+                channel: "in_app" | "email";
+                enabled: boolean;
+                /** Format: date-time */
+                updated_at: string;
+            };
+        };
+        NotificationPreferencePatchBody: {
+            /** @enum {string} */
+            event_type: "run_lifecycle" | "bug_lifecycle";
+            /** @enum {string} */
+            channel: "in_app" | "email";
+            enabled: boolean;
+        };
+        StoryTraceabilityPayload: {
+            story: components["schemas"]["TraceabilityStory"];
+            /** @description Every non-archived acceptance criterion of this User Story, ordered by position. Empty when the story has no acceptance criteria at all. */
+            criteria: components["schemas"]["TraceabilityCriterion"][];
+        };
+        TraceabilityStory: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            /** @enum {string} */
+            status: "draft" | "ready_to_test";
+            /** Format: date-time */
+            archived_at: string | null;
+        };
+        TraceabilityCriterion: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            /** @description Empty when this acceptance criterion has zero ATCs bound (renders the "Uncovered" strip). */
+            atcs: components["schemas"]["TraceabilityAtc"][];
+        };
+        TraceabilityAtc: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            title: string;
+            /** @enum {string} */
+            layer: "UI" | "API" | "Unit";
+            module: components["schemas"]["TraceabilityModule"];
+            test: components["schemas"]["TraceabilityTest"];
+            latest_run: components["schemas"]["TraceabilityLatestRun"];
+            /** @description Every defect whose provenance resolves to this ATC, not only the latest run's ("None linked" when empty). */
+            defects: components["schemas"]["TraceabilityDefect"][];
+        };
+        /** @description The Module this ATC belongs to (BK-48 filter target). Always present — every ATC has a module_id. */
+        TraceabilityModule: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        /** @description Null when no Test chains this ATC yet ("No test written yet"). */
+        TraceabilityTest: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+        } | null;
+        /** @description Null when a Test chains this ATC but it has never been run ("No run recorded yet"). */
+        TraceabilityLatestRun: {
+            /** Format: uuid */
+            run_id: string;
+            /** @enum {string} */
+            run_status: "running" | "passed" | "failed" | "aborted";
+            /** @enum {string} */
+            atc_status: "pending" | "passed" | "failed" | "blocked" | "skipped";
+            /** Format: date-time */
+            started_at: string;
+            /** Format: date-time */
+            finished_at: string | null;
+            /**
+             * @description Run-level `running` outranks any position verdict — an ATC inside a still-running Run always reads `in_flight`, never a stale prior verdict.
+             * @enum {string}
+             */
+            state: "in_flight" | "aborted" | "passed" | "failed" | "blocked" | "skipped";
+        } | null;
+        TraceabilityDefect: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            /** @enum {string} */
+            severity: "P1" | "P2" | "P3" | "P4";
+            /** @enum {string} */
+            status: "open" | "in_progress" | "resolved" | "closed";
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            run_id: string | null;
+            /** Format: uuid */
+            run_step_id: string | null;
         };
     };
     responses: never;

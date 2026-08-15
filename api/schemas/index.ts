@@ -11,6 +11,7 @@
  */
 
 export type * from './auth.types';
+export type * from './bugs.types';
 
 // Add new domain facades here:
 // export type * from './bookings.types';
