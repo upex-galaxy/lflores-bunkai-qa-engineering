@@ -20,6 +20,7 @@ import { ApiBase } from '@api/ApiBase';
 import { AuthApi } from '@api/AuthApi';
 import { BugsApi } from '@api/BugsApi';
 import { ExampleApi } from '@api/ExampleApi';
+import { NotificationsApi } from '@api/NotificationsApi';
 import { WorkspaceApi } from '@api/WorkspaceApi';
 
 // ============================================
@@ -39,6 +40,9 @@ export class ApiFixture extends ApiBase {
   /** Bugs component - defect filing + assignment operations */
   readonly bugs: BugsApi;
 
+  /** Notifications component - per-workspace notification inbox reads */
+  readonly notifications: NotificationsApi;
+
   constructor(options: TestContextOptions) {
     super(options);
 
@@ -47,6 +51,7 @@ export class ApiFixture extends ApiBase {
     this.example = new ExampleApi(options);
     this.workspace = new WorkspaceApi(options);
     this.bugs = new BugsApi(options);
+    this.notifications = new NotificationsApi(options);
   }
 
   // ============================================
@@ -63,6 +68,7 @@ export class ApiFixture extends ApiBase {
     this.example.setAuthToken(token);
     this.workspace.setAuthToken(token);
     this.bugs.setAuthToken(token);
+    this.notifications.setAuthToken(token);
   }
 
   /**
@@ -74,5 +80,6 @@ export class ApiFixture extends ApiBase {
     this.example.clearAuthToken();
     this.workspace.clearAuthToken();
     this.bugs.clearAuthToken();
+    this.notifications.clearAuthToken();
   }
 }

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-15T14:32:58.020Z",
+  "generatedAt": "2026-08-15T15:06:26.832Z",
   "components": {
     "api": [
       {
@@ -31,9 +31,59 @@
             "line": 107
           },
           {
+            "id": "BK-478",
+            "method": "rejectStatusSkip",
+            "line": 171
+          },
+          {
+            "id": "BK-479",
+            "method": "advanceStatusLegally",
+            "line": 199
+          },
+          {
+            "id": "BK-480",
+            "method": "rejectAssignToNonMember",
+            "line": 223
+          },
+          {
+            "id": "BK-481",
+            "method": "rejectAssignToViewer",
+            "line": 247
+          },
+          {
+            "id": "BK-482",
+            "method": "rejectStatusBackwardOrSame",
+            "line": 275
+          },
+          {
+            "id": "BK-483",
+            "method": "reassignBugToDifferentMember",
+            "line": 299
+          },
+          {
+            "id": "BK-484",
+            "method": "keepAssigneeAndStatusIndependent",
+            "line": 348
+          },
+          {
+            "id": "BK-485",
+            "method": "unassignBug",
+            "line": 322
+          },
+          {
             "id": "BK-486",
             "method": "rejectWriteActionForViewer",
             "line": 144
+          },
+          {
+            "id": "BK-488",
+            "method": "rejectNonDisclosingNotFound",
+            "line": 375
+          },
+          {
+            "id": "BK-489",
+            "method": "assignBugTriggersNotification",
+            "line": 400
           }
         ]
       },
@@ -58,6 +108,12 @@
             "line": 105
           }
         ]
+      },
+      {
+        "name": "NotificationsApi",
+        "file": "NotificationsApi.ts",
+        "relativePath": "tests/components/api/NotificationsApi.ts",
+        "atcs": []
       },
       {
         "name": "WorkspaceApi",
@@ -121,9 +177,9 @@
   },
   "preconditions": [],
   "summary": {
-    "totalComponents": 6,
-    "totalATCs": 14,
-    "apiComponents": 4,
+    "totalComponents": 7,
+    "totalATCs": 24,
+    "apiComponents": 5,
     "uiComponents": 2,
     "preconditionModules": 0
   }

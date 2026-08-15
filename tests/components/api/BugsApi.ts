@@ -160,4 +160,257 @@ export class BugsApi extends ApiBase {
 
     return [response, body];
   }
+
+  /**
+   * ATC: Reject a status change that skips a lifecycle stage - expects rejection (422)
+   *
+   * @param bugId - Target bug id
+   * @param payload - Target status that skips one or more stages ahead
+   * @returns Tuple with response and error envelope
+   */
+  @atc('BK-478')
+  async rejectStatusSkip(
+    bugId: string,
+    payload: BugStatusTransitionBody,
+  ): Promise<[APIResponse, BugError]> {
+    const [response, body] = await this.apiPOST<BugError, BugStatusTransitionBody>(
+      `/bugs/${bugId}/status`,
+      payload,
+    );
+
+    expect(response.status()).toBe(422);
+    expect(body.error.code).toBe('validation_failed');
+    expect((body.error.details as { reason?: string } | undefined)?.reason).toBe('status_transition_skipped');
+
+    return [response, body];
+  }
+
+  /**
+   * ATC: Advance a bug's status given a legal forward transition - expects success (200)
+   *
+   * Parametrized (EP): the 3 legal forward transitions (open->in_progress,
+   * in_progress->resolved, resolved->closed) share the same 200 outcome
+   * shape, so they are three Examples rows of this one ATC.
+   *
+   * @param bugId - Target bug id, seeded at the transition's current status
+   * @param payload - Target status (the only legal next stage)
+   * @returns Tuple with response, the updated bug, and sent payload
+   */
+  @atc('BK-479')
+  async advanceStatusLegally(
+    bugId: string,
+    payload: BugStatusTransitionBody,
+  ): Promise<[APIResponse, { bug: BugDetail }, BugStatusTransitionBody]> {
+    const [response, body, sentPayload] = await this.apiPOST<{ bug: BugDetail }, BugStatusTransitionBody>(
+      `/bugs/${bugId}/status`,
+      payload,
+    );
+
+    expect(response.status()).toBe(200);
+    expect(body.bug.id).toBe(bugId);
+    expect(body.bug.status).toBe(payload.status);
+
+    return [response, body, sentPayload];
+  }
+
+  /**
+   * ATC: Reject assignment given the target is not a workspace member - expects rejection (422)
+   *
+   * @param bugId - Target bug id
+   * @param nonMemberUserId - A user id with no workspace_members row in the bug's workspace
+   * @returns Tuple with response and error envelope
+   */
+  @atc('BK-480')
+  async rejectAssignToNonMember(
+    bugId: string,
+    nonMemberUserId: string,
+  ): Promise<[APIResponse, BugError]> {
+    const [response, body] = await this.apiPOST<BugError, BugAssignBody>(
+      `/bugs/${bugId}/assign`,
+      { assignee_user_id: nonMemberUserId },
+    );
+
+    expect(response.status()).toBe(422);
+    expect(body.error.code).toBe('validation_failed');
+    expect((body.error.details as { reason?: string } | undefined)?.reason).toBe('assignee_not_workspace_member');
+
+    return [response, body];
+  }
+
+  /**
+   * ATC: Reject assignment given the target is a Viewer-role member - expects rejection (422)
+   *
+   * @param bugId - Target bug id
+   * @param viewerUserId - An active workspace_members row with role "viewer"
+   * @returns Tuple with response and error envelope
+   */
+  @atc('BK-481')
+  async rejectAssignToViewer(
+    bugId: string,
+    viewerUserId: string,
+  ): Promise<[APIResponse, BugError]> {
+    const [response, body] = await this.apiPOST<BugError, BugAssignBody>(
+      `/bugs/${bugId}/assign`,
+      { assignee_user_id: viewerUserId },
+    );
+
+    expect(response.status()).toBe(422);
+    expect(body.error.code).toBe('validation_failed');
+    expect((body.error.details as { reason?: string } | undefined)?.reason).toBe('assignee_view_only');
+
+    return [response, body];
+  }
+
+  /**
+   * ATC: Reject a status change that moves backward or repeats the current status - expects rejection (422)
+   *
+   * Parametrized (EP): 3 genuine-backward rows + 1 same-status row all fold
+   * into the same 422/status_transition_backward outcome shape per the
+   * endpoint's documented behavior.
+   *
+   * @param bugId - Target bug id
+   * @param payload - Target status that moves backward or repeats the current one
+   * @returns Tuple with response and error envelope
+   */
+  @atc('BK-482')
+  async rejectStatusBackwardOrSame(
+    bugId: string,
+    payload: BugStatusTransitionBody,
+  ): Promise<[APIResponse, BugError]> {
+    const [response, body] = await this.apiPOST<BugError, BugStatusTransitionBody>(
+      `/bugs/${bugId}/status`,
+      payload,
+    );
+
+    expect(response.status()).toBe(422);
+    expect(body.error.code).toBe('validation_failed');
+    expect((body.error.details as { reason?: string } | undefined)?.reason).toBe('status_transition_backward');
+
+    return [response, body];
+  }
+
+  /**
+   * ATC: Update the assignee when reassigning to a different eligible member - expects success (200)
+   *
+   * @param bugId - Target bug id, already assigned to a different member
+   * @param payload - New assignee_user_id (differs from the current one)
+   * @returns Tuple with response, the updated bug, and sent payload
+   */
+  @atc('BK-483')
+  async reassignBugToDifferentMember(
+    bugId: string,
+    payload: BugAssignBody,
+  ): Promise<[APIResponse, { bug: BugDetail }, BugAssignBody]> {
+    const [response, body, sentPayload] = await this.apiPOST<{ bug: BugDetail }, BugAssignBody>(
+      `/bugs/${bugId}/assign`,
+      payload,
+    );
+
+    expect(response.status()).toBe(200);
+    expect(body.bug.id).toBe(bugId);
+    expect(body.bug.assignee_user_id).toBe(payload.assignee_user_id);
+
+    return [response, body, sentPayload];
+  }
+
+  /**
+   * ATC: Clear the assignee when unassigning - expects success (200)
+   *
+   * @param bugId - Target bug id, already assigned
+   * @returns Tuple with response and the updated bug
+   */
+  @atc('BK-485')
+  async unassignBug(bugId: string): Promise<[APIResponse, { bug: BugDetail }]> {
+    const [response, body] = await this.apiPOST<{ bug: BugDetail }, BugAssignBody>(
+      `/bugs/${bugId}/assign`,
+      { assignee_user_id: null },
+    );
+
+    expect(response.status()).toBe(200);
+    expect(body.bug.id).toBe(bugId);
+    expect(body.bug.assignee_user_id).toBeNull();
+
+    return [response, body];
+  }
+
+  /**
+   * ATC: Keep assignee and status changes independent of each other - expects success (200)
+   *
+   * Parametrized (EP): reassigning and changing status share the same "the
+   * write itself succeeds" 200 outcome shape as fixed assertions; which
+   * other* field stayed untouched is a test-level assertion (composes a
+   * second GET), per KATA Rule 7.
+   *
+   * @param bugId - Target bug id
+   * @param action - Which write endpoint to call and its payload
+   * @returns Tuple with response and the updated bug
+   */
+  @atc('BK-484')
+  async keepAssigneeAndStatusIndependent(
+    bugId: string,
+    action: BugWriteAction,
+  ): Promise<[APIResponse, { bug: BugDetail }]> {
+    const endpoint = action.kind === 'assign' ? `/bugs/${bugId}/assign` : `/bugs/${bugId}/status`;
+    const [response, body] = await this.apiPOST<{ bug: BugDetail }, BugAssignBody | BugStatusTransitionBody>(
+      endpoint,
+      action.payload,
+    );
+
+    expect(response.status()).toBe(200);
+    expect(body.bug.id).toBe(bugId);
+
+    return [response, body];
+  }
+
+  /**
+   * ATC: Return a non-disclosing 404 given the bug does not exist or is outside the caller's workspace - expects rejection (404)
+   *
+   * Parametrized (EP): a nonexistent id and a real id from an unrelated
+   * workspace both return the identical 404/not_found shape (non-disclosing
+   * by design), so they are two Examples rows of this one ATC.
+   *
+   * @param bugId - A bug id that either doesn't exist or belongs to another workspace
+   * @returns Tuple with response and error envelope
+   */
+  @atc('BK-488')
+  async rejectNonDisclosingNotFound(bugId: string): Promise<[APIResponse, BugError]> {
+    const [response, body] = await this.apiPOST<BugError, BugAssignBody>(
+      `/bugs/${bugId}/assign`,
+      { assignee_user_id: null },
+    );
+
+    expect(response.status()).toBe(404);
+    expect(body.error.code).toBe('not_found');
+
+    return [response, body];
+  }
+
+  /**
+   * ATC: Assign an unassigned bug for the first time - expects success (200)
+   *
+   * Complete flow mirrors assignBugToEligibleMember, but this is its own
+   * TC (BK-489) because the test-level follow-up is different: it confirms
+   * the assignment write triggers exactly 1 new `notifications` row for
+   * BK-212's benefit, not just that the assignee field was set.
+   *
+   * @param bugId - Target bug id, open and unassigned
+   * @param payload - Target assignee_user_id
+   * @returns Tuple with response, the updated bug, and sent payload
+   */
+  @atc('BK-489')
+  async assignBugTriggersNotification(
+    bugId: string,
+    payload: BugAssignBody,
+  ): Promise<[APIResponse, { bug: BugDetail }, BugAssignBody]> {
+    const [response, body, sentPayload] = await this.apiPOST<{ bug: BugDetail }, BugAssignBody>(
+      `/bugs/${bugId}/assign`,
+      payload,
+    );
+
+    expect(response.status()).toBe(200);
+    expect(body.bug.id).toBe(bugId);
+    expect(body.bug.assignee_user_id).toBe(payload.assignee_user_id);
+
+    return [response, body, sentPayload];
+  }
 }
