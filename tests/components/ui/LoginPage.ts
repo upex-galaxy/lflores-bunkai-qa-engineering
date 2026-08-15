@@ -4,13 +4,18 @@
  * UI component for authentication via the login page.
  * Handles login flows for E2E tests.
  *
- * TODO: Replace 'PROJ' in @atc IDs with your Jira project key (e.g., @atc('UPEX-101'))
+ * Page: /login (Bunkai). Two-step flow: email -> Continue reveals the
+ * password field -> Sign in. Confirmed live against staging 2026-08-15
+ * (playwright-cli) after the generic boilerplate selectors below were
+ * found stale (never adapted -- 0 usages block until this session's
+ * BK-479/@critical test pulled in the "smoke" project's ui-setup
+ * dependency and surfaced the mismatch).
  *
- * Page: /login (UPEX Dojo)
  * Locators (data-testid):
- * - Email: [data-testid="login-email-input"]
- * - Password: [data-testid="login-password-input"]
- * - Submit: [data-testid="login-submit-button"]
+ * - Email: [data-testid="login-email"]
+ * - Continue (step 1 -> step 2): [data-testid="login-continue"]
+ * - Password: [data-testid="login-password"]
+ * - Sign in (step 2 submit): [data-testid="login-signin"]
  * - Error: [data-testid="login-error"]
  */
 
@@ -48,12 +53,14 @@ export class LoginPage extends UiBase {
 
   /**
    * Fill login form and submit
-   * Helper that combines fill + submit actions
+   * Helper that combines fill + submit actions across the two-step flow
+   * (email -> Continue reveals password -> Sign in).
    */
   private async fillAndSubmitLoginForm(credentials: LoginCredentials): Promise<void> {
-    await this.page.locator('[data-testid="login-email-input"]').fill(credentials.email);
-    await this.page.locator('[data-testid="login-password-input"]').fill(credentials.password);
-    await this.page.locator('[data-testid="login-submit-button"]').click();
+    await this.page.locator('[data-testid="login-email"]').fill(credentials.email);
+    await this.page.locator('[data-testid="login-continue"]').click();
+    await this.page.locator('[data-testid="login-password"]').fill(credentials.password);
+    await this.page.locator('[data-testid="login-signin"]').click();
   }
 
   // ============================================
