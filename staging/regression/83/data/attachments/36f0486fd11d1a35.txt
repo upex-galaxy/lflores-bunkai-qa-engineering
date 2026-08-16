@@ -1,0 +1,11 @@
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/auth/signin
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
+✅ [BK-311] authenticateSuccessfully - PASS (749ms)
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/bugs
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/9d1a0900-9d9e-4216-9de7-329bd0ec7f6f/assign
+✅ [BK-477] assignBugToEligibleMember - PASS (321ms)
+---- API NOK: 422 - https://staging-upexbunkai.vercel.app/api/v1/auth/signin
+❌ [BK-311] authenticateSuccessfully - FAIL: expect(received).toBe(expected) // Object.is equality
+
+Expected: 200
+Received: 422
