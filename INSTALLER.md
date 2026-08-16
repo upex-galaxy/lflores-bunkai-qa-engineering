@@ -2,7 +2,7 @@
 
 > **Audience**: QA engineers cloning `agentic-qa-boilerplate` for the first time, or anyone wanting to understand what `bun run setup` configures (gentle-ai, community skills, MCPs, local skills) and what is optional.
 > **Read time**: 8 minutes.
-> **Status**: updated 2026-05-17 — 5-phase TUI flow, step idempotency, GitHub repo step.
+> **Status**: updated 2026-08-16 — 5-phase TUI flow, step idempotency, GitHub repo step; "What stays local" table synced with `bug-screenshot-annotation` + `pr-review-lead`.
 >
 > This document is the **contract that `cli/install.ts` implements**. The four layers of the workstation — gentle-ai (Engram only, minimal preset), community skills via `bunx skills`, locally committed workflow skills (including the vendored `judgment-day`), and the 7 canonical MCPs — are documented below in that order.
 
@@ -389,6 +389,7 @@ Skills that are workflow-specific to this boilerplate live in `.claude/skills/` 
 | `project-discovery`     | `/project-discovery`                     | 4-phase reverse-engineering of a target project (Constitution → Specification)                                                                                                                                                 |
 | `shift-left-testing`    | `/shift-left-testing`                    | Stage 0: pre-sprint AC refinement on a batch of backlog Stories. Drafts ATP outlines, surfaces gaps, transitions `backlog → shift_left_qa → estimation`.                                                                       |
 | `sprint-testing`        | `/sprint-testing`                        | Stages 1-3: per-ticket manual QA loop (planning, execution, reporting). Short-circuits Phases 1-3 when the Story carries label `shift-left-reviewed` <30 days old.                                                             |
+| `bug-screenshot-annotation` | `annotate bug screenshot`, `mark up evidence`, `anota este bug` | Turns a raw bug screenshot into QA-style annotated evidence (circles/arrows/callouts/corner badge) via local HTML+CSS overlays — never an external image service. Auto-loaded inline by `/sprint-testing` Stage 2 for visual/positional bugs. |
 | `test-documentation`    | `/test-documentation`                    | Stage 4: TMS test-case authoring + ROI prioritization (Jira/Xray bridge)                                                                                                                                                       |
 | `test-automation`       | `/test-automation`                       | Stage 5: KATA + Playwright + TS test authoring (plan → code → review)                                                                                                                                                          |
 | `regression-testing`    | `/regression-testing`                    | Stage 6: CI suite execution, failure classification, GO/NO-GO verdict                                                                                                                                                          |
@@ -397,6 +398,7 @@ Skills that are workflow-specific to this boilerplate live in `.claude/skills/` 
 | `xray-cli`              | `/xray-cli`                              | Xray Cloud TMS CLI (test creation, executions, JUnit/Cucumber import)                                                                                                                                                          |
 | `git-flow-master`       | (auto on git intents)                    | End-to-end Git operator (branch, commit, push, PR, conflict, chained-PR)                                                                                                                                                       |
 | `judgment-day`          | `/judgment-day`, `juzgar`, `dual review` | T2 vendored (gentle-ai, Apache-2.0). Adversarial dual-judge review (2 blind judges in parallel, fix loop, re-judge). Cited as optional gate by `/test-automation` Phase 3 + `/git-flow-master` pre-PR. Never auto-invoked.     |
+| `pr-review-lead`        | `revisa este PR`, `review this PR`, `actúa de QA lead` | QA Lead / QA Architect review of a PR's test-automation work against KATA doctrine (this repo's own, or an external target repo's), citing a concrete doctrine reference or code location per finding. Runs a strictness preflight (Flexible/Standard/Strict) first; never posts to GitHub without explicit final OK. |
 
 These skills evolve with the repo and are versioned in git. The split is intentional: gentle-ai owns persistent memory (Engram); this repo owns the **vertical** workflow (specific to the QA stages 1-6 pipeline) plus a small set of vendored helpers (`judgment-day`).
 
@@ -483,7 +485,7 @@ What you lose:
 
 - **Persistent memory (Engram)** — no cross-session recall, no `mem_save` / `mem_search`. Each session starts blind.
 
-What you keep: every workflow skill committed in this repo (`/sprint-testing`, `/test-documentation`, `/test-automation`, `/regression-testing`, `/agentic-qa-core`, `/agentic-qa-onboard`, `/playwright-cli`, `/acli`, `/xray-cli`, `/project-discovery`, `/git-flow-master`, vendored `/judgment-day`) and the 6 canonical MCPs (Context7, Tavily, Playwright, DBHub, OpenAPI, Postman). The Atlassian MCP is opt-in — see docs/mcp/ to enable it manually after install. The repo is fully usable without gentle-ai — the integration is additive.
+What you keep: every workflow skill committed in this repo (`/shift-left-testing`, `/sprint-testing`, `/test-documentation`, `/test-automation`, `/regression-testing`, `/framework-development`, `/agentic-qa-core`, `/agentic-qa-onboard`, `/acli`, `/xray-cli`, `/project-discovery`, `/git-flow-master`, `bug-screenshot-annotation`, `pr-review-lead`, vendored `/judgment-day`) and the 6 canonical MCPs (Context7, Tavily, Playwright, DBHub, OpenAPI, Postman). The Atlassian MCP is opt-in — see docs/mcp/ to enable it manually after install. The repo is fully usable without gentle-ai — the integration is additive.
 
 ---
 
