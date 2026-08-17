@@ -113,15 +113,19 @@ Scenario: BK-253 - should display the newly active workspace in the header switc
   And the dropdown lists all workspaces the user belongs to with the active one marked
 ```
 
-**Status**: Blocked — `LoginPage.ts` (the KATA UI reference component) still uses fictional
-`data-testid`s that don't exist on the real login page (`login-email-input` etc. — discovered
-2026-08-03 while verifying `ui-auth.setup.ts`). `LoginPage.ts` and the switcher's own selectors
-both need real `data-testid` inspection before this TC can be coded.
+**Status**: Blocked — re-checked 2026-08-17. The original `LoginPage.ts` blocker (fictional
+`data-testid`s) was fixed in a later session (BK-264, real 2-step login confirmed live). Live
+inspection via playwright-cli against staging (2026-08-17) found a separate, still-open blocker:
+`components/layout/WorkspaceSwitcher.tsx` has ZERO `data-testid` attributes on the trigger
+button, dropdown, or list items — only text-based role locators are available, and the active
+item is marked by a decorative check-mark SVG with no `aria-current`. Tracked in **BK-328**
+("Add data-testid attributes to WorkspaceSwitcher component") — Tech Story, Status **To Do**
+as of 2026-08-17. Do not automate BK-253 until BK-328 lands.
 
 ## Acceptance Criteria
 
-- [ ] BK-250 automated and passing (this session's scope)
-- [ ] BK-251 automated and passing (next session)
-- [ ] BK-252 automated and passing, DB triforce assertion included (next session)
+- [x] BK-250 automated and passing (BK-316 closed 2026-08-17, retested green against staging)
+- [x] BK-251 automated and passing
+- [x] BK-252 automated and passing, DB triforce assertion included
 - [ ] BK-253 automated and passing, real UI selectors captured (blocked on LoginPage.ts fix)
 - [ ] Tests pass on `staging` (already the only env with real data for this ticket)
