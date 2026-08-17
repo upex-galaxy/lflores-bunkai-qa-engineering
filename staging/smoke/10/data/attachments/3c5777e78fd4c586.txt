@@ -1,6 +1,0 @@
-[UI Setup] Starting UI authentication...
-[UI Setup] Target: /login
-❌ [PROJ-101] loginSuccessfully - FAIL: page.waitForURL: Timeout 15000ms exceeded.
-=========================== logs ===========================
-waiting for navigation until "load"
-============================================================
