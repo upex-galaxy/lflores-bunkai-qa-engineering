@@ -1,0 +1,24 @@
+{
+  "user": {
+    "id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+    "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+  },
+  "session": {
+    "access_token": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImUzNTEyOTEwLTY0ZDEtNGY4OS04ZDk2LTI4NjA5NzQ2ZTQ1YyIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2ZtYnBpa3pwa2FmcHRxeGltaHhuLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiIyNzQyZGEzOS1lMGZmLTRmMGMtYTBhMS04OGRhZTgwNGUxNGYiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzg3MDE4NTY2LCJpYXQiOjE3ODcwMTQ5NjYsImVtYWlsIjoiYnVua2FpLXN0YWdpbmctdXNlcmxmQGFtYnV1c3RlbG4ucmVzZW5kLmFwcCIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWxfdmVyaWZpZWQiOnRydWV9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzg3MDE0OTY2fV0sInNlc3Npb25faWQiOiI5M2YyN2I5YS04NGZmLTRjMzctYmM3Yi0wMjRjYjBiNTNjYzMiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.HeXGvaU06VxJK8BGMRcKAiV1Ug93bJO3Zc3enLCdXTC8SVB4BrSA9btjwDHg9Sz0bAC-l3pY4KSxqOM-wKWTFQ",
+    "refresh_token": "desb2qfz7ow7",
+    "expires_at": 1787018566,
+    "token_type": "bearer"
+  },
+  "pat": {
+    "token": "bk_pat_5BHohEDPdZp0.KpZoY-zl6fyobsK1hvIwwwSjxUnIqXA",
+    "id": "eaca63a5-6676-4760-8b49-cc5038be0867",
+    "name": "cli-signin",
+    "scopes": [
+      "atc:read",
+      "atc:write",
+      "run:execute"
+    ],
+    "expires_at": null
+  },
+  "warning": "Store the PAT token now — it cannot be retrieved later."
+}

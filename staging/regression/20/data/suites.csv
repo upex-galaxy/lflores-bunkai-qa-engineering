@@ -1,7 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","9","Global Teardown: generate reports and sync TMS","global-teardown","2026-06-14","passed","2026-06-14","","teardown/global.teardown.ts","",""
-"","0","UPEX-100: should get current user with valid token","integration","2026-06-14","skipped","2026-06-14","UPEX-100: User Session API","integration/auth/user-session.test.ts","",""
-"","2683","API Setup: authenticate via API","api-setup","2026-06-14","failed","2026-06-14","","setup/api-auth.setup.ts","",""
-"","0","UPEX-100: should be able to re-authenticate","integration","2026-06-14","skipped","2026-06-14","UPEX-100: User Session API","integration/auth/user-session.test.ts","",""
-"","0","UPEX-100: should fail without token","integration","2026-06-14","skipped","2026-06-14","UPEX-100: User Session API","integration/auth/user-session.test.ts","",""
-"","5","Global Setup: prepare environment","global-setup","2026-06-14","passed","2026-06-14","","setup/global.setup.ts","",""
