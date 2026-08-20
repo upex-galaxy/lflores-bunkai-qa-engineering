@@ -16,6 +16,7 @@
  */
 
 import type { APIResponse } from '@playwright/test';
+import type { ActivityItemResponse, ActivityPageResponse } from '@schemas/activity.types';
 import type { BugAssignBody, BugDetail, BugError, BugStandaloneCreateBody, BugStatusTransitionBody } from '@schemas/bugs.types';
 import type { TestContextOptions } from '@TestContext';
 
@@ -412,5 +413,60 @@ export class BugsApi extends ApiBase {
     expect(body.bug.assignee_user_id).toBe(payload.assignee_user_id);
 
     return [response, body, sentPayload];
+  }
+
+  /**
+   * ATC: Attribute a bug write action to the actor who actually made the
+   * call, never the bug's assignee or a third party - expects success (200)
+   *
+   * Complete flow:
+   * 1. POST the action's payload to its dedicated endpoint (ACTION)
+   * 2. GET /activity for the workspace, newest first, and find the row for
+   *    this bug + this action - no server-side entity filter exists, so the
+   *    feed is paged and filtered client-side (VERIFICATION)
+   * 3. Validate the matching activity row exists and its actor is the caller
+   *    that made the request (fixed assertions)
+   *
+   * Whether the actor differs from the resulting assignee is a test-level
+   * assertion — it composes the returned item's `actor` against its own
+   * `payload`, which is beyond this ATC's single-endpoint scope.
+   *
+   * @param args - Target bug/workspace, the action to perform, and the expected actor
+   * @param args.bugId - Target bug id
+   * @param args.workspaceId - Workspace the bug belongs to (required for the /activity read)
+   * @param args.action - Which write endpoint to call and its payload
+   * @param args.expectedActorUserId - The user id that should show up as the activity row's actor
+   * @returns Tuple with the /activity response and the matched activity item
+   */
+  @atc('BK-487')
+  async attributeActionToActualCaller(args: {
+    bugId: string
+    workspaceId: string
+    action: BugWriteAction
+    expectedActorUserId: string
+  }): Promise<[APIResponse, ActivityItemResponse]> {
+    // ACTION: POST the action's payload to its dedicated endpoint
+    const endpoint = args.action.kind === 'assign' ? `/bugs/${args.bugId}/assign` : `/bugs/${args.bugId}/status`;
+    const [actionResponse] = await this.apiPOST<{ bug: BugDetail }, BugAssignBody | BugStatusTransitionBody>(
+      endpoint,
+      args.action.payload,
+    );
+    expect(actionResponse.status()).toBe(200);
+
+    // VERIFICATION: page the activity feed and find the matching row client-side
+    // (no server-side entity filter exists — GET /activity only takes workspace_id/limit/cursor)
+    const expectedAction = args.action.kind === 'assign' ? 'bug.assigned' : 'bug.status_changed';
+    const [activityResponse, page] = await this.apiGET<ActivityPageResponse>('/activity', {
+      params: { workspace_id: args.workspaceId, limit: '50' },
+    });
+    expect(activityResponse.status()).toBe(200);
+
+    const matched = page.items.find(item => item.item.entity_id === args.bugId && item.action === expectedAction);
+
+    // Fixed assertions - the activity row exists and its actor matches the true caller
+    expect(matched).toBeDefined();
+    expect(matched?.actor.user_id).toBe(args.expectedActorUserId);
+
+    return [activityResponse, matched as ActivityItemResponse];
   }
 }
