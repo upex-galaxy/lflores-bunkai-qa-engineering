@@ -20,6 +20,7 @@ import { ApiBase } from '@api/ApiBase';
 import { AuthApi } from '@api/AuthApi';
 import { BugsApi } from '@api/BugsApi';
 import { NotificationsApi } from '@api/NotificationsApi';
+import { TokensApi } from '@api/TokensApi';
 import { WorkspaceApi } from '@api/WorkspaceApi';
 
 // ============================================
@@ -39,6 +40,9 @@ export class ApiFixture extends ApiBase {
   /** Notifications component - per-workspace notification inbox reads */
   readonly notifications: NotificationsApi;
 
+  /** Tokens component - personal access token issuance/listing/revocation */
+  readonly tokens: TokensApi;
+
   constructor(options: TestContextOptions) {
     super(options);
 
@@ -47,6 +51,7 @@ export class ApiFixture extends ApiBase {
     this.workspace = new WorkspaceApi(options);
     this.bugs = new BugsApi(options);
     this.notifications = new NotificationsApi(options);
+    this.tokens = new TokensApi(options);
   }
 
   // ============================================
@@ -63,6 +68,7 @@ export class ApiFixture extends ApiBase {
     this.workspace.setAuthToken(token);
     this.bugs.setAuthToken(token);
     this.notifications.setAuthToken(token);
+    this.tokens.setAuthToken(token);
   }
 
   /**
@@ -74,5 +80,6 @@ export class ApiFixture extends ApiBase {
     this.workspace.clearAuthToken();
     this.bugs.clearAuthToken();
     this.notifications.clearAuthToken();
+    this.tokens.clearAuthToken();
   }
 }

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-15T19:53:42.663Z",
+  "generatedAt": "2026-08-20T10:30:12.102Z",
   "components": {
     "api": [
       {
@@ -94,6 +94,38 @@
         "atcs": []
       },
       {
+        "name": "TokensApi",
+        "file": "TokensApi.ts",
+        "relativePath": "tests/components/api/TokensApi.ts",
+        "atcs": [
+          {
+            "id": "BK-543",
+            "method": "allowPatGetTokenListing",
+            "line": 200
+          },
+          {
+            "id": "BK-545",
+            "method": "allowSessionAuthenticatedTokenLifecycle",
+            "line": 230
+          },
+          {
+            "id": "BK-546",
+            "method": "rejectInvalidBearerBeforePostureCheck",
+            "line": 265
+          },
+          {
+            "id": "BK-552",
+            "method": "rejectPatPostTokenIssuance",
+            "line": 144
+          },
+          {
+            "id": "BK-553",
+            "method": "rejectPatDeleteTokenRevocation",
+            "line": 175
+          }
+        ]
+      },
+      {
         "name": "WorkspaceApi",
         "file": "WorkspaceApi.ts",
         "relativePath": "tests/components/api/WorkspaceApi.ts",
@@ -101,17 +133,37 @@
           {
             "id": "BK-250",
             "method": "switchToActiveWorkspace",
-            "line": 80
+            "line": 142
           },
           {
             "id": "BK-251",
             "method": "switchToNonMemberWorkspace",
-            "line": 109
+            "line": 171
           },
           {
             "id": "BK-252",
             "method": "switchToSuspendedWorkspace",
-            "line": 138
+            "line": 200
+          },
+          {
+            "id": "BK-544",
+            "method": "rejectInviteCreationWithReadOnlyPat",
+            "line": 231
+          },
+          {
+            "id": "BK-548",
+            "method": "rejectRevokeInviteWithoutAdminScope",
+            "line": 262
+          },
+          {
+            "id": "BK-550",
+            "method": "allowWorkspaceAdminActionWithBoundPat",
+            "line": 292
+          },
+          {
+            "id": "BK-551",
+            "method": "rejectCrossWorkspaceAdminPat",
+            "line": 324
           }
         ]
       }
@@ -138,9 +190,9 @@
   },
   "preconditions": [],
   "summary": {
-    "totalComponents": 5,
-    "totalATCs": 19,
-    "apiComponents": 4,
+    "totalComponents": 6,
+    "totalATCs": 28,
+    "apiComponents": 5,
     "uiComponents": 1,
     "preconditionModules": 0
   }

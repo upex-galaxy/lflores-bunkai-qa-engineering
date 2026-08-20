@@ -13,6 +13,7 @@
 export type * from './auth.types';
 export type * from './bugs.types';
 export type * from './notifications.types';
+export type * from './tokens.types';
 
 // Add new domain facades here:
 // export type * from './bookings.types';

@@ -3,7 +3,7 @@
 **Jira Key:** [BK-497](https://jira.upexgalaxy.com/browse/BK-497)
 **Epic:** [BK-1](https://jira.upexgalaxy.com/browse/BK-1) (Tenancy & Identity)
 **Type:** Story
-**Status:** Ready For QA
+**Status:** In Test
 **Priority:** Medium
 **Story Points:** 5
 
@@ -44,6 +44,7 @@ This Story is one of three successors split from ***BK-262*** ("PAT | Enforce ca
 - [Out Of Scope](./out-of-scope.md)
 - [Implementation Plan (Dev)](./implementation-plan.md)
 - [Acceptance Test Plan (QA)](./acceptance-test-plan.md)
+- [Acceptance Test Results (QA)](./acceptance-test-results.md)
 
 ---
 
@@ -51,9 +52,13 @@ This Story is one of three successors split from ***BK-262*** ("PAT | Enforce ca
 
 ### Storys (3)
 
-- [BK-498](https://jira.upexgalaxy.com/browse/BK-498): PAT | Enforce capability scopes on the authoring domain _(Ready For Dev)_
+- [BK-498](https://jira.upexgalaxy.com/browse/BK-498): PAT | Enforce capability scopes on the authoring domain _(Ready For QA)_
 - [BK-499](https://jira.upexgalaxy.com/browse/BK-499): PAT | Enforce capability scopes on read, identity and notification routes _(Backlog)_
 - [BK-262](https://jira.upexgalaxy.com/browse/BK-262): PAT | Enforce capability scopes on every non-ATC route _(ABORTED)_
+
+### Improvement (1)
+
+- [BK-542](https://jira.upexgalaxy.com/browse/BK-542): BK-1: PAT/API Auth: route-capability-coverage.test.ts crashes ungracefully when auth options are fully omitted _(Open)_
 
 ---
 

@@ -29,5 +29,11 @@
 - `.context/master-test-plan.md` flags Auth (magic-link + headless signin/signup/OTP) as **CRITICAL** risk tier — "security gateway; every flow sits behind it" — explicitly listing PAT minting as one of the guarded surfaces, and references prior real PAT-scope incidents (member-role PAT self-escalation, Bearer ignoring workspace switch — both since fixed) plus an unresolved residual-risk gap (GAP-14: ~136 pre-fix admin-scoped PATs never confirmed revoked). BK-497 sits directly in this risk tier: it is foundational plumbing for capability enforcement, not a leaf feature.
 - This Story's own scope is explicitly non-functional/type-level + one narrow behavioural lift — it does not itself assign any new capability gate, so it should not be tested as if it changes authorization outcomes broadly. BK-498/BK-499 (successors) are where new capability assignments land.
 
+## Final Status
+
+**Result:** PASSED WITH ISSUES (15/17 TCs; 1 BLOCKED with substitute coverage passed, 1 non-blocking finding filed as Improvement)
+**Workflow Complete:** 2026-08-19
+**Next:** QA Approved — no further QA action pending on BK-497. Improvement BK-542 (TC-08 finding) tracked independently, non-blocking. TC-03/AC-06 live-reproduction gap logged as a QA-process observation only (see test-session-memory.md § Observations), not a defect.
+
 ## Next Step
-Story workflow (US path) — Stage 1 Planning next.
+Closed — Stages 1-3 complete, Story QA Approved. No further QA action pending.
