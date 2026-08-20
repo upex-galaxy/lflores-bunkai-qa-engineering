@@ -8,21 +8,8 @@
  * Project: integration (depends on api-setup)
  */
 
+import { WORKSPACE_NOT_MEMBER_ID } from '@data/constants';
 import { config, expect, test } from '@TestFixture';
-
-/**
- * Fixed reference workspace where the BK-6 test user has zero `workspace_members`
- * rows — validated via direct staging DB query on 2026-08-07. No runtime DB client
- * exists in this framework and no API endpoint can discover a "workspace I am NOT a
- * member of" (would be a cross-tenant data leak), so a fixed, documented reference is
- * the only viable Discover-adjacent strategy here (Generate via signup+email+confirm
- * was rejected as disproportionate for a single negative-path check). See
- * atc/BK-251-switch-non-member-workspace.md §7 for the full decision trail.
- *
- * RESERVED FIXTURE — do not add the BK-6 test user as a member of this workspace, and
- * do not delete it. Doing so breaks this TC with a false result, not a real regression.
- */
-const WORKSPACE_NOT_MEMBER_ID = '047c106e-5334-4a80-8b66-d99ef4c474b4'; // bunkai1-qa
 
 /**
  * Fixed reference workspace where the BK-6 test user HAS a `workspace_members` row but

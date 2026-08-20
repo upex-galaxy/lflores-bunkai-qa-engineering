@@ -13,15 +13,36 @@
  */
 
 import type { APIResponse } from '@playwright/test';
-import type { ActiveWorkspaceBody, ActiveWorkspaceError, ActiveWorkspaceResponse } from '@schemas/workspace.types';
+import type {
+  ActiveWorkspaceBody,
+  ActiveWorkspaceError,
+  ActiveWorkspaceResponse,
+  ErrorEnvelope,
+  WorkspaceInviteCreateBody,
+  WorkspaceInviteCreateResponse,
+  WorkspaceInviteListResponse,
+  WorkspacePatchBody,
+  WorkspaceResponse,
+} from '@schemas/workspace.types';
 import type { TestContextOptions } from '@TestContext';
 
 import { ApiBase } from '@api/ApiBase';
 import { expect } from '@playwright/test';
-import { atc } from '@utils/decorators';
+import { atc, step } from '@utils/decorators';
 
 // Re-export types for consumers that import from WorkspaceApi
-export type { ActiveWorkspaceBody, ActiveWorkspaceError, ActiveWorkspaceResponse } from '@schemas/workspace.types';
+export type {
+  ActiveWorkspaceBody,
+  ActiveWorkspaceError,
+  ActiveWorkspaceResponse,
+  ErrorEnvelope,
+  WorkspaceInvite,
+  WorkspaceInviteCreateBody,
+  WorkspaceInviteCreateResponse,
+  WorkspaceInviteListResponse,
+  WorkspacePatchBody,
+  WorkspaceResponse,
+} from '@schemas/workspace.types';
 
 // ============================================
 // Workspace API Component
@@ -57,6 +78,47 @@ export class WorkspaceApi extends ApiBase {
     finally {
       if (savedToken) { this.setAuthToken(savedToken); }
     }
+  }
+
+  /**
+   * Helper: List a workspace's invites (pending/accepted/revoked).
+   *
+   * Read-only GET — used as a test-level verification step to confirm a
+   * rejected invite create/revoke (BK-544/BK-548) left the invites list
+   * unchanged. Not an ATC on its own. Called with the OWNER session/PAT,
+   * restored after the restricted PAT under test is done, since RLS scopes
+   * this list to admins/owners.
+   *
+   * @param workspaceId - Target workspace id
+   * @returns Tuple with response and the invite list
+   */
+  @step
+  async getWorkspaceInvites(workspaceId: string): Promise<[APIResponse, WorkspaceInviteListResponse]> {
+    return this.apiGET<WorkspaceInviteListResponse>(`/workspaces/${workspaceId}/invites`);
+  }
+
+  /**
+   * Helper: Issue a workspace invite with the OWNER session/PAT.
+   *
+   * Generate-pattern precondition — creates a fresh pending invite used to
+   * set up BK-548's "revoke a pending invite" scenario. Called BEFORE the
+   * test swaps `this.authToken` to the restricted PAT under test. Not an
+   * ATC on its own: invite creation's own fixed assertions belong to a
+   * future Candidate TC (BK-547-adjacent), out of this plan's scope.
+   *
+   * @param args - Target workspace id and the invite payload
+   * @param args.workspaceId - Target workspace id
+   * @param args.body - Invite payload (email, role)
+   * @returns Tuple with response, the created invite, and sent payload
+   */
+  @step
+  async createWorkspaceInvite(
+    args: { workspaceId: string, body: WorkspaceInviteCreateBody },
+  ): Promise<[APIResponse, WorkspaceInviteCreateResponse, WorkspaceInviteCreateBody]> {
+    return this.apiPOST<WorkspaceInviteCreateResponse, WorkspaceInviteCreateBody>(
+      `/workspaces/${args.workspaceId}/invites`,
+      args.body,
+    );
   }
 
   // ============================================
@@ -147,6 +209,130 @@ export class WorkspaceApi extends ApiBase {
     // Fixed assertions - validates the switch was rejected with the canonical error code
     expect(response.status()).toBe(403);
     expect(body.error.code).toBe('forbidden');
+
+    return [response, body, sentPayload];
+  }
+
+  /**
+   * ATC: Create a workspace invite using a PAT scoped only `atc:read` - expects rejection (403)
+   *
+   * Complete flow:
+   * 1. POST an invite payload to /api/v1/workspaces/{id}/invites using a read-only-scoped PAT (ACTION)
+   * 2. Validate the request is rejected with the canonical error envelope (fixed assertions)
+   *
+   * The follow-up "was an invite actually created?" check (GET .../invites, owner session) is
+   * a test-level assertion — it composes a second endpoint under a DIFFERENT credential.
+   *
+   * @param args - Target workspace id and the invite payload
+   * @param args.workspaceId - Target workspace id
+   * @param args.invite - Invite payload (email, role)
+   * @returns Tuple with response, error envelope, and sent payload
+   */
+  @atc('BK-544')
+  async rejectInviteCreationWithReadOnlyPat(
+    args: { workspaceId: string, invite: WorkspaceInviteCreateBody },
+  ): Promise<[APIResponse, ErrorEnvelope, WorkspaceInviteCreateBody]> {
+    const [response, body, sentPayload] = await this.apiPOST<ErrorEnvelope, WorkspaceInviteCreateBody>(
+      `/workspaces/${args.workspaceId}/invites`,
+      args.invite,
+    );
+
+    // Fixed assertions - validates the scope-based rejection
+    expect(response.status()).toBe(403);
+    expect(body.error.code).toBe('forbidden');
+
+    return [response, body, sentPayload];
+  }
+
+  /**
+   * ATC: Revoke a pending invite using a PAT without `workspace:admin` - expects rejection (403)
+   *
+   * Complete flow:
+   * 1. DELETE a pending invite using a PAT scoped `atc:write`+`run:execute` (no `workspace:admin`) (ACTION)
+   * 2. Validate the request is rejected with the canonical error envelope (fixed assertions)
+   *
+   * The follow-up "is the invite still pending?" check (GET .../invites, owner session) is
+   * a test-level assertion — it composes a second endpoint under a DIFFERENT credential.
+   *
+   * @param args - Target workspace id and the pending invite's id
+   * @param args.workspaceId - Target workspace id
+   * @param args.inviteId - Pending invite id to attempt revoking
+   * @returns Tuple with response and error envelope
+   */
+  @atc('BK-548')
+  async rejectRevokeInviteWithoutAdminScope(
+    args: { workspaceId: string, inviteId: string },
+  ): Promise<[APIResponse, ErrorEnvelope]> {
+    const [response, body] = await this.apiDELETE<ErrorEnvelope>(
+      `/workspaces/${args.workspaceId}/invites/${args.inviteId}`,
+    );
+
+    // Fixed assertions - validates the scope-based rejection
+    expect(response.status()).toBe(403);
+    expect(body.error.code).toBe('forbidden');
+
+    return [response, body];
+  }
+
+  /**
+   * ATC: Perform a workspace-admin action with a correctly-scoped, bound PAT - expects success (200)
+   *
+   * Complete flow:
+   * 1. PATCH /api/v1/workspaces/{id} using a `workspace:admin`-scoped PAT bound to that same workspace (ACTION)
+   * 2. Validate the workspace reflects the update (fixed assertions)
+   *
+   * Positive control, counterweight to BK-544/BK-548/BK-551 — single-call scope, no
+   * test-level composition needed.
+   *
+   * @param args - Target workspace id and the patch payload
+   * @param args.workspaceId - Target workspace id
+   * @param args.body - Patch payload (name)
+   * @returns Tuple with response, the updated workspace, and sent payload
+   */
+  @atc('BK-550')
+  async allowWorkspaceAdminActionWithBoundPat(
+    args: { workspaceId: string, body: WorkspacePatchBody },
+  ): Promise<[APIResponse, WorkspaceResponse, WorkspacePatchBody]> {
+    const [response, respBody, sentPayload] = await this.apiPATCH<WorkspaceResponse, WorkspacePatchBody>(
+      `/workspaces/${args.workspaceId}`,
+      args.body,
+    );
+
+    // Fixed assertions - validates the write succeeded and reflects the sent payload
+    expect(response.status()).toBe(200);
+    expect(respBody.workspace.name).toBe(args.body.name);
+
+    return [response, respBody, sentPayload];
+  }
+
+  /**
+   * ATC: Perform a workspace-admin action with a PAT bound to a different workspace - expects rejection (403)
+   *
+   * Complete flow:
+   * 1. PATCH /api/v1/workspaces/{id} (workspace B) using a `workspace:admin`-scoped PAT bound to
+   *    workspace A (ACTION)
+   * 2. Validate the request is rejected with the verbatim wrong-workspace message (fixed assertions)
+   *
+   * Sibling of BK-550's "correctly scoped, correct workspace" positive partition — single-call
+   * negative check, no test-level composition needed.
+   *
+   * @param args - Target workspace id (the PAT's NON-bound workspace) and the patch payload
+   * @param args.workspaceId - Target workspace id (NOT the PAT's bound workspace)
+   * @param args.body - Patch payload (name)
+   * @returns Tuple with response, error envelope, and sent payload
+   */
+  @atc('BK-551')
+  async rejectCrossWorkspaceAdminPat(
+    args: { workspaceId: string, body: WorkspacePatchBody },
+  ): Promise<[APIResponse, ErrorEnvelope, WorkspacePatchBody]> {
+    const [response, body, sentPayload] = await this.apiPATCH<ErrorEnvelope, WorkspacePatchBody>(
+      `/workspaces/${args.workspaceId}`,
+      args.body,
+    );
+
+    // Fixed assertions - validates the workspace-binding rejection and its verbatim message
+    expect(response.status()).toBe(403);
+    expect(body.error.message).toBe('This token is scoped to a different workspace.');
 
     return [response, body, sentPayload];
   }
