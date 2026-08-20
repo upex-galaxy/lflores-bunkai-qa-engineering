@@ -91,7 +91,7 @@ environments:
 git_strategy:
   strategy: solo-main # null until Strategy Setup runs; then one of: solo-main | main-integration | enterprise | trunk-based | gitflow | github-flow | gitlab-flow | sdet
   description: >
-    Single long-lived branch (main); single maintainer (this repo is the boilerplate template itself). Work is committed and pushed directly to main (PRs optional). Every push to main is effectively a release of the template. No integration branch, no promotion path, no hotfix ceremony.
+    Single long-lived branch (main); single maintainer (this repo is the boilerplate template itself). Work lands via PR only (direct pushes to main forbidden, changed 2026-08-20 per user decision) — every code-touching change goes through a work branch + gh pr create. No integration branch, no promotion path, no hotfix ceremony.
   branches:
     production: main # release / default branch
     integration: null # long-lived integration branch name (e.g. staging), or null
@@ -104,7 +104,7 @@ git_strategy:
     hotfix_policy: n/a # branch-off-prod-backmerge | via-integration | none | n/a
   policy:
     # how strictly protected branches are guarded (set by Strategy Setup Q4; defaults are safe)
-    direct_push_to_protected: allowed # forbidden | confirm | allowed (solo-main = allowed)
+    direct_push_to_protected: forbidden # forbidden | confirm | allowed (solo-main default = allowed; changed to forbidden 2026-08-20 per user decision — all code changes go via PR)
     admin_bypass: true # team POLICY: may a repo admin bypass PR/protection for urgent changes? actual capability still depends on the GitHub user's role — the skill re-confirms at runtime
     require_pr_reviews: 0 # null | 0 | N — min approvals before merge to a protected branch (informational)
   branch_prefixes:

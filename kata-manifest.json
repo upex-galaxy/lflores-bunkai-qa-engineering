@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-20T10:30:12.102Z",
+  "generatedAt": "2026-08-20T12:03:01.687Z",
   "components": {
     "api": [
       {
@@ -28,62 +28,67 @@
           {
             "id": "BK-477",
             "method": "assignBugToEligibleMember",
-            "line": 107
+            "line": 108
           },
           {
             "id": "BK-478",
             "method": "rejectStatusSkip",
-            "line": 171
+            "line": 172
           },
           {
             "id": "BK-479",
             "method": "advanceStatusLegally",
-            "line": 199
+            "line": 200
           },
           {
             "id": "BK-480",
             "method": "rejectAssignToNonMember",
-            "line": 223
+            "line": 224
           },
           {
             "id": "BK-481",
             "method": "rejectAssignToViewer",
-            "line": 247
+            "line": 248
           },
           {
             "id": "BK-482",
             "method": "rejectStatusBackwardOrSame",
-            "line": 275
+            "line": 276
           },
           {
             "id": "BK-483",
             "method": "reassignBugToDifferentMember",
-            "line": 299
+            "line": 300
           },
           {
             "id": "BK-484",
             "method": "keepAssigneeAndStatusIndependent",
-            "line": 348
+            "line": 349
           },
           {
             "id": "BK-485",
             "method": "unassignBug",
-            "line": 322
+            "line": 323
           },
           {
             "id": "BK-486",
             "method": "rejectWriteActionForViewer",
-            "line": 144
+            "line": 145
+          },
+          {
+            "id": "BK-487",
+            "method": "attributeActionToActualCaller",
+            "line": 441
           },
           {
             "id": "BK-488",
             "method": "rejectNonDisclosingNotFound",
-            "line": 375
+            "line": 376
           },
           {
             "id": "BK-489",
             "method": "assignBugTriggersNotification",
-            "line": 400
+            "line": 401
           }
         ]
       },
@@ -191,7 +196,7 @@
   "preconditions": [],
   "summary": {
     "totalComponents": 6,
-    "totalATCs": 28,
+    "totalATCs": 29,
     "apiComponents": 5,
     "uiComponents": 1,
     "preconditionModules": 0

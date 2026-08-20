@@ -1770,6 +1770,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workspaces/{id}/billing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read a workspace's plan, seats, and usage overview
+         * @description Bearer `atc:read` (or cookie session) — owner/admin only. Same scope floor as the sibling workspace-inventory reads (`/coverage`, `/open-bugs`, `/recent-projects`, `/active-runs`); cookie sessions hold the full capability set, so this constrains PATs only. `bunkai_workspace_billing_overview` is SECURITY INVOKER with no caller-supplied actor parameter; its own step-0 gate (`bunkai_is_workspace_admin`) restricts the read, and this route calls it through the caller's own RLS-scoped client, never a service-role client. A non-admin caller, an unknown workspace id, and a workspace the caller cannot see all collapse into the SAME `404 not_found` — never `403`, so the response never discloses more than the workspace's existence. The tier ladder (limits, price, display name) is NOT part of this payload; look it up client-side in `lib/billing/plan-tiers.ts` keyed by the returned `plan`.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The workspace's billing overview. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["WorkspaceBillingOverview"];
+                    };
+                };
+                /** @description The workspace id in the path is not a UUID (`bad_request`). */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Not authenticated. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:read scope. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Not found — returned uniformly for a non-admin caller, an unknown workspace, and a workspace the caller cannot see (`not_found`, never `403`). */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description The overview could not be read (`internal_error`). */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{id}/modules": {
         parameters: {
             query?: never;
@@ -1825,7 +1911,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Caller is not a member of the project. */
+                /** @description Missing atc:write scope or not a member. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -1909,6 +1995,15 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
+                /** @description Missing atc:read scope or not a member. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
             };
         };
         put?: never;
@@ -1958,7 +2053,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Caller is not a member of the project. */
+                /** @description Missing atc:write scope or not a member. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2045,7 +2140,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Caller is not a member of the project. */
+                /** @description Missing atc:write scope or not a member. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2122,7 +2217,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Caller is not a member of the project. */
+                /** @description Missing atc:write scope or not a member. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2211,6 +2306,15 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
+                /** @description Missing atc:read scope or not a member. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
             };
         };
         put?: never;
@@ -2260,7 +2364,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Caller is not a member of the project's workspace. */
+                /** @description Missing atc:write scope or not a member. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2354,7 +2458,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Caller is a member but holds only the viewer role. */
+                /** @description Missing atc:write scope or not a member. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2446,7 +2550,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Caller is not a member of the project. */
+                /** @description Missing atc:write scope or not a member. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2523,7 +2627,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Caller is not a member of the project. */
+                /** @description Missing atc:write scope or not a member. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2572,7 +2676,7 @@ export interface paths {
         };
         /**
          * List a module's active user stories
-         * @description Member-only. Returns active (non-archived) stories, newest first.
+         * @description Bearer `atc:read` (or cookie session). Member-only. Returns active (non-archived) stories, newest first.
          */
         get: {
             parameters: {
@@ -2605,12 +2709,21 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
+                /** @description Missing atc:read scope or not a member. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
             };
         };
         put?: never;
         /**
          * Create a user story under a module
-         * @description Member-only. Anchors the story to the module, validates the title (3–200) and optional Jira key, sanitizes the Markdown description. Duplicate Jira key in the project returns 409.
+         * @description Bearer `atc:write` (or cookie session). Member-only. Anchors the story to the module, validates the title (3–200) and optional Jira key, sanitizes the Markdown description. Duplicate Jira key in the project returns 409.
          */
         post: {
             parameters: {
@@ -2656,7 +2769,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Not a member. */
+                /** @description Missing atc:write scope or not a member. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2739,6 +2852,15 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
+                /** @description Missing atc:read scope or not a member. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
                 /** @description Not found. */
                 404: {
                     headers: {
@@ -2784,7 +2906,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Not a member. */
+                /** @description Missing atc:write scope or not a member. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2817,7 +2939,7 @@ export interface paths {
         head?: never;
         /**
          * Edit a user story
-         * @description Member-only. Title / description / Jira key. The Jira key is immutable once set (409 on change).
+         * @description Bearer `atc:write` (or cookie session). Member-only. Title / description / Jira key. The Jira key is immutable once set (409 on change).
          */
         patch: {
             parameters: {
@@ -2863,7 +2985,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Not a member. */
+                /** @description Missing atc:write scope or not a member. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2912,7 +3034,7 @@ export interface paths {
         };
         /**
          * List a story's active acceptance criteria
-         * @description Member-only. Returns active (non-archived) criteria in position order.
+         * @description Bearer `atc:read` (or cookie session). Member-only. Returns active (non-archived) criteria in position order.
          */
         get: {
             parameters: {
@@ -2945,12 +3067,21 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
+                /** @description Missing atc:read scope or not a member. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
             };
         };
         put?: never;
         /**
          * Add an acceptance criterion to a user story
-         * @description Member-only. Inserts at the given position (or the tail), atomically shifting active siblings down so positions stay gap-free.
+         * @description Bearer `atc:write` (or cookie session). Member-only. Inserts at the given position (or the tail), atomically shifting active siblings down so positions stay gap-free.
          */
         post: {
             parameters: {
@@ -2996,7 +3127,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Not a member. */
+                /** @description Missing atc:write scope or not a member. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -3070,6 +3201,15 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
+                /** @description Missing atc:read scope or not a member. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
                 /** @description Not found. */
                 404: {
                     headers: {
@@ -3085,7 +3225,7 @@ export interface paths {
         post?: never;
         /**
          * Soft-delete (archive) an acceptance criterion
-         * @description Member-only. Archives the criterion, closes the position gap, and drops the parent story out of ready_to_test when it was the last active criterion (user_story_reverted).
+         * @description Bearer `atc:write` (or cookie session). Member-only. Archives the criterion, closes the position gap, and drops the parent story out of ready_to_test when it was the last active criterion (user_story_reverted).
          */
         delete: {
             parameters: {
@@ -3119,7 +3259,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Not a member. */
+                /** @description Missing atc:write scope or not a member. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -3152,7 +3292,7 @@ export interface paths {
         head?: never;
         /**
          * Edit or reorder an acceptance criterion
-         * @description Member-only. Edits title/detail (direct update) and/or moves position (atomic, gap-free re-number).
+         * @description Bearer `atc:write` (or cookie session). Member-only. Edits title/detail (direct update) and/or moves position (atomic, gap-free re-number).
          */
         patch: {
             parameters: {
@@ -3198,7 +3338,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Not a member. */
+                /** @description Missing atc:write scope or not a member. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -3240,7 +3380,7 @@ export interface paths {
         put?: never;
         /**
          * Start an async Jira import
-         * @description Member-only. Enqueues a one-way Jira import for the project and processes it in the background; idempotent on re-run. At most one active import per project (409). Returns immediately with the job id.
+         * @description Bearer `atc:write` (or cookie session). Member-only. Enqueues a one-way Jira import for the project and processes it in the background; idempotent on re-run. At most one active import per project (409). Returns immediately with the job id.
          */
         post: {
             parameters: {
@@ -3286,7 +3426,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Not a member. */
+                /** @description Missing atc:write scope or not a member. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -3330,7 +3470,7 @@ export interface paths {
         };
         /**
          * Poll an import job
-         * @description Member-only. Returns the job status (queued | running | completed | failed) plus per-run counts and per-issue errors.
+         * @description Bearer `atc:read` (or cookie session). Member-only. Returns the job status (queued | running | completed | failed) plus per-run counts and per-issue errors.
          */
         get: {
             parameters: {
@@ -3356,6 +3496,15 @@ export interface paths {
                 };
                 /** @description Not signed in. */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:read scope or not a member. */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -6547,6 +6696,20 @@ export interface components {
             modules_fully_covered: number;
             /** @description How many projects were rolled up. Zero for a workspace with no projects, and also for a workspace the caller cannot read — see the non-disclosure note on the operation. */
             project_count: number;
+        };
+        /** @description A workspace's live billing-relevant counts, admin/owner only. */
+        WorkspaceBillingOverview: {
+            /**
+             * @description The workspace's `workspaces.plan` literal. Look up the tier ladder (display name, seat/project/retention limits, price) for this key in `lib/billing/plan-tiers.ts` — this endpoint does not repeat it.
+             * @enum {string}
+             */
+            plan: "community" | "cloud" | "enterprise";
+            /** @description Workspace members with `status = 'active'` only. Pending invitations and suspended members never count toward this figure. */
+            active_seats: number;
+            /** @description Every project in the workspace. `projects` carries no soft-delete column, so this is an exact, unfiltered count. */
+            project_count: number;
+            /** @description Age in days of the workspace's oldest run (`now() - min(runs.created_at)`), or `null` when the workspace has no runs. This reports how much of the plan's retention WINDOW is in use — nothing in this product prunes runs, so this figure is never a countdown to deletion. */
+            oldest_run_age_days: number | null;
         };
         ModuleCreateResponse: {
             module: components["schemas"]["Module"];
