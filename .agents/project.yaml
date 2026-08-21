@@ -100,7 +100,7 @@ git_strategy:
   decisions:
     # captured by the Strategy Setup questionnaire (Q1/Q2/Q3)
     promote_method: n/a # ff-only | merge-commit | squash | n/a
-    feature_merge: n/a # merge-commit | squash | rebase-merge | n/a
+    feature_merge: merge-commit # merge-commit | squash | rebase-merge | n/a — HARD CONSTRAINT, not just convention: GitHub ruleset `rules/branches/main` sets `allowed_merge_methods: ["merge"]` only (verified via `gh api repos/<owner>/<repo>/rules/branches/main` 2026-08-21) — squash/rebase are REJECTED by GitHub itself unless bypassed with `gh pr merge --admin`, which also bypasses `require_code_owner_review`. PR #8 used `--admin --squash` and the admin bypass silently let the disallowed method through — always use `gh pr merge --merge` (`--admin` only to clear the code-owner-review block, never to pick a different merge method). All 7 prior PRs (#1,3,4,5,6,7) used a regular merge commit.
     hotfix_policy: n/a # branch-off-prod-backmerge | via-integration | none | n/a
   policy:
     # how strictly protected branches are guarded (set by Strategy Setup Q4; defaults are safe)
