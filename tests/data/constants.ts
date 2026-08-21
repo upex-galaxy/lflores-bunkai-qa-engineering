@@ -33,3 +33,17 @@ export const WORKSPACE_NOT_MEMBER_ID = '047c106e-5334-4a80-8b66-d99ef4c474b4'; /
  * matter, only that it never resolves to a real token.
  */
 export const INVALID_BEARER_TOKEN = 'bk_pat_invalid.does-not-exist-00000000';
+
+/**
+ * Fixed reference project/workspace/module used by BK-498's capability-scope
+ * enforcement TCs on the authoring domain (Modules family). Same fixtures
+ * Stage 2 execution used live on staging (Engram `#216`) — a real project the
+ * BK-6 test user is an active member of, with a pre-existing module to read
+ * user stories from.
+ *
+ * Promoted here (not file-local) since BK-498's plan already scopes these as
+ * shared across both `ModulesApi` and the later `AuthoringSweepApi` test files.
+ */
+export const BK264_DEFECT_TRIAGE_PROJECT_ID = '2fee236f-1246-40c4-bfc4-d332287f9548';
+export const BK264_QA_SANDBOX_WORKSPACE_ID = '6646f244-a28c-441e-8486-9af33bdb5c11';
+export const DEFECT_TRIAGE_MODULE_ID = '175f8a08-20b9-4c96-a21a-e02dcae2837e';

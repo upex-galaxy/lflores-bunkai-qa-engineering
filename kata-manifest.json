@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-20T12:03:01.687Z",
+  "generatedAt": "2026-08-21T11:12:59.178Z",
   "components": {
     "api": [
       {
@@ -17,6 +17,38 @@
             "id": "BK-312",
             "method": "loginWithInvalidCredentials",
             "line": 110
+          }
+        ]
+      },
+      {
+        "name": "AuthoringSweepApi",
+        "file": "AuthoringSweepApi.ts",
+        "relativePath": "tests/components/api/AuthoringSweepApi.ts",
+        "atcs": [
+          {
+            "id": "BK-559",
+            "method": "rejectWritesAcrossFamilies",
+            "line": 299
+          },
+          {
+            "id": "BK-561",
+            "method": "acceptWritesAcrossFamilies",
+            "line": 358
+          },
+          {
+            "id": "BK-563",
+            "method": "acceptReadsAcrossFamilies",
+            "line": 433
+          },
+          {
+            "id": "BK-566",
+            "method": "rejectReadsAcrossFamilies",
+            "line": 467
+          },
+          {
+            "id": "BK-568",
+            "method": "completeImportLifecycleDualScope",
+            "line": 503
           }
         ]
       },
@@ -89,6 +121,58 @@
             "id": "BK-489",
             "method": "assignBugTriggersNotification",
             "line": 401
+          }
+        ]
+      },
+      {
+        "name": "ModulesApi",
+        "file": "ModulesApi.ts",
+        "relativePath": "tests/components/api/ModulesApi.ts",
+        "atcs": [
+          {
+            "id": "BK-556",
+            "method": "createModuleSuccessfully",
+            "line": 92
+          },
+          {
+            "id": "BK-557",
+            "method": "createModuleViaSessionRegardlessOfPatScope",
+            "line": 330
+          },
+          {
+            "id": "BK-558",
+            "method": "rejectRevokedTokenWithInvalidMessage",
+            "line": 362
+          },
+          {
+            "id": "BK-560",
+            "method": "rejectModuleCreationReadOnlyPat",
+            "line": 122
+          },
+          {
+            "id": "BK-562",
+            "method": "createModuleWithUnboundPat",
+            "line": 152
+          },
+          {
+            "id": "BK-564",
+            "method": "listUserStoriesSuccessfully",
+            "line": 176
+          },
+          {
+            "id": "BK-565",
+            "method": "rejectReadWithWriteOnlyPat",
+            "line": 200
+          },
+          {
+            "id": "BK-567",
+            "method": "rejectUnauthenticatedModuleCreation",
+            "line": 235
+          },
+          {
+            "id": "BK-570",
+            "method": "defaultScopeSucceedsOnWriteAndRead",
+            "line": 293
           }
         ]
       },
@@ -195,9 +279,9 @@
   },
   "preconditions": [],
   "summary": {
-    "totalComponents": 6,
-    "totalATCs": 29,
-    "apiComponents": 5,
+    "totalComponents": 8,
+    "totalATCs": 43,
+    "apiComponents": 7,
     "uiComponents": 1,
     "preconditionModules": 0
   }

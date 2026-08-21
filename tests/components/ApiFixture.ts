@@ -18,7 +18,9 @@ import type { TestContextOptions } from '@TestContext';
 
 import { ApiBase } from '@api/ApiBase';
 import { AuthApi } from '@api/AuthApi';
+import { AuthoringSweepApi } from '@api/AuthoringSweepApi';
 import { BugsApi } from '@api/BugsApi';
+import { ModulesApi } from '@api/ModulesApi';
 import { NotificationsApi } from '@api/NotificationsApi';
 import { TokensApi } from '@api/TokensApi';
 import { WorkspaceApi } from '@api/WorkspaceApi';
@@ -43,6 +45,15 @@ export class ApiFixture extends ApiBase {
   /** Tokens component - personal access token issuance/listing/revocation */
   readonly tokens: TokensApi;
 
+  /** Modules component - module creation + per-module user-story listing */
+  readonly modules: ModulesApi;
+
+  /**
+   * Authoring sweep component - cross-family capability-scope checks (User
+   * Stories, Acceptance Criteria, Environments, Milestones, Imports)
+   */
+  readonly authoringSweep: AuthoringSweepApi;
+
   constructor(options: TestContextOptions) {
     super(options);
 
@@ -52,6 +63,8 @@ export class ApiFixture extends ApiBase {
     this.bugs = new BugsApi(options);
     this.notifications = new NotificationsApi(options);
     this.tokens = new TokensApi(options);
+    this.modules = new ModulesApi(options);
+    this.authoringSweep = new AuthoringSweepApi(options);
   }
 
   // ============================================
@@ -69,6 +82,8 @@ export class ApiFixture extends ApiBase {
     this.bugs.setAuthToken(token);
     this.notifications.setAuthToken(token);
     this.tokens.setAuthToken(token);
+    this.modules.setAuthToken(token);
+    this.authoringSweep.setAuthToken(token);
   }
 
   /**
@@ -81,5 +96,7 @@ export class ApiFixture extends ApiBase {
     this.bugs.clearAuthToken();
     this.notifications.clearAuthToken();
     this.tokens.clearAuthToken();
+    this.modules.clearAuthToken();
+    this.authoringSweep.clearAuthToken();
   }
 }
