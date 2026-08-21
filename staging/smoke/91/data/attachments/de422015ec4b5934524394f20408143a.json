@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "forbidden",
+    "message": "Missing required capability: workspace:admin",
+    "request_id": "7a956c90-05c8-445d-b0b1-56980710e45c"
+  }
+}
