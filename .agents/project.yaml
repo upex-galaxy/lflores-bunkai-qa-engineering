@@ -100,7 +100,7 @@ git_strategy:
   decisions:
     # captured by the Strategy Setup questionnaire (Q1/Q2/Q3)
     promote_method: n/a # ff-only | merge-commit | squash | n/a
-    feature_merge: n/a # merge-commit | squash | rebase-merge | n/a
+    feature_merge: merge-commit # merge-commit | squash | rebase-merge | n/a (corrected 2026-08-21: solo-main's generic "n/a" doesn't hold here — direct_push_to_protected=forbidden means every change lands via work-branch -> main PR, and 7 prior PRs (#1,3,4,5,6,7) all used a regular merge commit, preserving atomic commits under the merge; PR #8 wrongly used --squash, breaking that precedent — locking this in so it doesn't recur)
     hotfix_policy: n/a # branch-off-prod-backmerge | via-integration | none | n/a
   policy:
     # how strictly protected branches are guarded (set by Strategy Setup Q4; defaults are safe)
