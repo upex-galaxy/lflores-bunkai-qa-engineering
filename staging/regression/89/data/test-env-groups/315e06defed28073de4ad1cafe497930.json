@@ -1,0 +1,1 @@
+{"id":"315e06defed28073de4ad1cafe497930","fullName":"integration/modules/enforceModuleCapabilityScope.test.ts:124:3","name":"BK-498: should list user stories successfully given a PAT scoped atc:read","status":"passed","testResultsByEnv":{"default":"f90ac5a3fcd6dae53b3445985216b163"}}
