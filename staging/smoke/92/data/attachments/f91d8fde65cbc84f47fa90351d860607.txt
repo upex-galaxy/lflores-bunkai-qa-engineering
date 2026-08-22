@@ -1,0 +1,2 @@
+---- API NOK: 401 - https://staging-upexbunkai.vercel.app/api/v1/projects/2fee236f-1246-40c4-bfc4-d332287f9548/modules
+✅ [BK-567] rejectUnauthenticatedModuleCreation - PASS (206ms)

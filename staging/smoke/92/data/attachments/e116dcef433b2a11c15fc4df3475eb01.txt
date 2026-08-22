@@ -1,0 +1,12 @@
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/auth/signin
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
+✅ [BK-311] authenticateSuccessfully - PASS (768ms)
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/bugs
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/de0627b5-7737-4ffe-a10e-d7feb585a186/assign
+✅ [BK-477] assignBugToEligibleMember - PASS (321ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/auth/signin
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
+✅ [BK-311] authenticateSuccessfully - PASS (706ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/de0627b5-7737-4ffe-a10e-d7feb585a186/status
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/activity
+✅ [BK-487] attributeActionToActualCaller - PASS (755ms)

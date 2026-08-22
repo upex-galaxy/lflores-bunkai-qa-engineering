@@ -1,0 +1,1 @@
+{"id":"5c5d74586eaa12b7444b4e7d4aaa5f69","fullName":"integration/modules/enforceModuleCapabilityScope.test.ts:253:3","name":"BK-498: should return 401 for a revoked atc:write token, distinct from the 403 an under-scoped-but-valid token receives","status":"passed","testResultsByEnv":{"default":"ad8d6a79ca68642581a6edc5e83b42f4"}}
