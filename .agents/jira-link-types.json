@@ -13,13 +13,6 @@
     "inward": "is blocked by",
     "exists_in_workspace": true
   },
-  "causes": {
-    "id": "10013",
-    "name": "Problem/Incident",
-    "outward": "causes",
-    "inward": "is caused by",
-    "exists_in_workspace": true
-  },
   "cloners": {
     "id": "10001",
     "name": "Cloners",
@@ -89,13 +82,6 @@
     "outward": "executes",
     "inward": "is executed by",
     "exists_in_workspace": true
-  },
-  "tested_by": {
-    "id": "",
-    "name": "",
-    "outward": "tested by",
-    "inward": "tests",
-    "exists_in_workspace": false
   },
   "xray_defect": {
     "id": "10012",
