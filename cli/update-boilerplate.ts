@@ -727,6 +727,7 @@ const PROTECTED_WATCHLIST: ProtectedWatchEntry[] = [
   { path: '.agents/project.yaml', reason: 'per-project identity + env map, but upstream keeps ADDING structural blocks (e.g. git_strategy). A project scaffolded before a block existed never learns it should have one.' },
   { path: 'tsconfig.json', reason: 'path aliases (@utils, @api, @schemas, @variables) are the contract every synced file imports through — a new upstream alias breaks synced code in a project whose tsconfig never learned it.' },
   { path: 'eslint.config.js', reason: 'lint rules evolve upstream and .husky/pre-commit (which IS synced) runs eslint against this local config.' },
+  { path: 'cli/lib/variables-manifest.ts', reason: 'BUNKAI-SPECIFIC — adds 8 secondary-role identity vars (LOCAL/STAGING member+viewer email/password) that the generic upstream manifest has no equivalent for. Dropped once already (2026-08-22) when a `bun run up` synced the generic manifest over this one; restored and now protected here.' },
 ];
 
 // NOT on the watchlist, deliberately — do not "fix" this asymmetry:
@@ -1015,9 +1016,13 @@ async function main(): Promise<void> {
     //  - scripts/api-login.ts: project-adapted auth CLI (override points for the
     //    project's auth flow). Shipped once via the create-* scaffold tarball,
     //    then owned by the project — re-syncing would clobber the adaptation.
+    //  - cli/lib/variables-manifest.ts: BUNKAI-SPECIFIC secondary-role identity
+    //    vars layered on top of the generic manifest — see PROTECTED_WATCHLIST
+    //    above for the incident that made this exclusion necessary.
     excludePaths: [
       path.join(SKILLS_CANONICAL_DIR, 'REGISTRY.md').replace(/\\/g, '/'),
       'scripts/api-login.ts',
+      'cli/lib/variables-manifest.ts',
     ],
     // The boilerplate's own design material. `docs` is a synced component, so
     // without this every consumer project inherits our proposals and backlogs as
