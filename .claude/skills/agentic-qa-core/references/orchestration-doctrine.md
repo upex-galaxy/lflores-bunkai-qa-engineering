@@ -16,7 +16,7 @@
 
 1. **Goal** — one sentence
 2. **Context docs** — files to read first
-3. **Project Standards (auto-resolved)** — compact rules pulled from `.claude/skills/REGISTRY.md` (built by `bun run skills:registry`, validated by `bun run skills:registry:check`). Subagents trust these as authoritative for listed conventions and DO NOT re-read full SKILL.md unless explicitly told to. Protocol: `agentic-qa-core/references/skill-resolver.md`.
+3. **Project Standards (auto-resolved)** — compact rules pulled from `.claude/skills/REGISTRY.md` (built by `bun run skills:registry`). Subagents trust these as authoritative for listed conventions and DO NOT re-read full SKILL.md unless explicitly told to. Protocol: `agentic-qa-core/references/skill-resolver.md`
 4. **Skills to load** — explicit (e.g. `/playwright-cli`)
 5. **Exact instructions** — step-by-step, not vague goals
 6. **Report format** — what to return (files changed, tests passed, blockers)

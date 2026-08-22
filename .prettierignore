@@ -85,3 +85,7 @@ api/.openapi-config.json
 
 # ----- 2026-07-29 (sync) -----
 packages/decks/
+
+# ----- 2026-08-22 (sync) -----
+.scratch/
+.session/
