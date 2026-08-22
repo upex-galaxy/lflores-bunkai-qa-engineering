@@ -33,6 +33,7 @@ testing:
 
 qa:
   formal_blocked_gate: true # When true and the substrate exposes a `blocked` story status, FAILED stories dispatch `defect_reported` (in_test -> blocked). When false (or no `blocked` slug), the skill leaves the story in `in_test` with the linked bug — non-strict fallback. See sprint-testing/references/sprint-orchestration.md Briefing 4 Step 5.
+  qa_artifact_label: QA-Artifact # Jira label carried by every QA process epic (Master Test Plan, Test Repository, Test Artifacts, Defect Management) so they're identifiable without hardcoding keys. Read by scripts/sync-jira-issues.ts (falls back to this same default if unset). See defect-management-doctrine.md Part 4.
   # QA process epics — buckets that hold QA artifacts so they never pollute product epics/roadmap.
   # FOUR QA-process epics form the QA-governance cluster: Test Plans parent to `master_test_plan_epic`;
   # Test (TC) issues parent to `test_repository_epic`; Test Executions/Preconditions/Test Sets parent to
@@ -112,6 +113,23 @@ git_strategy:
         else: forbidden # any non-.md file in the same change set -> falls back to the base policy (branch + PR)
     admin_bypass: true # team POLICY: may a repo admin bypass PR/protection for urgent changes? actual capability still depends on the GitHub user's role — the skill re-confirms at runtime
     require_pr_reviews: 0 # null | 0 | N — min approvals before merge to a protected branch (informational)
+    accepted_divergences: # git:policy verify findings intentionally left open — see .claude/skills/git-flow-master/references/ruleset-parity.md §2b
+      - field: main.require_code_owner_review
+        enforced: true (no CODEOWNERS file exists, so nobody outside the bypass list can satisfy it)
+        accepted: 2026-08-22
+        reason: >
+          `bun run git:policy verify` first surfaced this drift on 2026-08-22 (the checking tool
+          itself shipped in this same boilerplate update) — it is pre-existing host config, not a
+          new decision. Accepted as-is pending a team decision on whether to add a CODEOWNERS file
+          or turn the host rule off; not blocking pushes in the meantime.
+      - field: admin_bypass
+        enforced: false (no matching bypass configured on the host ruleset)
+        accepted: 2026-08-22
+        reason: >
+          Declared `true` as policy intent (a repo admin should be able to bypass for urgent
+          changes) but the host ruleset does not currently grant it. Same first-surfaced-2026-08-22
+          situation as above — accepted until the team decides whether to configure the bypass on
+          GitHub or drop the declared intent.
   branch_prefixes:
     precedence: [feat, fix, refactor, test, docs, chore]
     naming_with_key: '{prefix}/{ISSUE-KEY}-{kebab-slug}'
