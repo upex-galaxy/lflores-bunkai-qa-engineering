@@ -1,0 +1,1 @@
+{"id":"9b819bed96a23061c21d25f846b4648a","fullName":"integration/workspace/switchActiveWorkspace.test.ts:78:3","name":"BK-6: should reject workspace switch given the user has no active membership","status":"passed","testResultsByEnv":{"default":"656b7db1f44e5ba8ba271af4ecff9391"}}
