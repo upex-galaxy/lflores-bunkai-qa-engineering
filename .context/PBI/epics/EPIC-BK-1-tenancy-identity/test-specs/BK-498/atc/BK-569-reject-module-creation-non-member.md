@@ -9,12 +9,26 @@ async rejectModuleCreationNonMember(projectId: string, payload: ModulePayload): 
 ```
 
 ## Precondition (test-level)
-- `authenticateSuccessfully()`
-- `tokens.mintPatWithScopes({ scopes: ['atc:write'], workspace_id: WORKSPACE_NOT_MEMBER_ID })`
-  — **binding semantics NOT yet confirmed live for this family** (automation-plan.md §7
-  Risk 1); Code phase must verify this reproduces `not_a_member` against
-  `BK264_DEFECT_TRIAGE_PROJECT_ID`'s modules endpoint before finalizing
-- `modules.setAuthToken(pat.token)`
+- `auth.authenticateSuccessfully(config.testNonMember)` — signs in as
+  `STAGING_NON_MEMBER_EMAIL`, a real account deliberately never invited to
+  BK264 QA Sandbox (or any other workspace). Sign-in auto-mints an unbound
+  default-scoped PAT (`atc:read` + `atc:write` + `run:execute`, `workspace_id:
+  null`) and sets it as the Bearer token.
+
+**Resolution of the original plan (automation-plan.md §7 Risk 1)**: the
+original precondition tried `mintPatWithScopes({ workspace_id:
+WORKSPACE_NOT_MEMBER_ID })`, which 403s at MINT time — `assertTokenIssuanceAuthorized`
+(`lib/api/pat.ts`) requires active membership for ANY `workspace_id` binding,
+admin scope or not. Confirmed live on staging 2026-08-23: an UNBOUND `atc:write`
+PAT mints successfully for any authenticated user regardless of membership
+(`!args.workspaceId` short-circuits the membership check entirely), and the
+`/modules` route (`app/api/v1/projects/[id]/modules/route.ts`) only gates on
+the capability at the handler (`requires: ['atc:write']`) — the actual
+membership check is RLS on the `modules` INSERT, which a non-member fails
+with Postgrest `42501`, mapped to `403 { code: 'forbidden', details.reason:
+'not_a_member' }`. Live-verified against `BK264_DEFECT_TRIAGE_PROJECT_ID` with
+the new `bk569-nonmember@ambuusteln.resend.app` identity: reproduces
+byte-for-byte.
 
 ## Action
 `POST /api/v1/projects/{project_id}/modules` using the correctly-scoped-but-non-member PAT.

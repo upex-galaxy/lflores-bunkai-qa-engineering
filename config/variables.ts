@@ -70,6 +70,14 @@ const {
   STAGING_VIEWER_EMAIL = '',
   STAGING_VIEWER_PASSWORD = '',
 
+  // === Non-member identity (optional — only needed by TCs that must log in
+  // as a real user deliberately excluded from a target workspace, e.g.
+  // BK-569/TC7's membership-403 vs capability-403 distinction) ===
+  LOCAL_NON_MEMBER_EMAIL = '',
+  LOCAL_NON_MEMBER_PASSWORD = '',
+  STAGING_NON_MEMBER_EMAIL = '',
+  STAGING_NON_MEMBER_PASSWORD = '',
+
   // === TMS Configuration ===
   TMS_PROVIDER = 'xray', // Used: config.tms.provider (jiraSync) - 'xray' | 'jira'
   AUTO_SYNC = 'false', // Used: config.tms.autoSync (jiraSync, global.teardown)
@@ -162,6 +170,10 @@ const viewerCredentialsMap: Record<Environment, { email: string, password: strin
   local: { email: LOCAL_VIEWER_EMAIL, password: LOCAL_VIEWER_PASSWORD },
   staging: { email: STAGING_VIEWER_EMAIL, password: STAGING_VIEWER_PASSWORD },
 };
+const nonMemberCredentialsMap: Record<Environment, { email: string, password: string }> = {
+  local: { email: LOCAL_NON_MEMBER_EMAIL, password: LOCAL_NON_MEMBER_PASSWORD },
+  staging: { email: STAGING_NON_MEMBER_EMAIL, password: STAGING_NON_MEMBER_PASSWORD },
+};
 
 // ============================================
 // ENV DATA Mapping (hardcoded - not secrets because these are not sensitive data like credentials)
@@ -212,6 +224,7 @@ export const config = {
   // before use (e.g. skip/fixme the TC rather than logging in with '').
   testMember: memberCredentialsMap[env.current],
   testViewer: viewerCredentialsMap[env.current],
+  testNonMember: nonMemberCredentialsMap[env.current],
 
   // TMS
   tms: {

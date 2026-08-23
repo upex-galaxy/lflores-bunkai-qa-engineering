@@ -256,18 +256,43 @@ export class ModulesApi extends ApiBase {
     }
   }
 
-  // NOTE: BK-569 (TC7 — rejectModuleCreationNonMember) intentionally NOT implemented
-  // in this batch. Live staging probe (2026-08-21) showed the precondition itself is
-  // unconstructible: `POST /tokens` with `workspace_id: WORKSPACE_NOT_MEMBER_ID` 403s
-  // at MINT time (`"You are not a member of the target workspace."`) — the staging
-  // test user cannot bind a PAT to a workspace they don't belong to at all, so the
-  // planned "bound-to-non-member-workspace PAT targets a different, real project"
-  // shape (automation-plan.md §7 Risk 1) can never reach the /modules endpoint under
-  // this account. Flagged in the Batch B report; needs a second real user account
-  // (a member of BK264's workspace's project but not of WORKSPACE_NOT_MEMBER_ID
-  // reversed, or vice-versa) to reconstruct a valid non-member scenario — Code-phase
-  // follow-up, not implemented here to avoid fabricating an assertion for a code path
-  // never actually exercised.
+  /**
+   * ATC: Create a module using a correctly-scoped `atc:write` PAT whose user is not a
+   * workspace member - expects rejection (403, membership-denial)
+   *
+   * Complete flow:
+   * 1. POST a module payload to /projects/{id}/modules using an unbound `atc:write` PAT
+   *    held by a real user who is not a member of the target project's workspace (ACTION)
+   * 2. Validate the request is rejected for lack of membership — a DISTINCT failure
+   *    surface from BK-560's capability-403 (correctly-scoped token, wrong project) —
+   *    proving the gate does not conflate the two failure classes (fixed assertions)
+   *
+   * Precondition contract: caller must have already authenticated as a real user who
+   * is deliberately not a member of the target project's workspace (`config.testNonMember`)
+   * — an unbound PAT mints successfully for any authenticated user regardless of
+   * workspace membership, so the 403 here comes from the RLS-backed insert, not from
+   * token issuance.
+   *
+   * @param projectId - Target project id (a real project the caller is NOT a member of)
+   * @param payload - Module payload
+   * @returns Tuple with response, error envelope, and sent payload
+   */
+  @atc('BK-569')
+  async rejectModuleCreationNonMember(
+    projectId: string,
+    payload: ModulePayload,
+  ): Promise<[APIResponse, ErrorEnvelope, ModulePayload]> {
+    const [response, body, sentPayload] = await this.apiPOST<ErrorEnvelope, ModulePayload>(
+      `/projects/${projectId}/modules`,
+      payload,
+    );
+
+    // Fixed assertions - validates the membership-based rejection, distinct from BK-560's capability-403
+    expect(response.status()).toBe(403);
+    expect((body.error.details as { reason?: string } | undefined)?.reason).toBe('not_a_member');
+
+    return [response, body, sentPayload];
+  }
 
   /**
    * ATC: Create a module, then list its user stories, using a default-scoped PAT -
