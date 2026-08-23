@@ -255,6 +255,42 @@ export const VAR_MANIFEST: VarSpec[] = [
     obtainHint: 'viewer-role test-user creds for your project-under-test; set only if a TC needs to log in as a viewer.',
     note: 'Staging viewer-role identity password. Optional — empty-string safe in config/variables.ts.',
   },
+  {
+    name: 'LOCAL_NON_MEMBER_EMAIL',
+    destinations: ['local', 'github'],
+    secret: false,
+    required: false,
+    critical: false,
+    obtainHint: 'a real user deliberately excluded from every workspace under test; set only if a TC needs a membership-403 distinct from a capability-403.',
+    note: 'Local non-member identity email. Optional — empty-string safe in config/variables.ts.',
+  },
+  {
+    name: 'LOCAL_NON_MEMBER_PASSWORD',
+    destinations: ['local', 'github'],
+    secret: true,
+    required: false,
+    critical: false,
+    obtainHint: 'a real user deliberately excluded from every workspace under test; set only if a TC needs a membership-403 distinct from a capability-403.',
+    note: 'Local non-member identity password. Optional — empty-string safe in config/variables.ts.',
+  },
+  {
+    name: 'STAGING_NON_MEMBER_EMAIL',
+    destinations: ['local', 'github'],
+    secret: false,
+    required: false,
+    critical: false,
+    obtainHint: 'a real user deliberately excluded from every workspace under test; set only if a TC needs a membership-403 distinct from a capability-403.',
+    note: 'Staging non-member identity email. Optional — empty-string safe in config/variables.ts.',
+  },
+  {
+    name: 'STAGING_NON_MEMBER_PASSWORD',
+    destinations: ['local', 'github'],
+    secret: true,
+    required: false,
+    critical: false,
+    obtainHint: 'a real user deliberately excluded from every workspace under test; set only if a TC needs a membership-403 distinct from a capability-403.',
+    note: 'Staging non-member identity password. Optional — empty-string safe in config/variables.ts.',
+  },
 
   // --- Xray (TMS, optional) ---
   {
