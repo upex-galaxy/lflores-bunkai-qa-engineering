@@ -8,14 +8,13 @@
  * (AC-07: capability gating depends on scope + real membership, not
  * token-workspace binding).
  *
- * Batch B (TC6-10 — auth/membership/revocation edge cases). BK-569 (TC7 —
- * non-member rejection) is NOT implemented: a live staging probe showed the
- * planned precondition (`mintPatWithScopes({ workspace_id: WORKSPACE_NOT_MEMBER_ID })`)
- * 403s at MINT time ("You are not a member of the target workspace.") — the
- * test user cannot bind a PAT to a workspace it does not belong to at all, so
- * the /modules-endpoint-level membership-403 this TC targets is never
- * reachable under the current account. Flagged for a Code-phase follow-up
- * (needs a second real, non-member user account), not fabricated here.
+ * Batch B (TC6-10 — auth/membership/revocation edge cases), including BK-569
+ * (TC7 — non-member rejection). TC7's precondition uses `config.testNonMember`,
+ * a real staging identity deliberately never invited to BK264 QA Sandbox: an
+ * unbound `atc:write` PAT mints for it with no membership check (see BK-562/
+ * AC-07), and the actual membership gate on `/modules` is RLS-on-INSERT, which
+ * a genuine non-member fails with a `not_a_member` 403 — distinct from BK-560's
+ * capability-403.
  *
  * Project: integration (depends on api-setup)
  */
@@ -186,10 +185,31 @@ test.describe('BK-498: Module Capability Scope API', { tag: ['@critical'] }, () 
   );
 
   /**
-   * NOTE: Scenario 7 (BK-569 / TC7 — non-member membership-403) intentionally
-   * NOT implemented in this batch — see the file-header note and
-   * ModulesApi.ts's inline comment above the (removed) BK-569 method.
+   * ATC: BK-569
+   *
+   * Precondition: fresh login as `config.testNonMember` — a real user
+   * deliberately never invited to BK264 QA Sandbox (or any other workspace).
+   * Sign-in auto-mints an unbound default-scoped PAT (includes `atc:write`,
+   * no `workspace_id` — see BK-562/AC-07: an unbound PAT mints for any
+   * authenticated user regardless of membership).
    */
+  test(
+    'BK-498: should reject module creation with a membership-403 given a correctly-scoped atc:write PAT whose user is not a workspace member',
+    async ({ api }) => {
+      const [, authBody] = await api.auth.authenticateSuccessfully({
+        email: config.testNonMember.email,
+        password: config.testNonMember.password,
+      });
+      api.modules.setAuthToken(authBody.pat.token);
+
+      // ACTION: attempt to create a module in a project whose workspace this
+      // user is not a member of — ATC handles fixed assertions (403, reason
+      // `not_a_member`, distinct from BK-560's capability-403)
+      await api.modules.rejectModuleCreationNonMember(BK264_DEFECT_TRIAGE_PROJECT_ID, {
+        name: api.data.createTestId('module'),
+      });
+    },
+  );
 
   /**
    * ATC: BK-570
