@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "forbidden",
+    "message": "This token is scoped to a different workspace.",
+    "request_id": "2a121942-f737-429b-8520-c79ec93b2edb"
+  }
+}
