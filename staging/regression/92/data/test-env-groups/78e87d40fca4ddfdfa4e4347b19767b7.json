@@ -1,0 +1,1 @@
+{"id":"78e87d40fca4ddfdfa4e4347b19767b7","fullName":"integration/modules/enforceModuleCapabilityScope.test.ts:148:3","name":"BK-498: should reject a read request with 403 given a PAT scoped only atc:write","status":"passed","testResultsByEnv":{"default":"6a31f759eddb158b807d629b663b956e"}}

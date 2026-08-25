@@ -1,0 +1,29 @@
+{
+  "error": {
+    "code": "validation_failed",
+    "message": "Request body failed validation.",
+    "details": [
+      {
+        "origin": "string",
+        "code": "invalid_format",
+        "format": "email",
+        "pattern": "/^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$/",
+        "path": [
+          "email"
+        ],
+        "message": "Invalid input"
+      },
+      {
+        "origin": "string",
+        "code": "too_small",
+        "minimum": 6,
+        "inclusive": true,
+        "path": [
+          "password"
+        ],
+        "message": "Invalid input"
+      }
+    ],
+    "request_id": "1132ea29-134d-4c5f-a13f-40c484368d16"
+  }
+}
