@@ -1,0 +1,1 @@
+{"id":"2bf40de873b98795b5a1452790775801","fullName":"integration/workspace/switchActiveWorkspace.test.ts:108:3","name":"BK-6: should reject workspace switch given the user has a suspended membership","status":"passed","testResultsByEnv":{"default":"183d78f4df24e50d500256f486e21cde"}}
