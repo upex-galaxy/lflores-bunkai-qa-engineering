@@ -1,0 +1,7 @@
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/auth/signin
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
+✅ [BK-311] authenticateSuccessfully - PASS (713ms)
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/tokens
+---- API OK: 202 - https://staging-upexbunkai.vercel.app/api/v1/imports
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/imports/dcf4c448-ea4e-47d7-9a18-7ed54d6c757c
+✅ [BK-568] completeImportLifecycleDualScope - PASS (610ms)

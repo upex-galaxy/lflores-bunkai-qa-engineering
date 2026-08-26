@@ -1,0 +1,1 @@
+{"id":"9b270c499f473268beb50c38f95687b6","fullName":"integration/modules/enforceModuleCapabilityScope.test.ts:250:3","name":"BK-498: should create module successfully via an authenticated browser session regardless of any PAT scope restriction","status":"passed","testResultsByEnv":{"default":"cceef0180102c529fadf61b1f656a8e1"}}
