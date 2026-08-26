@@ -1,5 +1,0 @@
----- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/auth/signin
----- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
-✅ [BK-311] authenticateSuccessfully - PASS (507ms)
----- API NOK: 404 - https://staging-upexbunkai.vercel.app/api/v1/bugs/ffbe23d3-f35c-47d8-8761-e1890a1679e5/assign
-✅ [BK-488] rejectNonDisclosingNotFound - PASS (191ms)
