@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "forbidden",
+    "message": "Personal access tokens cannot revoke tokens. Use a browser session.",
+    "request_id": "f83ef7d0-7055-49ba-b1c5-bd1a7bafcc6c"
+  }
+}
