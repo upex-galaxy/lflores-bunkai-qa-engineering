@@ -1,0 +1,1 @@
+{"id":"719673b08f1f72b8fc2ba7b36c77f3bf","fullName":"integration/tokens/allowSessionTokenLifecycleUnaffectedByLift.test.ts:20:3","name":"BK-497: should allow session-authenticated calls to all three token routes given the cookie-only lift","status":"passed","testResultsByEnv":{"default":"3c5344064f09523b9db1412ce1ad300a"}}
