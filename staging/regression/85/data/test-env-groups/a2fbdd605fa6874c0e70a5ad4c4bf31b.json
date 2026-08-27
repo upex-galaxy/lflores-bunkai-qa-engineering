@@ -1,1 +1,0 @@
-{"id":"a2fbdd605fa6874c0e70a5ad4c4bf31b","fullName":"integration/bugs/assignmentRejections.test.ts:28:3","name":"BK-264: should reject assignment given the target is not a workspace member","status":"passed","testResultsByEnv":{"default":"3608193d326511727b31d3a09496239a"}}
