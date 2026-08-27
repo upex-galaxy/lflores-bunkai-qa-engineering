@@ -1,0 +1,10 @@
+{
+  "error": {
+    "code": "validation_failed",
+    "message": "A bug must move to 'resolved' first.",
+    "details": {
+      "reason": "status_transition_skipped"
+    },
+    "request_id": "c796d7dd-8e36-4c70-9bc8-fe8dddba1064"
+  }
+}

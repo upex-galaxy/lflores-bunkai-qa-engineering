@@ -1,0 +1,1 @@
+{"id":"a3c2903bfce89d74a2f47073f004af2d","fullName":"integration/bugs/statusTransitions.test.ts:83:5","name":"BK-264: should reject a status change that skips a lifecycle stage (\"in_progress->closed\")","status":"passed","testResultsByEnv":{"default":"b85bdcecd5ec2b480dd0347bfe8ff26c"}}
