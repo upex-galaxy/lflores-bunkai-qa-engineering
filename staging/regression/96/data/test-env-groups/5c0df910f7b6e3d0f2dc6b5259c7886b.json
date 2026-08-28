@@ -1,0 +1,1 @@
+{"id":"5c0df910f7b6e3d0f2dc6b5259c7886b","fullName":"integration/bugs/attributeActionToActualCaller.test.ts:50:3","name":"BK-264: should attribute a bug assignment to the actor, not the resulting assignee","status":"passed","testResultsByEnv":{"default":"f5363ab6450d187d3c1feeda7960f74a"}}
