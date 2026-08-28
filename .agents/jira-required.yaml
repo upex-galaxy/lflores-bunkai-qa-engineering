@@ -830,13 +830,13 @@ link_types:
       used_by: [test-documentation]
 
     test_execute:
-      name: Test Execution
+      name: Test Execute
       outward: executes
       inward: is executed by
       fallback: relates
       description: |
         TMS traceability edge — ATR `executes` TC / TC `is executed by` ATR.
-        Requires a custom "Test Execution" link type in Jira (or Xray auto-creates it).
+        Requires a custom "Test Execute" link type in Jira (or Xray auto-creates it).
         Fallback to `relates` if the workspace link type is not yet configured.
       used_by: [test-documentation]
 

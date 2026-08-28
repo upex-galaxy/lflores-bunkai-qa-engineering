@@ -52,7 +52,7 @@ qa:
       key: BK-70 # discovered/created at runtime, then cached here (e.g. PROJ-456)
     test_artifacts_epic:
       name: QA Test Artifacts # holds every Test Execution (FTR/STR/ATR), Precondition, Test Set
-      key: null # discovered/created at runtime, then cached here (e.g. PROJ-789)
+      key: BK-515 # discovered/created at runtime, then cached here (e.g. PROJ-789)
     defect_epic:
       name: QA Defect Management # convention name; the `QA ` prefix marks a process epic, not product
       key: BK-183 # discovered/created at runtime, then cached here (e.g. PROJ-123)
