@@ -1,0 +1,982 @@
+{
+  "items": [
+    {
+      "id": "66552db9-53e0-49d6-903b-8971d1450110",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bk264-member2@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "1e722f14-d904-404a-b618-b5425293b7b8"
+      },
+      "payload": {
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-08-28T13:39:33.385255+00:00"
+    },
+    {
+      "id": "e5c08c9e-5614-44b6-9c91-f12c3a98dd8c",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bunkai-staging-userlf@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "354fb51b-eab4-4f66-8c63-c29650a34fc6"
+      },
+      "payload": {
+        "assignee_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-08-28T13:39:31.279515+00:00"
+    },
+    {
+      "id": "42d362f8-4ac6-45d9-b7f5-7e644f0ab3d1",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bk264-member@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "2bfcb25e-1db3-44b0-9094-05a9da9e8b00"
+      },
+      "payload": {
+        "assignee_user_id": "c6a2b665-c090-4b74-b3df-6abcdae40c89",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-08-28T13:39:29.834744+00:00"
+    },
+    {
+      "id": "3880bc94-0484-49e5-8e5b-7cb2c87806ce",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "38a111b9-5c9c-41ed-9de8-93ebe3946aa0"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-08-28T08:51:51.121693+00:00"
+    },
+    {
+      "id": "e984600b-b051-4be6-a560-a5ccff5a13af",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "closed this defect",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "db69c1e0-6a1a-4d50-8882-c3b265569b5c"
+      },
+      "payload": {
+        "status": "closed",
+        "previous_status": "resolved",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-08-28T08:51:49.865348+00:00"
+    },
+    {
+      "id": "674ed396-a011-4531-9bac-a0c107789ae1",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to resolved",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "db69c1e0-6a1a-4d50-8882-c3b265569b5c"
+      },
+      "payload": {
+        "status": "resolved",
+        "previous_status": "in_progress",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-08-28T08:51:49.666304+00:00"
+    },
+    {
+      "id": "c9eb0b1b-3de2-40c1-9660-eb68f5df1802",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "db69c1e0-6a1a-4d50-8882-c3b265569b5c"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-08-28T08:51:49.482011+00:00"
+    },
+    {
+      "id": "35ac4a43-372f-4011-b64b-83633ec6cc93",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "f24cee1d-e851-43f9-b19d-f6a7e2304bc2"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-08-28T08:51:48.111433+00:00"
+    },
+    {
+      "id": "14ef1873-767e-47fc-bcd9-c0bb49a2212a",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to resolved",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "8a250a05-4021-4495-9726-4c1235da8438"
+      },
+      "payload": {
+        "status": "resolved",
+        "previous_status": "in_progress",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-08-28T08:51:46.754955+00:00"
+    },
+    {
+      "id": "9e8c25f0-875d-4555-b074-113897712794",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "8a250a05-4021-4495-9726-4c1235da8438"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-08-28T08:51:46.557054+00:00"
+    },
+    {
+      "id": "7a44114f-65e4-4678-807c-24b910f8455b",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "3ceea39b-62eb-45ab-8b13-065318a9e2b8"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-08-28T08:51:45.263056+00:00"
+    },
+    {
+      "id": "fe163f71-3853-450b-afab-8ef4d9169c69",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "closed this defect",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "58723c52-9d86-4be4-9c4e-8bcf1520f959"
+      },
+      "payload": {
+        "status": "closed",
+        "previous_status": "resolved",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "created_at": "2026-08-28T08:51:41.944627+00:00"
+    },
+    {
+      "id": "cccf140e-9ddf-4f84-a065-048ec3469beb",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to resolved",
+      "actor": {
+        "user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "email": "bk264-member2@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "58723c52-9d86-4be4-9c4e-8bcf1520f959"
+      },
+      "payload": {
+        "status": "resolved",
+        "previous_status": "in_progress",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "created_at": "2026-08-28T08:51:41.262762+00:00"
+    },
+    {
+      "id": "d56f18fc-3daf-47e5-bc0d-7ca1b081d814",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "email": "bk264-member2@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "58723c52-9d86-4be4-9c4e-8bcf1520f959"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "created_at": "2026-08-28T08:51:41.055575+00:00"
+    },
+    {
+      "id": "f9a9ea6a-54f6-4f82-afb3-95707b488c35",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bk264-member2@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "58723c52-9d86-4be4-9c4e-8bcf1520f959"
+      },
+      "payload": {
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-08-28T08:51:40.314505+00:00"
+    },
+    {
+      "id": "78c65001-1342-4e6d-9b64-ff189fdd57f7",
+      "entity_type": "bug",
+      "action": "bug.unassigned",
+      "action_label": "unassigned this defect",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "2dec1252-2193-4b9c-b862-53db75cd976b"
+      },
+      "payload": {
+        "assignee_user_id": null,
+        "previous_assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "created_at": "2026-08-28T08:51:35.885838+00:00"
+    },
+    {
+      "id": "6f9c4f4c-f4f0-48ef-a832-20fb9e2924a6",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bk264-member2@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "2dec1252-2193-4b9c-b862-53db75cd976b"
+      },
+      "payload": {
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-08-28T08:51:35.698557+00:00"
+    },
+    {
+      "id": "6cc707b4-46e0-4cb7-a358-b03c93254be4",
+      "entity_type": "bug",
+      "action": "bug.reassigned",
+      "action_label": "assigned this defect to bunkai-staging-userlf@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "bc5e78ff-7178-4838-a1a4-1e32da2b9eca"
+      },
+      "payload": {
+        "assignee_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "previous_assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "created_at": "2026-08-28T08:51:34.518903+00:00"
+    },
+    {
+      "id": "5d0caf43-b162-444b-b25c-33201980419c",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bk264-member2@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "bc5e78ff-7178-4838-a1a4-1e32da2b9eca"
+      },
+      "payload": {
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-08-28T08:51:34.31926+00:00"
+    },
+    {
+      "id": "8e682987-1f86-4503-ab77-1f520f48175e",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "f31c91df-e648-4e80-b220-5f06557b3c80"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "created_at": "2026-08-28T08:51:31.785671+00:00"
+    },
+    {
+      "id": "2a10450b-eb9a-4bb5-b427-87deab128afe",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bk264-member2@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "f31c91df-e648-4e80-b220-5f06557b3c80"
+      },
+      "payload": {
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-08-28T08:51:31.59544+00:00"
+    },
+    {
+      "id": "448662c6-4310-4612-8d4b-027d81544c3b",
+      "entity_type": "bug",
+      "action": "bug.reassigned",
+      "action_label": "assigned this defect to bunkai-staging-userlf@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "22122042-3dc6-43a8-9593-d040723716df"
+      },
+      "payload": {
+        "assignee_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "previous_assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "created_at": "2026-08-28T08:51:30.495637+00:00"
+    },
+    {
+      "id": "7c987061-414b-4c53-b125-f80b1bf37bbe",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "closed this defect",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "22122042-3dc6-43a8-9593-d040723716df"
+      },
+      "payload": {
+        "status": "closed",
+        "previous_status": "resolved",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "created_at": "2026-08-28T08:51:30.297243+00:00"
+    },
+    {
+      "id": "9a7d986f-6550-4a40-9215-4694884fb822",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to resolved",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "22122042-3dc6-43a8-9593-d040723716df"
+      },
+      "payload": {
+        "status": "resolved",
+        "previous_status": "in_progress",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "created_at": "2026-08-28T08:51:30.09385+00:00"
+    },
+    {
+      "id": "2633aeb6-ec1c-40ad-a81d-dff3d35f7eb2",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "22122042-3dc6-43a8-9593-d040723716df"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "created_at": "2026-08-28T08:51:29.903838+00:00"
+    },
+    {
+      "id": "a9cfd0e5-bb0d-48fe-ada7-3c2b9c3312ac",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bk264-member2@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "22122042-3dc6-43a8-9593-d040723716df"
+      },
+      "payload": {
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-08-28T08:51:29.718824+00:00"
+    },
+    {
+      "id": "134c834a-92d9-4ec8-af0c-4bb290b9c82a",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "email": "bk264-member2@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "374434bb-c5f0-4770-85f4-9e07508baaea"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "created_at": "2026-08-28T08:51:28.56359+00:00"
+    },
+    {
+      "id": "6659ea0e-1aee-4c3e-8c02-fdd380613461",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bk264-member2@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "374434bb-c5f0-4770-85f4-9e07508baaea"
+      },
+      "payload": {
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-08-28T08:51:27.80846+00:00"
+    },
+    {
+      "id": "204e539e-3f61-4b91-bdce-61153e658679",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bk264-member2@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "424d30cf-e0db-4404-97af-155dfc727686"
+      },
+      "payload": {
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-08-28T08:51:26.581911+00:00"
+    },
+    {
+      "id": "30c1997a-2cd1-4c2f-89dc-b325d6e23d9c",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bk264-member2@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "2512780f-9892-47da-ae0e-347543705899"
+      },
+      "payload": {
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-08-28T08:51:24.739387+00:00"
+    },
+    {
+      "id": "782c214b-e743-4c56-8dc1-170500c1d8d3",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bunkai-staging-userlf@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "746192f4-0cf3-43e2-bc76-2d60dfb07178"
+      },
+      "payload": {
+        "assignee_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-08-28T08:51:21.60749+00:00"
+    },
+    {
+      "id": "2f1d5955-2a70-4f61-a313-73fbb9c5faf2",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bk264-member@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "9880b068-d8d4-4c5b-824a-6a630528c45b"
+      },
+      "payload": {
+        "assignee_user_id": "c6a2b665-c090-4b74-b3df-6abcdae40c89",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-08-28T08:51:20.664287+00:00"
+    },
+    {
+      "id": "2af1d8f5-080f-46c1-82f5-43228b77d854",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "8cdf13cd-add3-4a2a-9424-b8ab597bc615"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-08-27T12:14:45.275871+00:00"
+    },
+    {
+      "id": "04b99f52-cf92-492a-9ea2-d0dc78278d74",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "closed this defect",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "f2cd2f21-56c1-4ed9-a3a0-6668672a44b5"
+      },
+      "payload": {
+        "status": "closed",
+        "previous_status": "resolved",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-08-27T12:14:43.18074+00:00"
+    },
+    {
+      "id": "9bd9f0da-471d-4460-ac19-16c569449358",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to resolved",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "f2cd2f21-56c1-4ed9-a3a0-6668672a44b5"
+      },
+      "payload": {
+        "status": "resolved",
+        "previous_status": "in_progress",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-08-27T12:14:42.864136+00:00"
+    },
+    {
+      "id": "0224a3de-a196-4f51-aa33-312933c8a487",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "f2cd2f21-56c1-4ed9-a3a0-6668672a44b5"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-08-27T12:14:42.582246+00:00"
+    },
+    {
+      "id": "4c7d306d-c72b-495f-92c5-8982dd2fcb90",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "386ffb33-675c-40bf-a699-3b834b3c8b8f"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-08-27T12:14:40.667074+00:00"
+    },
+    {
+      "id": "3153c313-cf44-4945-99fe-b1f512b3e32c",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to resolved",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "54b87603-2eae-4e71-929a-638c65140e25"
+      },
+      "payload": {
+        "status": "resolved",
+        "previous_status": "in_progress",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-08-27T12:14:38.583933+00:00"
+    },
+    {
+      "id": "77d2a058-2915-497d-bd21-bb74fa2daa14",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "54b87603-2eae-4e71-929a-638c65140e25"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-08-27T12:14:38.304566+00:00"
+    },
+    {
+      "id": "0b4c2533-e170-44ab-87c4-2e74229701b8",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "f2552b23-fdac-4a51-a7a7-4a49f57e5b94"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-08-27T12:14:36.202445+00:00"
+    },
+    {
+      "id": "ffa5bd20-b9f3-4cf0-b1fd-93a8fa1042db",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "closed this defect",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "7d018287-3cbc-4e1e-ad31-910c4ad0f188"
+      },
+      "payload": {
+        "status": "closed",
+        "previous_status": "resolved",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "created_at": "2026-08-27T12:14:31.274837+00:00"
+    },
+    {
+      "id": "bf91a3ae-ef2c-4bcb-acc7-31dba4a94854",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to resolved",
+      "actor": {
+        "user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "email": "bk264-member2@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "7d018287-3cbc-4e1e-ad31-910c4ad0f188"
+      },
+      "payload": {
+        "status": "resolved",
+        "previous_status": "in_progress",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "created_at": "2026-08-27T12:14:30.222254+00:00"
+    },
+    {
+      "id": "0f4fd55b-c9ad-4bec-b5c7-5866b36aad77",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "email": "bk264-member2@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "7d018287-3cbc-4e1e-ad31-910c4ad0f188"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "created_at": "2026-08-27T12:14:29.915774+00:00"
+    },
+    {
+      "id": "082aaa5b-edee-4583-b114-cfc474548376",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bk264-member2@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "7d018287-3cbc-4e1e-ad31-910c4ad0f188"
+      },
+      "payload": {
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-08-27T12:14:28.905327+00:00"
+    },
+    {
+      "id": "fc781bce-14bf-4e5d-80ad-2596800d630c",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "email": "bk264-member2@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "30a61e77-b53c-4b37-a1e0-e2ed4cca0b07"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "created_at": "2026-08-27T12:14:27.015006+00:00"
+    },
+    {
+      "id": "822621cc-8342-4e40-8227-e068cb9101b3",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bk264-member2@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "30a61e77-b53c-4b37-a1e0-e2ed4cca0b07"
+      },
+      "payload": {
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-08-27T12:14:26.028855+00:00"
+    },
+    {
+      "id": "1e377884-3973-4a1a-9d3a-d4a7a4171af9",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bk264-member2@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "2dd86113-1b23-47b8-9a68-13314f647f28"
+      },
+      "payload": {
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-08-27T12:14:24.317477+00:00"
+    },
+    {
+      "id": "3edf4c0c-f3ff-451a-912a-023ea9ecb574",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bunkai-staging-userlf@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "a2492ee2-312e-41e4-a501-a1ce15b808b3"
+      },
+      "payload": {
+        "assignee_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-08-27T12:14:22.524383+00:00"
+    },
+    {
+      "id": "4a4ed72d-3618-4608-8152-039b232acb2e",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bk264-member@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "b648fc3c-0e4c-4f7a-a47a-4216ed0f4b10"
+      },
+      "payload": {
+        "assignee_user_id": "c6a2b665-c090-4b74-b3df-6abcdae40c89",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-08-27T12:14:21.120044+00:00"
+    },
+    {
+      "id": "bcae12b2-1fa3-452e-8c84-10ed44bcddee",
+      "entity_type": "test",
+      "action": "test.created",
+      "action_label": "created a Test",
+      "actor": {
+        "user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+        "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "BK499 seed Test for tests-runs validation",
+        "entity_id": "04054ddc-6ab1-4166-9a32-08c065f4c47d"
+      },
+      "payload": {
+        "title": "BK499 seed Test for tests-runs validation"
+      },
+      "created_at": "2026-08-27T11:10:54.07225+00:00"
+    }
+  ],
+  "next_cursor": "MjAyNi0wOC0yN1QxMToxMDo1NC4wNzIyNSswMDowMHxiY2FlMTJiMi0xZmEzLTQ1MmUtOGM4NC0xMGVkNDRiY2RkZWU"
+}
