@@ -1,0 +1,1 @@
+{"id":"185d62f907f558c09e7f4ea2f3a37cb7","fullName":"integration/workspace/enforceInviteCapabilityScope.test.ts:24:3","name":"BK-497: should reject invite creation when the PAT is scoped only to atc:read","status":"passed","testResultsByEnv":{"default":"48bd695641142ff4abddb6bba8e31d66"}}
