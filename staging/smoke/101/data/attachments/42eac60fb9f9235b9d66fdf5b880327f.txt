@@ -1,0 +1,11 @@
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/auth/signin
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
+✅ [BK-311] authenticateSuccessfully - PASS (537ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/modules/175f8a08-20b9-4c96-a21a-e02dcae2837e/user-stories
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/tokens
+---- API NOK: 403 - https://staging-upexbunkai.vercel.app/api/v1/modules/175f8a08-20b9-4c96-a21a-e02dcae2837e/user-stories
+---- API NOK: 403 - https://staging-upexbunkai.vercel.app/api/v1/user-stories/d0facb1f-8872-40d1-b3f4-5a9a4d449a09/acceptance-criteria
+---- API NOK: 403 - https://staging-upexbunkai.vercel.app/api/v1/projects/2fee236f-1246-40c4-bfc4-d332287f9548/environments
+---- API NOK: 403 - https://staging-upexbunkai.vercel.app/api/v1/projects/2fee236f-1246-40c4-bfc4-d332287f9548/milestones
+---- API NOK: 403 - https://staging-upexbunkai.vercel.app/api/v1/imports
+✅ [BK-559] rejectWritesAcrossFamilies - PASS (890ms)
