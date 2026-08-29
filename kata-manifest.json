@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-23T12:00:26.833Z",
+  "generatedAt": "2026-08-29T19:33:03.891Z",
   "components": {
     "api": [
       {
@@ -227,37 +227,42 @@
           {
             "id": "BK-250",
             "method": "switchToActiveWorkspace",
-            "line": 142
+            "line": 199
           },
           {
             "id": "BK-251",
             "method": "switchToNonMemberWorkspace",
-            "line": 171
+            "line": 228
           },
           {
             "id": "BK-252",
             "method": "switchToSuspendedWorkspace",
-            "line": 200
+            "line": 257
           },
           {
             "id": "BK-544",
             "method": "rejectInviteCreationWithReadOnlyPat",
-            "line": 231
+            "line": 288
           },
           {
             "id": "BK-548",
             "method": "rejectRevokeInviteWithoutAdminScope",
-            "line": 262
+            "line": 319
           },
           {
             "id": "BK-550",
             "method": "allowWorkspaceAdminActionWithBoundPat",
-            "line": 292
+            "line": 349
           },
           {
             "id": "BK-551",
             "method": "rejectCrossWorkspaceAdminPat",
-            "line": 324
+            "line": 381
+          },
+          {
+            "id": "BK-671",
+            "method": "createWorkspaceWithAnyScope",
+            "line": 171
           }
         ]
       }
@@ -285,7 +290,7 @@
   "steps": [],
   "summary": {
     "totalComponents": 8,
-    "totalATCs": 44,
+    "totalATCs": 45,
     "apiComponents": 7,
     "uiComponents": 1,
     "stepsModules": 0

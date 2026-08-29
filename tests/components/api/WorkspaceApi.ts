@@ -18,6 +18,8 @@ import type {
   ActiveWorkspaceError,
   ActiveWorkspaceResponse,
   ErrorEnvelope,
+  WorkspaceCreateBody,
+  WorkspaceCreateResponse,
   WorkspaceInviteCreateBody,
   WorkspaceInviteCreateResponse,
   WorkspaceInviteListResponse,
@@ -36,6 +38,8 @@ export type {
   ActiveWorkspaceError,
   ActiveWorkspaceResponse,
   ErrorEnvelope,
+  WorkspaceCreateBody,
+  WorkspaceCreateResponse,
   WorkspaceInvite,
   WorkspaceInviteCreateBody,
   WorkspaceInviteCreateResponse,
@@ -121,9 +125,62 @@ export class WorkspaceApi extends ApiBase {
     );
   }
 
+  /**
+   * Helper: Raw POST /api/v1/workspaces wrapper — bootstraps a new workspace
+   * and enrolls the caller as its owner.
+   *
+   * The sole genuinely capability-free write in the API (BK-499's Implementation
+   * Plan, "authenticated" posture bucket) — any PAT holding at least one scope
+   * passes. Not an ATC on its own; `createWorkspaceWithAnyScope` (BK-671) owns
+   * the fixed assertions. Also reusable as a Generate-pattern precondition by
+   * any other TC that just needs "a fresh workspace where the caller is owner"
+   * (e.g. BK-682, BK-684), without dragging in BK-671's own assertions.
+   *
+   * @param body - Workspace name and slug
+   * @returns Tuple with response, the created workspace, and sent payload
+   */
+  @step
+  async createWorkspace(
+    body: WorkspaceCreateBody,
+  ): Promise<[APIResponse, WorkspaceCreateResponse, WorkspaceCreateBody]> {
+    return this.apiPOST<WorkspaceCreateResponse, WorkspaceCreateBody>('/workspaces', body);
+  }
+
   // ============================================
   // ATCs - Complete Test Cases (ACTION + VERIFICATION)
   // ============================================
+
+  /**
+   * ATC: Bootstrap a new workspace with an any-scope PAT - expects success (201)
+   *
+   * Complete flow:
+   * 1. POST a fresh workspace name/slug to /api/v1/workspaces (ACTION)
+   * 2. Validate the workspace was created with an owner assigned (fixed assertions)
+   *
+   * AC1's positive scenario: any PAT holding at least one scope passes —
+   * `POST /workspaces` is the sole genuinely capability-free write (BK-499's
+   * Implementation Plan, "authenticated" posture bucket).
+   *
+   * The follow-up "is the owner specifically ME?" check (GET /me) is a
+   * test-level assertion — it composes a second endpoint and belongs in the
+   * test file, not here.
+   *
+   * @param body - Workspace name and slug
+   * @returns Tuple with response, the created workspace, and sent payload
+   */
+  @atc('BK-671')
+  async createWorkspaceWithAnyScope(
+    body: WorkspaceCreateBody,
+  ): Promise<[APIResponse, WorkspaceCreateResponse, WorkspaceCreateBody]> {
+    const [response, respBody, sentPayload] = await this.createWorkspace(body);
+
+    // Fixed assertions - validates the bootstrap succeeded and an owner was assigned
+    expect(response.status()).toBe(201);
+    expect(respBody.workspace.id).toBeDefined();
+    expect(respBody.workspace.owner_user_id).toBeDefined();
+
+    return [response, respBody, sentPayload];
+  }
 
   /**
    * ATC: Switch active workspace to one where the caller is an active member - expects success (200)
