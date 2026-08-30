@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-30T12:45:30.146Z",
+  "generatedAt": "2026-08-30T13:17:03.565Z",
   "components": {
     "api": [
       {
@@ -143,6 +143,16 @@
             "id": "BK-681",
             "method": "allowBrowserSessionOnGatedRouteNoScopeCheck",
             "line": 105
+          },
+          {
+            "id": "BK-682",
+            "method": "rejectOwnerRoleMissingCapability",
+            "line": 133
+          },
+          {
+            "id": "BK-683",
+            "method": "allowViewerRoleWithCapability",
+            "line": 159
           }
         ]
       },
@@ -317,7 +327,7 @@
   "steps": [],
   "summary": {
     "totalComponents": 9,
-    "totalATCs": 49,
+    "totalATCs": 51,
     "apiComponents": 8,
     "uiComponents": 1,
     "stepsModules": 0
