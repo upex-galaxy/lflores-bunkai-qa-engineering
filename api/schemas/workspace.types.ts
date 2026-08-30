@@ -22,6 +22,16 @@ export type ActiveWorkspaceResponse = components['schemas']['ActiveWorkspaceResp
 export type ActiveWorkspaceError = components['schemas']['ErrorEnvelope'];
 
 // ============================================================================
+// Endpoint Types - POST /api/v1/workspaces (BK-499)
+// ============================================================================
+
+/** Request payload: { name, slug } — bootstrap a new workspace, caller becomes owner. */
+export type WorkspaceCreateBody = components['schemas']['WorkspaceCreateBody'];
+
+/** Response wrapper: { workspace: Workspace } — 201 on success. */
+export type WorkspaceCreateResponse = components['schemas']['WorkspaceCreateResponse'];
+
+// ============================================================================
 // Endpoint Types - PATCH /api/v1/workspaces/{id} (BK-497)
 // ============================================================================
 
@@ -49,6 +59,23 @@ export type WorkspaceInviteListResponse = components['schemas']['WorkspaceInvite
 
 /** One invite row — includes `revoked_at`, used to confirm a rejected revoke left it untouched. */
 export type WorkspaceInvite = components['schemas']['WorkspaceInvite'];
+
+// ============================================================================
+// Endpoint Types - DELETE /api/v1/workspaces/{id}/membership (BK-499)
+// ============================================================================
+
+/** Response for a successful leave — `{ newActiveWorkspaceId, newActiveWorkspaceName }`, both nullable. */
+export type WorkspaceLeaveResponse = components['schemas']['WorkspaceLeaveResponse'];
+
+// ============================================================================
+// Endpoint Types - POST /api/v1/invites/accept (BK-499 TC10 precondition)
+// ============================================================================
+
+/** Request payload: { token } — the raw invite token from `WorkspaceInviteCreateResponse.token`. */
+export type InviteAcceptBody = components['schemas']['InviteAcceptBody'];
+
+/** Response: `{ ok, workspace_id, role }`. */
+export type InviteAcceptResponse = components['schemas']['InviteAcceptResponse'];
 
 // ============================================================================
 // Shared

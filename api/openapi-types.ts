@@ -109,6 +109,15 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
+                /** @description `pat_scopes` contained `workspace:admin`. The scope is schema-valid but rejected after parsing: headless auth has no `workspace_id` to bind an admin token to. Use `POST /api/v1/tokens` instead. See ADR-0005. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
                 /** @description Validation failed. */
                 422: {
                     headers: {
@@ -242,6 +251,15 @@ export interface paths {
                 };
                 /** @description Invalid credentials. */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description `pat_scopes` contained `workspace:admin`. The scope is schema-valid but rejected after parsing: headless auth has no `workspace_id` to bind an admin token to. Use `POST /api/v1/tokens` instead. See ADR-0005. */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -569,6 +587,15 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
+                /** @description Any of: a Personal Access Token was used (this route is session-only — a PAT must not mint a PAT); `workspace:admin` was requested without a `workspace_id`; the caller is not an ACTIVE member of the target workspace; or the caller is a member but not `admin`/`owner` while requesting `workspace:admin`. All four are checked after body validation. See ADR-0005. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
                 /** @description Body failed validation. */
                 422: {
                     headers: {
@@ -621,6 +648,15 @@ export interface paths {
                 };
                 /** @description Not signed in. */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description A Bearer PAT was used. This route is session-only (`auth: 'cookie-only'`): a token cannot revoke tokens, including itself. Sign in through the browser and retry with the session cookie. */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -850,7 +886,7 @@ export interface paths {
         };
         /**
          * List workspaces the caller belongs to
-         * @description RLS-filtered list of every workspace where the caller has an active membership.
+         * @description Bearer `atc:read` (or cookie session). RLS-filtered list of every workspace where the caller has an active membership.
          */
         get: {
             parameters: {
@@ -872,6 +908,15 @@ export interface paths {
                 };
                 /** @description Caller is not signed in. */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:read scope. */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -950,7 +995,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get a single workspace */
+        /**
+         * Get a single workspace
+         * @description Bearer `atc:read` (or cookie session).
+         */
         get: {
             parameters: {
                 query?: never;
@@ -973,6 +1021,15 @@ export interface paths {
                 };
                 /** @description Caller is not signed in. */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:read scope. */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1024,6 +1081,15 @@ export interface paths {
                         "application/json": components["schemas"]["WorkspaceResponse"];
                     };
                 };
+                /** @description The body was not valid JSON, the path `{id}` is not a UUID, or the body was an empty object `{}` — at least one updatable field is required (`bad_request`). */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
                 /** @description Caller is not signed in. */
                 401: {
                     headers: {
@@ -1033,7 +1099,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Caller is not an owner. */
+                /** @description Any of: the Bearer PAT lacks the `workspace:admin` capability; the PAT is not bound to any workspace (there is no global admin — ADR-0005); the PAT is bound to a DIFFERENT workspace than `{id}`; or the caller is not an owner (RLS returns zero rows). The token-binding checks run before RLS, so a correctly-scoped RLS row does not rescue a mis-bound token. See ADR-0006. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -1064,7 +1130,7 @@ export interface paths {
         };
         /**
          * List workspace invites
-         * @description RLS limits results to admins/owners of the workspace.
+         * @description Requires the `workspace:admin` capability; RLS then limits results to admins/owners of the workspace. A Bearer PAT must additionally be bound to THIS workspace.
          */
         get: {
             parameters: {
@@ -1088,6 +1154,15 @@ export interface paths {
                 };
                 /** @description Caller is not signed in. */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Any of: the Bearer PAT lacks the `workspace:admin` capability; the PAT is not bound to any workspace (there is no global admin — ADR-0005); or the PAT is bound to a DIFFERENT workspace than `{id}`. The token-binding checks run before RLS, so a correctly-scoped RLS row does not rescue a mis-bound token. See ADR-0006. */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1135,7 +1210,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Caller is not an admin/owner. */
+                /** @description Any of: the Bearer PAT lacks the `workspace:admin` capability; the PAT is not bound to any workspace (there is no global admin — ADR-0005); the PAT is bound to a DIFFERENT workspace than `{id}`; or the caller is not an admin/owner. The token-binding checks run before RLS, so a correctly-scoped RLS row does not rescue a mis-bound token. See ADR-0006. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -1213,6 +1288,15 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
+                /** @description Any of: the Bearer PAT lacks the `workspace:admin` capability; the PAT is not bound to any workspace (there is no global admin — ADR-0005); or the PAT is bound to a DIFFERENT workspace than `{id}`. The token-binding checks run before RLS, so a correctly-scoped RLS row does not rescue a mis-bound token. See ADR-0006. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
                 /** @description Invite not found or no permission. */
                 404: {
                     headers: {
@@ -1248,6 +1332,15 @@ export interface paths {
                 };
                 /** @description Caller is not signed in. */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Any of: the Bearer PAT lacks the `workspace:admin` capability; the PAT is not bound to any workspace (there is no global admin — ADR-0005); or the PAT is bound to a DIFFERENT workspace than `{id}`. The token-binding checks run before RLS, so a correctly-scoped RLS row does not rescue a mis-bound token. See ADR-0006. */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1359,7 +1452,7 @@ export interface paths {
         put?: never;
         /**
          * Create a project in a workspace
-         * @description Member-only (role >= member). Auto-derives a per-workspace-unique slug from the name. Duplicate slug returns 409; non-members return 403.
+         * @description Bearer `atc:write` (or cookie session). Member-only (role >= member). Auto-derives a per-workspace-unique slug from the name. Duplicate slug returns 409; non-members return 403.
          */
         post: {
             parameters: {
@@ -1403,7 +1496,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Caller is not a member of the workspace. */
+                /** @description Missing atc:write scope, or caller is not a member of the workspace. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -1850,6 +1943,174 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{id}/billing/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start a self-serve Community -> Cloud upgrade
+         * @description Owner-only (bunkai_is_workspace_owner) — an admin/member/viewer is rejected before any Stripe call. `Idempotency-Key` is REQUIRED (ADR-0002). Plan activation happens asynchronously via the Stripe webhook once payment is confirmed — this endpoint never writes `workspaces.plan` itself. At most one open Checkout Session may exist per workspace at a time (a partial unique index backs this); a second concurrent request either reuses the existing session's URL or answers 409.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    /** @description Required. 8–128 chars, [a-zA-Z0-9_-]. A replay with the same key and payload returns the stored response; the same key with a different payload returns 409 `conflict`. This is the HTTP-level replay guard — distinct from the DB-level one-open-session-per-workspace guard that covers two different tabs/keys racing for the same workspace. */
+                    "Idempotency-Key": string;
+                };
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BillingCheckoutBody"];
+                };
+            };
+            responses: {
+                /** @description Checkout Session URL (freshly created, or replayed/reused). */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BillingCheckoutResponse"];
+                    };
+                };
+                /** @description Missing/malformed Idempotency-Key, or malformed workspace id (`bad_request`). */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Caller is not signed in. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Any of: missing `workspace:admin` capability / PAT not bound to this workspace (ADR-0006); or the caller is not the workspace OWNER (`not_workspace_owner` — stricter than admin, checked inside the handler). */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Workspace not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description A checkout session is already open (`checkout_in_progress`) or an Idempotency-Key was reused with a different payload (`conflict`). */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Workspace is already on Cloud/Enterprise (`plan_not_upgradable`), or `seat_quantity` is out of bounds (`seat_quantity_invalid`). */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Stripe is not configured for this environment (`payment_processor_unavailable`). */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workspaces/{id}/billing/checkout/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel the workspace's open checkout session
+         * @description Owner-only. Expires the Stripe Checkout Session server-side (best-effort) and releases the one-open-session lock immediately, instead of stranding the owner for the session's TTL. A no-op (still 204) when there is no open session.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Canceled (or nothing to cancel). */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Caller is not signed in. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing `workspace:admin` capability / PAT not bound to this workspace (ADR-0006). */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -2415,6 +2676,8 @@ export interface paths {
         /**
          * Edit a milestone
          * @description Member-only (role >= member). Same normalize/length rules as create. The target-date bounds (today-or-later, within 5 years) are enforced ONLY when the submitted date differs from the milestone's current stored value — an unchanged past-dated milestone stays editable (e.g. a description-only edit). Non-members receive a non-disclosing 404; a member with only the viewer role receives 403.
+         *
+         *     This is a FULL REPLACE, not a partial patch: `description` defaults to empty when omitted, so a body carrying only `name` and `target_date` silently CLEARS an existing description. Send all three fields on every edit.
          */
         patch: {
             parameters: {
@@ -2496,6 +2759,505 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/api/v1/projects/{id}/test-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a project's test plans
+         * @description Lists the project's test plans newest first (created_at descending, id descending as the tie-break). Visible to any workspace member including viewers; a non-member receives an empty list.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Test plans listed. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TestPlanListResponse"];
+                    };
+                };
+                /** @description Malformed project id. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Caller is not signed in. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:read scope. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Create a test plan in a project
+         * @description Member-only (role >= member), re-checked live server-side on every call — a viewer calling this endpoint directly receives 403 regardless of what the client believes its role to be. Normalizes the name (collapses internal whitespace, then trims) and enforces 1–100 chars; description is capped at 500 chars and goal at 100. The name is unique per project (case-insensitive, whitespace-normalized) via a database unique index, so two concurrent creates of the same name resolve to exactly one success and one 409. The new plan is always created with status "open" and no member tests.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TestPlanCreateBody"];
+                };
+            };
+            responses: {
+                /** @description Test plan created. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TestPlanCreateResponse"];
+                    };
+                };
+                /** @description Malformed project id or invalid JSON body. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Caller is not signed in. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:write scope, or the caller is a viewer / not a member. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Project not found. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description A test plan with this name already exists in the project. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Validation failed (name, description or goal length). */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/test-plans/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Edit a test plan
+         * @description Member-only (role >= member), re-checked live server-side on every call. Same normalize/length rules as create, applied unconditionally to every field — renaming into an existing name in the same project returns 409 under the identical case-insensitive, whitespace-normalized rule that governs create; renaming a plan to the name it already holds is not a conflict. Editing is NOT restricted to the plan's creator: any member of the workspace may edit any plan in it. Non-members receive a non-disclosing 404; a member with only the viewer role receives 403. A plan that is no longer open cannot be edited.
+         *
+         *     This is a FULL REPLACE, not a partial patch: `description` and `goal` default to empty when omitted, so a body carrying only `name` clears both. Send all three fields.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TestPlanUpdateBody"];
+                };
+            };
+            responses: {
+                /** @description Test plan updated. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TestPlanUpdateResponse"];
+                    };
+                };
+                /** @description Malformed test plan id or invalid JSON body. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Caller is not signed in. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:write scope, or the caller is a viewer. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Test plan not found (or not visible to the caller). */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description A test plan with this name already exists in the project, or the plan is no longer open. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Validation failed (name, description or goal length). */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/test-plans/{id}/tests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a test plan's member tests
+         * @description Visible to any workspace member of the plan, viewers included — seeing membership is role-agnostic (only add/remove is gated). Membership is a reference: the same Test may appear in several plans, and removing it here never alters the Test.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Member tests listed. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TestPlanMemberTestListResponse"];
+                    };
+                };
+                /** @description Malformed test plan id. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Caller is not signed in. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:read scope. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Test plan not found (or not visible to the caller). */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Add tests to a test plan
+         * @description Member-only (role >= member), re-checked live server-side, and only while the plan is Open. Every submitted Test id must belong to the plan's own project (derived from its chained ATCs); a mismatch, a nonexistent id, or a foreign-workspace id are all rejected uniformly (422 test_outside_plan_project), with no id disclosed back. A Test already in the plan rejects the WHOLE request (409 conflict) rather than partially applying. Requires an `Idempotency-Key` header; a rapid double-submit of the same selection is deduplicated by the header AND independently by the database unique constraint.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TestPlanAddTestsBody"];
+                };
+            };
+            responses: {
+                /** @description Tests added. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TestPlanAddTestsResponse"];
+                    };
+                };
+                /** @description Malformed test plan id or invalid JSON body. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Caller is not signed in. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:write scope, or the caller is a viewer. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Test plan not found (or not visible to the caller). */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description A submitted test is already in the plan, or the plan is closed. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Empty test_ids, or a submitted test does not belong to the plan's project. */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/test-plans/{id}/tests/{testId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove a test from a test plan
+         * @description Member-only (role >= member), re-checked live server-side, and only while the plan is Open. Removing a membership never deletes or alters the Test itself, and never affects the Test's membership in any other plan.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    testId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Test removed from the plan. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TestPlanRemoveTestResponse"];
+                    };
+                };
+                /** @description Malformed test plan id or test id. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Caller is not signed in. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:write scope, or the caller is a viewer. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Test plan not found, or this test is not a member of it. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description The plan is closed. */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/modules/{id}": {
@@ -3708,6 +4470,81 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cross-entity workspace search
+         * @description Bearer `atc:read` (or cookie session). Searches ATCs, Tests, Projects, Modules, Bugs and Runs inside ONE workspace and returns up to 5 matches per entity type, each with a ready-to-navigate `href`.
+         *
+         *     There is deliberately no workspace path segment and no workspace query parameter — the caller is never the authority on scope. A cookie session is scoped to its active workspace (the `bk_active_ws` cookie, falling back to the caller's oldest workspace); a Bearer PAT is scoped to the workspace it was issued against.
+         *
+         *     Scope failures never disclose existence: an unknown, foreign or inaccessible workspace and a query with no matches all return the same `200 { "data": [], "truncated": false }`. This route answers no 403 or 404 for scope reasons.
+         */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Required. Free-text query, trimmed server-side; it must be at least 2 characters AFTER trimming, so `"  a  "` fails with 422. The client is expected never to send a shorter query in the first place — this is a defensive backstop. */
+                    q: string;
+                    /** @description 1..20, default 20. A per-request ceiling only: the underlying RPC independently caps each entity group at 5 rows, so raising `limit` never returns more than 5 of any one type. */
+                    limit?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Matches, grouped-capped and possibly empty. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SearchPageResponse"];
+                    };
+                };
+                /** @description Not authenticated. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description The Bearer PAT does not carry the `atc:read` scope (`forbidden`). Enforced by the gateway before the handler runs; cookie sessions hold every capability and never hit this. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Any of: `q` missing or shorter than 2 characters after trimming; `limit` not an integer in 1..20 (`validation_failed`). ALSO returned — unlike every other workspace-scoped route, which answers 403 — when a Bearer PAT is not bound to any workspace, or when a cookie session has no resolvable active workspace. */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/atcs/{id}": {
         parameters: {
             query?: never;
@@ -3827,7 +4664,7 @@ export interface paths {
         put?: never;
         /**
          * Duplicate an ATC (deep-copy steps, assertions, AC bindings)
-         * @description Bearer `atc:write` (or cookie session). Deep-copies the source ATC into a NEW ATC in the same project — every step and assertion (in order) plus the AC bindings — with a fresh slug, `version = 1`, and an independent set of child rows (editing the copy never changes the source). The title defaults to `<source> (copy)` unless an optional `title` is supplied. Emits an `atc.created` event.
+         * @description Bearer `atc:write` (or cookie session). Deep-copies the source ATC into a NEW ATC in the same project — every step and assertion (in order) plus the AC bindings — with a fresh slug, `version = 1`, and an independent set of child rows (editing the copy never changes the source). The title defaults to `<source> (copy)` unless the optional `new_title` field is supplied. The field is named `new_title`, NOT `title` — an unknown `title` key is stripped silently by the schema, so a request sending it succeeds and the copy quietly keeps the default `(copy)` name. Emits an `atc.created` event.
          */
         post: {
             parameters: {
@@ -4030,8 +4867,8 @@ export interface paths {
                         };
                     };
                 };
-                /** @description Authentication / scope error (`bad_request`). */
-                400: {
+                /** @description Not authenticated. */
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4039,8 +4876,8 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description Not authenticated. */
-                401: {
+                /** @description The Bearer PAT does not carry the `atc:read` scope (`forbidden`). The gateway enforces the capability before the handler runs. Cookie sessions hold every capability and never hit this. */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4153,6 +4990,81 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/tests/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search Tests by title and tags
+         * @description Bearer `atc:read` (or cookie session). Project-scoped substring search over Test title and tags. A Test has no project_id of its own (Tests are workspace-scoped); the project match is derived from the Test's chained ATCs. Results are restricted to the caller's active workspace memberships AND to the required `project_id`. Zero matches return an empty `items` array (never 404).
+         */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Free-text query matched (substring, case-insensitive) against Test title and tags. */
+                    query: string;
+                    /** @description Required. Scopes the search to a single project, derived from each Test's chained ATCs; a project outside the caller's active workspaces returns no rows. */
+                    project_id: string;
+                    /** @description 1..50, default 20. */
+                    limit?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Matches (possibly empty), newest first. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: components["schemas"]["TestSearchResult"][];
+                        };
+                    };
+                };
+                /** @description Not authenticated. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:read scope. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Validation failed (empty/missing query, missing/invalid project_id, bad limit). */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/tests/{id}": {
         parameters: {
             query?: never;
@@ -4162,7 +5074,7 @@ export interface paths {
         };
         /**
          * Read a Test with its chain of ATCs fully expanded
-         * @description Cookie session or Bearer PAT (read identity only — viewer role suffices; no write scope required). Returns the Test header plus the ordered chain of ATCs, each expanded inline with its ordered steps and assertions, in one round trip. Live content (references, not snapshots). Non-disclosing: missing, not-visible, and foreign-workspace Tests all return an identical 404 — never 403, never an existence echo.
+         * @description Bearer `atc:read` (or cookie session). Viewer role suffices; no write scope required. Returns the Test header plus the ordered chain of ATCs, each expanded inline with its ordered steps and assertions, in one round trip. Live content (references, not snapshots). Non-disclosing: missing, not-visible, and foreign-workspace Tests all return an identical 404 — never 403, never an existence echo.
          */
         get: {
             parameters: {
@@ -4200,6 +5112,15 @@ export interface paths {
                 };
                 /** @description Not authenticated. */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:read scope. */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4443,7 +5364,7 @@ export interface paths {
         };
         /**
          * List a Test's past Runs, newest first, filterable by outcome
-         * @description Cookie session or Bearer PAT; no scope requirement (mirrors `GET /api/v1/runs/{id}` — the PAT scope catalog has no run-read scope). One SECURITY DEFINER RPC resolves the Test's workspace and re-checks ACTIVE membership in-band; any role reads, viewers included. Returns TERMINAL Runs only (`passed` / `failed` / `aborted`) ordered `started_at desc, id desc` — an in-progress Run is neither listed nor counted. Pagination is KEYSET, not offset: `next_cursor` encodes the `(started_at, id)` of the last row, so a Run landing mid-scroll can neither skip nor duplicate a row, and the `id` tie-break keeps runs sharing a `started_at` in a stable total order. The `outcome` filter composes with pagination server-side — page 2 of a filtered history contains only that outcome. `totals` is all-time and filter-invariant. A Test with no terminal Runs returns an empty `items` with zeroed `totals` (never a 404).
+         * @description Bearer `atc:read` (or cookie session). Mirrors `GET /api/v1/runs/{id}`; the PAT scope catalog has no run-read scope, so run history reuses the read scope. One SECURITY DEFINER RPC resolves the Test's workspace and re-checks ACTIVE membership in-band; any role reads, viewers included. Returns TERMINAL Runs only (`passed` / `failed` / `aborted`) ordered `started_at desc, id desc` — an in-progress Run is neither listed nor counted. Pagination is KEYSET, not offset: `next_cursor` encodes the `(started_at, id)` of the last row, so a Run landing mid-scroll can neither skip nor duplicate a row, and the `id` tie-break keeps runs sharing a `started_at` in a stable total order. The `outcome` filter composes with pagination server-side — page 2 of a filtered history contains only that outcome. `totals` is all-time and filter-invariant. A Test with no terminal Runs returns an empty `items` with zeroed `totals` (never a 404).
          */
         get: {
             parameters: {
@@ -4491,6 +5412,15 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
+                /** @description Missing atc:read scope. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
                 /** @description Test not found (also returned for a Test outside the caller's workspaces — no existence leak). */
                 404: {
                     headers: {
@@ -4528,7 +5458,7 @@ export interface paths {
         };
         /**
          * Filter a Project's Runs by date range, module, status and executor, with matching pass/fail totals
-         * @description Cookie session or Bearer PAT; no scope requirement yet (Key Contract Decision: a future `run:read`-equivalent PAT scope is out of scope for this story). One SECURITY DEFINER RPC (`bunkai_report_project_runs`) resolves the Project's workspace and re-checks ACTIVE membership in-band; any role reads, viewers included. Every filter is AND-composed and every filter composes with pagination server-side. Unlike `GET /api/v1/tests/{id}/runs`, rows are NOT restricted to terminal statuses — a currently-`running` Run is a legitimate row — and `totals` is recomputed from the SAME filtered set as the rows (not all-time), so the numbers change as filters narrow (Business Rule #3 / Technical Decision D2). Pagination is KEYSET on `(started_at desc, id desc)`, reusing the same opaque cursor contract as the run-history endpoint. A Project with no matching Runs returns an empty `items` with zeroed `totals` (never a 404) — a 404 means the Project itself is missing, foreign, or unreadable.
+         * @description Bearer `atc:read` (or cookie session). The PAT scope catalog has no run-read scope, so run reporting reuses the read scope rather than minting a fifth one (BK-499, superseding this story Key Contract Decision that deferred the question). One SECURITY DEFINER RPC (`bunkai_report_project_runs`) resolves the Project's workspace and re-checks ACTIVE membership in-band; any role reads, viewers included. Every filter is AND-composed and every filter composes with pagination server-side. Unlike `GET /api/v1/tests/{id}/runs`, rows are NOT restricted to terminal statuses — a currently-`running` Run is a legitimate row — and `totals` is recomputed from the SAME filtered set as the rows (not all-time), so the numbers change as filters narrow (Business Rule #3 / Technical Decision D2). Pagination is KEYSET on `(started_at desc, id desc)`, reusing the same opaque cursor contract as the run-history endpoint. A Project with no matching Runs returns an empty `items` with zeroed `totals` (never a 404) — a 404 means the Project itself is missing, foreign, or unreadable.
          */
         get: {
             parameters: {
@@ -4584,6 +5514,15 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
+                /** @description Missing atc:read scope. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
                 /** @description Project not found (also returned for a Project outside the caller's workspaces — no existence leak). */
                 404: {
                     headers: {
@@ -4621,7 +5560,7 @@ export interface paths {
         };
         /**
          * Compute per-user-story recovery-cycle time (first failing run -> first all-passing run)
-         * @description Cookie session or Bearer PAT; no scope requirement — mirrors `GET /api/v1/projects/{id}/coverage`. One SECURITY DEFINER RPC (`bunkai_report_project_recovery_cycles`) resolves the Project's workspace and re-checks ACTIVE membership in-band; any role reads, viewers included. No pagination or query parameters: the whole-project rollup is small and bounded. Computed entirely from Run history (`runs`/`run_atcs`) — no Bugs-domain read (Decision 1). A Project with zero Runs returns an empty `items` with `median_recovery_seconds: null` and zeroed counts (never a 404) — a 404 means the Project itself is missing, foreign, or unreadable.
+         * @description Bearer `atc:read` (or cookie session). Mirrors `GET /api/v1/projects/{id}/coverage`. One SECURITY DEFINER RPC (`bunkai_report_project_recovery_cycles`) resolves the Project's workspace and re-checks ACTIVE membership in-band; any role reads, viewers included. No pagination or query parameters: the whole-project rollup is small and bounded. Computed entirely from Run history (`runs`/`run_atcs`) — no Bugs-domain read (Decision 1). A Project with zero Runs returns an empty `items` with `median_recovery_seconds: null` and zeroed counts (never a 404) — a 404 means the Project itself is missing, foreign, or unreadable.
          */
         get: {
             parameters: {
@@ -4655,6 +5594,15 @@ export interface paths {
                 };
                 /** @description Not authenticated. */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:read scope. */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -4794,7 +5742,7 @@ export interface paths {
         };
         /**
          * Read a Run with its snapshot chain fully expanded
-         * @description Cookie session or Bearer PAT (read identity only — viewer role suffices; no write scope required). Returns the Run header plus the ordered run_atcs, each with its ordered run_steps — the immutable snapshot taken at start. Non-disclosing: missing, not-visible, and foreign-workspace Runs all return an identical 404 — never 403, never an existence echo.
+         * @description Bearer `atc:read` (or cookie session). Viewer role suffices; no write scope required. Returns the Run header plus the ordered run_atcs, each with its ordered run_steps — the immutable snapshot taken at start. Non-disclosing: missing, not-visible, and foreign-workspace Runs all return an identical 404 — never 403, never an existence echo.
          */
         get: {
             parameters: {
@@ -4829,6 +5777,15 @@ export interface paths {
                 };
                 /** @description Not authenticated. */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:read scope. */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -5048,7 +6005,7 @@ export interface paths {
         };
         /**
          * List the workspace activity feed, newest first
-         * @description Cookie session or Bearer PAT; no scope requirement (mirrors `GET /api/v1/tests/{id}/runs`). `bunkai_list_activity` is SECURITY INVOKER — it runs under the caller's own RLS, so a non-member workspace_id silently returns an empty page rather than leaking existence. Read-only, MVP-allowlisted event set only (8 of 12 write-site actions); no realtime, no defect activity. Pagination is KEYSET on `(created_at desc, id desc)`. An empty `items` is always a valid 200 — this endpoint never answers 404.
+         * @description Bearer `atc:read` (or cookie session). The whole workspace shared feed, which is why it takes the read scope while a personal notification inbox does not (mirrors `GET /api/v1/tests/{id}/runs`). `bunkai_list_activity` is SECURITY INVOKER — it runs under the caller's own RLS, so a non-member workspace_id silently returns an empty page rather than leaking existence. Read-only, MVP-allowlisted event set only (8 of 12 write-site actions); no realtime, no defect activity. Pagination is KEYSET on `(created_at desc, id desc)`. An empty `items` is always a valid 200 — this endpoint never answers 404.
          */
         get: {
             parameters: {
@@ -5086,6 +6043,15 @@ export interface paths {
                 };
                 /** @description Not authenticated. */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:read scope. */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -5223,7 +6189,7 @@ export interface paths {
         };
         /**
          * List and filter defects for a project, with aggregates
-         * @description Cookie session or Bearer PAT; no scope requirement (mirrors `GET /api/v1/activity` and `GET /api/v1/tests/{id}/runs`). `bunkai_list_bugs` is SECURITY INVOKER — it runs under the caller's own RLS, so a non-member `project_id` silently returns a 200 empty page rather than leaking existence. Module filter rolls up the full subtree (Decision 7); archived-module defects are hidden unconditionally (Decision 12); default sort is severity ascending then most-recent-first (Decision 5); pagination is the bugs-local 3-field keyset cursor (Decision 11).
+         * @description Bearer `atc:read` (or cookie session). Mirrors `GET /api/v1/activity` and `GET /api/v1/tests/{id}/runs`. `bunkai_list_bugs` is SECURITY INVOKER — it runs under the caller's own RLS, so a non-member `project_id` silently returns a 200 empty page rather than leaking existence. Module filter rolls up the full subtree (Decision 7); archived-module defects are hidden unconditionally (Decision 12); default sort is severity ascending then most-recent-first (Decision 5); pagination is the bugs-local 3-field keyset cursor (Decision 11).
          */
         get: {
             parameters: {
@@ -5267,6 +6233,15 @@ export interface paths {
                 };
                 /** @description Not authenticated. */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:read scope. */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -5376,7 +6351,7 @@ export interface paths {
         };
         /**
          * Read a single defect's full record
-         * @description Cookie session or Bearer PAT; no scope requirement — any active workspace role, viewers included, may read (`bugs_select_workspace_member`, migration 0046). `bunkai_bug_json` is SECURITY INVOKER — it runs under the caller's own RLS, so a bug outside the caller's workspaces returns the same 404 as an unknown id (non-disclosing). A bug filed against a since-archived module still renders in full, with `module.archived_at` set — this read does NOT apply the archived-module exclusion the list endpoints use.
+         * @description Bearer `atc:read` (or cookie session). Any active workspace role, viewers included, may read (`bugs_select_workspace_member`, migration 0046). `bunkai_bug_json` is SECURITY INVOKER — it runs under the caller's own RLS, so a bug outside the caller's workspaces returns the same 404 as an unknown id (non-disclosing). A bug filed against a since-archived module still renders in full, with `module.archived_at` set — this read does NOT apply the archived-module exclusion the list endpoints use.
          */
         get: {
             parameters: {
@@ -5411,6 +6386,15 @@ export interface paths {
                 };
                 /** @description Not authenticated. */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:read scope. */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -5630,7 +6614,7 @@ export interface paths {
         };
         /**
          * List a project's bugs, newest first
-         * @description Bare, unfiltered list (no query params yet — BK-41/BK-42 extend this route additively). Visible to any active workspace member (viewers included). Non-disclosure: a missing, non-visible, or foreign-workspace Project all return the same 404.
+         * @description Bearer `atc:read` (or cookie session). Bare, unfiltered list (no query params yet — BK-41/BK-42 extend this route additively). Visible to any active workspace member (viewers included). Non-disclosure: a missing, non-visible, or foreign-workspace Project all return the same 404.
          */
         get: {
             parameters: {
@@ -5670,6 +6654,15 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
+                /** @description Missing atc:read scope. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
                 /** @description Project not found (non-disclosing). */
                 404: {
                     headers: {
@@ -5698,7 +6691,7 @@ export interface paths {
         };
         /**
          * Surface a Project's untested acceptance criteria and modules, with a never-run indicator
-         * @description Cookie session or Bearer PAT; no scope requirement — mirrors `GET /api/v1/projects/{id}/runs/report`. One SECURITY DEFINER RPC (`bunkai_report_project_coverage`) resolves the Project's workspace and re-checks ACTIVE membership in-band; any role reads, viewers included (PO decision Q5 — this is not a privileged QA-only screen). No pagination or query parameters: the whole-project rollup is small and bounded, and the UI filters the returned payload client-side. A Project with zero acceptance criteria returns zeroed `kpis` and empty arrays (never a 404) — a 404 means the Project itself is missing, foreign, or unreadable.
+         * @description Bearer `atc:read` (or cookie session). Mirrors `GET /api/v1/projects/{id}/runs/report`. One SECURITY DEFINER RPC (`bunkai_report_project_coverage`) resolves the Project's workspace and re-checks ACTIVE membership in-band; any role reads, viewers included (PO decision Q5 — this is not a privileged QA-only screen). No pagination or query parameters: the whole-project rollup is small and bounded, and the UI filters the returned payload client-side. A Project with zero acceptance criteria returns zeroed `kpis` and empty arrays (never a 404) — a 404 means the Project itself is missing, foreign, or unreadable.
          */
         get: {
             parameters: {
@@ -5739,6 +6732,93 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
+                /** @description Missing atc:read scope. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Project not found (also returned for a Project outside the caller's workspaces — no existence leak). */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{id}/atcs/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export a Project's whole ATC library as a CSV file
+         * @description Bearer `atc:read` (or cookie session). Columns, fixed order: ATC ID, Slug, Title, Module, Layer, Tags, Status. Multiple Tags for one ATC join into a single cell with `; ` (semicolon-space). Any cell containing a comma, a double quote, or a line break is RFC4180-quoted, with embedded double quotes doubled. A cell whose content starts with `=`, `+`, `-`, `@`, a tab, or a CR is prefixed with a literal `'` before that escaping, to neutralize spreadsheet formula injection (OWASP guidance). The body is prefixed with a UTF-8 BOM so non-ASCII Title/Tag content renders correctly in Windows Excel. A Project with zero ATCs returns a header-only CSV (200, never an error). No row cap: every non-archived ATC is included regardless of library size.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description The Project whose ATC library to export. */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The Project's ATC library as CSV, `Content-Disposition: attachment`. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/csv": string;
+                    };
+                };
+                /** @description Malformed Project id (not a UUID) (`bad_request`). */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Not authenticated. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:read scope. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
                 /** @description Project not found (also returned for a Project outside the caller's workspaces — no existence leak). */
                 404: {
                     headers: {
@@ -5767,7 +6847,7 @@ export interface paths {
         };
         /**
          * Compute a per-module defect heatmap (count + week-over-week trend) for a chosen window
-         * @description Cookie session or Bearer PAT; no scope requirement — mirrors GET /api/v1/projects/{id}/metrics/recovery-cycles. One SECURITY DEFINER RPC (`bunkai_report_project_defect_heatmap`) resolves the Project's workspace and re-checks ACTIVE membership in-band; any role reads, viewers included. No pagination or filters: the whole-project rollup is small and bounded. Each module's defect_count rolls up its full descendant subtree (path-prefix match); archived modules are excluded from the heatmap by default but a filed defect against a since-archived descendant still counts toward an active ancestor. A Project with zero bugs returns every active module at Clean/0 (never a 404) — a 404 means the Project itself is missing, foreign, or unreadable.
+         * @description Bearer `atc:read` (or cookie session). Mirrors GET /api/v1/projects/{id}/metrics/recovery-cycles. One SECURITY DEFINER RPC (`bunkai_report_project_defect_heatmap`) resolves the Project's workspace and re-checks ACTIVE membership in-band; any role reads, viewers included. No pagination or filters: the whole-project rollup is small and bounded. Each module's defect_count rolls up its full descendant subtree (path-prefix match); archived modules are excluded from the heatmap by default but a filed defect against a since-archived descendant still counts toward an active ancestor. A Project with zero bugs returns every active module at Clean/0 (never a 404) — a 404 means the Project itself is missing, foreign, or unreadable.
          */
         get: {
             parameters: {
@@ -5804,6 +6884,15 @@ export interface paths {
                 };
                 /** @description Not authenticated. */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description Missing atc:read scope. */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -6132,7 +7221,7 @@ export interface paths {
         };
         /**
          * Render a User Story's full acceptance-criteria-to-defect evidence chain in one read
-         * @description Cookie session or Bearer PAT; no scope requirement — mirrors `GET /api/v1/projects/{id}/coverage`. One SECURITY DEFINER RPC (`bunkai_report_story_traceability`) resolves the User Story's Project via its Module (never the nullable `user_stories.project_id`) and re-checks ACTIVE membership in-band; any role reads, viewers included. No pagination: one story's own chain is small and bounded, and round trips never scale with AC/ATC/Test/Run counts. Archived acceptance criteria and ATCs (including under an archived ancestor Module) are excluded from the chain; an archived STORY itself still renders in full.
+         * @description Bearer `atc:read` (or cookie session). Mirrors `GET /api/v1/projects/{id}/coverage`. One SECURITY DEFINER RPC (`bunkai_report_story_traceability`) resolves the User Story's Project via its Module (never the nullable `user_stories.project_id`) and re-checks ACTIVE membership in-band; any role reads, viewers included. No pagination: one story's own chain is small and bounded, and round trips never scale with AC/ATC/Test/Run counts. Archived acceptance criteria and ATCs (including under an archived ancestor Module) are excluded from the chain; an archived STORY itself still renders in full.
          */
         get: {
             parameters: {
@@ -6176,6 +7265,15 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
+                /** @description Missing atc:read scope. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
                 /** @description User Story not found. Also returned, byte-identical, for a Story outside the caller's workspaces, or for a Story that does not belong to the `{id}` Project asserted in the URL — no existence leak, never a 403. */
                 404: {
                     headers: {
@@ -6206,7 +7304,7 @@ export interface components {
                  * @description Machine-readable error code. Branch on this value, not on `message`.
                  * @enum {string}
                  */
-                code: "bad_request" | "validation_failed" | "unauthorized" | "forbidden" | "not_found" | "method_not_allowed" | "conflict" | "idempotency_key_required" | "idempotency_key_invalid" | "rate_limited" | "ac_outside_user_story" | "module_outside_project_subtree" | "steps_position_invalid" | "slug_collision" | "chain_empty" | "chain_mismatch" | "chain_invalid" | "internal_error" | "upstream_error";
+                code: "bad_request" | "validation_failed" | "unauthorized" | "forbidden" | "not_found" | "method_not_allowed" | "conflict" | "idempotency_key_required" | "idempotency_key_invalid" | "rate_limited" | "ac_outside_user_story" | "module_outside_project_subtree" | "steps_position_invalid" | "slug_collision" | "chain_empty" | "chain_mismatch" | "chain_invalid" | "no_executable_steps" | "environment_invalid" | "test_outside_plan_project" | "internal_error" | "upstream_error";
                 /** @description Human-readable error description. */
                 message: string;
                 /** @description Optional structured details. For validation errors this is the ZodError issues array. */
@@ -6262,6 +7360,7 @@ export interface components {
              */
             token: string;
             pat_name?: string;
+            /** @description `workspace:admin` is NOT accepted here and returns 403 `forbidden`, even though the enum lists it — the enum is the shared capability vocabulary, not the set this route grants. Headless auth carries no `workspace_id`, and an admin-scoped token must target one specific workspace, so the guard rejects the scope outright. Mint admin-scoped tokens through `POST /api/v1/tokens` with a `workspace_id` instead. Omit this field to get the defaults: `atc:read`, `atc:write`, `run:execute`. See ADR-0005. */
             pat_scopes?: ("atc:read" | "atc:write" | "run:execute" | "workspace:admin")[];
             pat_expires_in_days?: number;
         };
@@ -6313,6 +7412,7 @@ export interface components {
             email: string;
             password: string;
             pat_name?: string;
+            /** @description `workspace:admin` is NOT accepted here and returns 403 `forbidden`, even though the enum lists it — the enum is the shared capability vocabulary, not the set this route grants. Headless auth carries no `workspace_id`, and an admin-scoped token must target one specific workspace, so the guard rejects the scope outright. Mint admin-scoped tokens through `POST /api/v1/tokens` with a `workspace_id` instead. Omit this field to get the defaults: `atc:read`, `atc:write`, `run:execute`. See ADR-0005. */
             pat_scopes?: ("atc:read" | "atc:write" | "run:execute" | "workspace:admin")[];
             pat_expires_in_days?: number;
         };
@@ -6391,11 +7491,11 @@ export interface components {
              * @example ci-pipeline
              */
             name?: string;
-            /** @description Scopes granted to this token. At least one required. */
+            /** @description Scopes granted to this token. At least one required. Requesting `workspace:admin` makes `workspace_id` MANDATORY — omitting it returns 403 `forbidden` — and additionally requires the caller to hold the role `admin` or `owner` in that workspace; any other role returns 403. Both guards run after schema validation, so the enum accepting the value is not a grant. See ADR-0005. */
             scopes: ("atc:read" | "atc:write" | "run:execute" | "workspace:admin")[];
             /**
              * Format: uuid
-             * @description Restrict the token to a single workspace. Omit for cross-workspace tokens.
+             * @description Restrict the token to a single workspace. Omit for cross-workspace tokens (non-admin scopes only). When supplied, the caller must be an ACTIVE member of that workspace — a non-member or a non-active membership returns 403 `forbidden`.
              */
             workspace_id?: string;
             /** @description TTL in days. Omit for non-expiring tokens. Max 365. */
@@ -6491,7 +7591,10 @@ export interface components {
         WorkspaceCreateBody: {
             /** @example Acme QA */
             name: string;
-            /** @example acme-qa */
+            /**
+             * @description URL slug. Must match `^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$`: lowercase letters and digits plus hyphens, 3 to 40 characters, and no leading or trailing hyphen. Uppercase, underscores, spaces and other characters are rejected with 422 `validation_failed`. A further 422 rejects 16 reserved slugs that would shadow app routes: `admin`, `api`, `app`, `auth`, `docs`, `invites`, `login`, `logout`, `onboarding`, `projects`, `public`, `qa`, `settings`, `static`, `workspaces`, `_next`. A slug already taken by another workspace returns 409 `conflict`.
+             * @example acme-qa
+             */
             slug: string;
         };
         WorkspaceListResponse: {
@@ -6504,7 +7607,9 @@ export interface components {
         WorkspaceResponse: {
             workspace: components["schemas"]["Workspace"];
         };
+        /** @description At least one field is required. An empty object `{}` parses cleanly against this schema but is rejected by the handler with 400 `bad_request` ("Provide at least one field to update."), so the constraint is not visible in the schema itself. */
         WorkspacePatchBody: {
+            /** @description New display name. The only mutable field today — slug rotation is post-MVP. */
             name?: string;
         };
         WorkspaceInviteCreateResponse: {
@@ -6704,12 +7809,25 @@ export interface components {
              * @enum {string}
              */
             plan: "community" | "cloud" | "enterprise";
+            /** @description BK-230 — the Cloud workspace's real purchased seat count (set at checkout completion). `null` for Community/Enterprise, or a Cloud workspace predating this column — `lib/billing/plan-tiers.ts`'s `effectiveSeatLimit()` falls back to the tier's flat `seatLimit` in that case. This is the workspace's ACTUAL seat cap; `PLAN_TIERS.cloud.seatLimit` (25) is only the plan's maximum purchasable quantity. */
+            purchased_seats: number | null;
             /** @description Workspace members with `status = 'active'` only. Pending invitations and suspended members never count toward this figure. */
             active_seats: number;
             /** @description Every project in the workspace. `projects` carries no soft-delete column, so this is an exact, unfiltered count. */
             project_count: number;
             /** @description Age in days of the workspace's oldest run (`now() - min(runs.created_at)`), or `null` when the workspace has no runs. This reports how much of the plan's retention WINDOW is in use — nothing in this product prunes runs, so this figure is never a countdown to deletion. */
             oldest_run_age_days: number | null;
+        };
+        BillingCheckoutResponse: {
+            /**
+             * Format: uri
+             * @description The Stripe-hosted Checkout URL to redirect the browser to. No card data ever reaches this app (Stripe Checkout, hosted — zero PCI scope).
+             */
+            url: string;
+        };
+        BillingCheckoutBody: {
+            /** @description Minimum is the workspace's current active_seats count (no seat-reduction path exists in this Story); maximum is the Cloud tier's seatLimit (25, see lib/billing/plan-tiers.ts). */
+            seat_quantity: number;
         };
         ModuleCreateResponse: {
             module: components["schemas"]["Module"];
@@ -6823,8 +7941,93 @@ export interface components {
             name: string;
             /** @description Calendar date (YYYY-MM-DD). Bounds (today-or-later, within 5 years) apply ONLY when this differs from the milestone's current stored value. */
             target_date: string;
+            /** @description 0–500 chars. DEFAULTS TO EMPTY WHEN OMITTED, and the empty value is written straight through — omitting this field CLEARS an existing description with no warning and no way to recover it. Always resend the current description on an edit that is not meant to erase it. */
+            description?: string;
+        };
+        TestPlanListResponse: {
+            /** @description Ordered by created_at descending, id descending. */
+            test_plans: components["schemas"]["TestPlan"][];
+        };
+        TestPlan: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            project_id: string;
+            /** @description 1–100 chars after normalize (internal whitespace collapsed, then trimmed). Unique per project, case-insensitive. */
+            name: string;
+            /** @description 0–500 chars. */
+            description: string;
+            /** @description 0–100 chars after normalize. Optional short target/release label, e.g. "Release 2.4". */
+            goal: string;
+            /**
+             * @description A new plan is always "open". Closing is a separate capability and is not exposed by this API.
+             * @enum {string}
+             */
+            status: "open" | "closed";
+            /** Format: uuid */
+            created_by: string | null;
+            /** Format: date-time */
+            created_at: string;
+        };
+        TestPlanCreateResponse: {
+            test_plan: components["schemas"]["TestPlan"];
+        };
+        TestPlanCreateBody: {
+            /** @description 1–100 chars after normalize. Unique per project, case-insensitive. */
+            name: string;
             /** @description 0–500 chars. Defaults to empty. */
             description?: string;
+            /** @description 0–100 chars after normalize. Defaults to empty. */
+            goal?: string;
+        };
+        TestPlanUpdateResponse: {
+            test_plan: components["schemas"]["TestPlan"];
+        };
+        TestPlanUpdateBody: {
+            /** @description 1–100 chars after normalize. Unique per project, case-insensitive — re-validated on rename by the same database index that guards create. */
+            name: string;
+            /** @description 0–500 chars. Defaults to empty. */
+            description?: string;
+            /** @description 0–100 chars after normalize. Defaults to empty. */
+            goal?: string;
+        };
+        TestPlanMemberTestListResponse: {
+            /** @description Ordered by added_at ascending (addition order). */
+            tests: components["schemas"]["TestPlanMemberTest"][];
+            count: number;
+        };
+        TestPlanMemberTest: {
+            /**
+             * Format: uuid
+             * @description The Test id (not the membership row id).
+             */
+            id: string;
+            title: string;
+            tags: string[];
+            /** Format: uuid */
+            added_by: string | null;
+            added_by_email: string | null;
+            /** Format: date-time */
+            added_at: string;
+        };
+        TestPlanAddTestsResponse: {
+            /** Format: uuid */
+            test_plan_id: string;
+            added_count: number;
+            /** @description Total member count after this add. */
+            member_count: number;
+        };
+        TestPlanAddTestsBody: {
+            /** @description At least one Test id from the plan's own project. */
+            test_ids: string[];
+        };
+        TestPlanRemoveTestResponse: {
+            /** Format: uuid */
+            test_plan_id: string;
+            /** Format: uuid */
+            removed_test_id: string;
+            /** @description Total member count after this removal. */
+            member_count: number;
         };
         ModuleUpdateResponse: {
             module: components["schemas"]["ModuleDetail"];
@@ -6899,7 +8102,7 @@ export interface components {
             title?: string;
             /** @description Markdown, up to 50 KB; null clears it. */
             description?: string | null;
-            /** @description Jira key. Immutable once set — a change returns 409. */
+            /** @description Jira key, e.g. `BK-42`. Immutable once set: after a story carries an `external_id`, ANY differing value returns 409 `conflict` (`details.reason = "external_id_immutable"`) — including `null` and an empty string. A set Jira link cannot be cleared or relinked through this endpoint; only re-sending the identical key is accepted, as a no-op. While the story has no link yet, the key must read as LETTERS-NUMBER or the request is 422. */
             external_id?: string | null;
             /**
              * @description Ready-to-test gate: moving to ready_to_test with zero active acceptance criteria returns 409 (BK-15).
@@ -7013,6 +8216,7 @@ export interface components {
             content: string;
         };
         AtcCreateBody: {
+            /** @description 3-200 characters after trimming leading/trailing whitespace (BK-622). */
             title: string;
             /** Format: uuid */
             module_id: string;
@@ -7047,7 +8251,28 @@ export interface components {
             /** @description Slash-separated module breadcrumb. */
             module_path: string;
         };
+        SearchPageResponse: {
+            /** @description Matches across all six entity types. The RPC caps each GROUP at 5 rows regardless of `limit`, so a broad query returns at most 5 ATCs, 5 Tests, 5 Projects, and so on. */
+            data: components["schemas"]["SearchResultItem"][];
+            /** @description True when ANY entity group hit its 5-row cap — the signal for rendering a per-group "+ more" hint. It does not mean the whole result set was cut to `limit`. */
+            truncated: boolean;
+        };
+        SearchResultItem: {
+            /** @enum {string} */
+            entity_type: "atc" | "test" | "project" | "module" | "bug" | "run";
+            /** Format: uuid */
+            id: string;
+            /** @description Display label for the row — the entity's title / name / slug as the RPC projected it. */
+            name: string;
+            /** Format: uuid */
+            project_id: string;
+            project_slug: string;
+            project_name: string;
+            /** @description Server-built destination path for this row (e.g. `/projects/{slug}/atcs/{id}`, `/projects/{slug}?module={id}`). Navigate to it verbatim — never reconstruct it client-side. */
+            href: string;
+        };
         AtcUpdateBody: {
+            /** @description 3-200 characters after trimming leading/trailing whitespace (BK-622). */
             title: string;
             /** @enum {string} */
             layer: "UI" | "API" | "Unit";
@@ -7065,7 +8290,7 @@ export interface components {
             acceptance_criterion_ids: string[];
         };
         AtcDuplicateBody: {
-            /** @description Optional title for the copy. Omit to default to `<source> (copy)`. */
+            /** @description Optional title for the copy. Omit to default to `<source> (copy)`. 3-200 characters after trimming leading/trailing whitespace (BK-622). */
             new_title?: string;
         };
         AtcUsageReport: {
@@ -7119,6 +8344,12 @@ export interface components {
             title: string;
             tags: string[];
             step_count: number;
+        };
+        TestSearchResult: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            tags: string[];
         };
         ExpandedTest: {
             /** Format: uuid */
@@ -7395,7 +8626,7 @@ export interface components {
             /** @description Opaque token for the next (older) page, or null when this is the last page. base64url — echo it back verbatim as `?cursor=`; never construct or parse one. */
             next_cursor: string | null;
         };
-        ActivityItem: components["schemas"]["ActivityItemModuleRenamed"] | components["schemas"]["ActivityItemModuleDescriptionUpdated"] | components["schemas"]["ActivityItemModuleMoved"] | components["schemas"]["ActivityItemModuleArchived"] | components["schemas"]["ActivityItemAtcCreated"] | components["schemas"]["ActivityItemTestCreated"] | components["schemas"]["ActivityItemRunFinished"] | components["schemas"]["ActivityItemRunAborted"];
+        ActivityItem: components["schemas"]["ActivityItemModuleRenamed"] | components["schemas"]["ActivityItemModuleDescriptionUpdated"] | components["schemas"]["ActivityItemModuleMoved"] | components["schemas"]["ActivityItemModuleArchived"] | components["schemas"]["ActivityItemAtcCreated"] | components["schemas"]["ActivityItemTestCreated"] | components["schemas"]["ActivityItemRunFinished"] | components["schemas"]["ActivityItemRunAborted"] | components["schemas"]["ActivityItemBugAssigned"] | components["schemas"]["ActivityItemBugReassigned"] | components["schemas"]["ActivityItemBugUnassigned"] | components["schemas"]["ActivityItemBugStatusChanged"];
         ActivityItemModuleRenamed: {
             /**
              * Format: uuid
@@ -7607,6 +8838,116 @@ export interface components {
         ActivityPayloadRunAborted: {
             skipped_steps: number | null;
         };
+        ActivityItemBugAssigned: {
+            /**
+             * Format: uuid
+             * @description activity_log row id — stable React key.
+             */
+            id: string;
+            /** @enum {string} */
+            entity_type: "bug";
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            action: "bug.assigned";
+            /** @description Server-rendered, from ACTION_LABELS — never re-derived client-side. */
+            action_label: string;
+            actor: components["schemas"]["ActivityActor"];
+            item: components["schemas"]["ActivityItemLabel"];
+            payload: components["schemas"]["ActivityPayloadBugAssigned"];
+            /** Format: date-time */
+            created_at: string;
+        };
+        ActivityPayloadBugAssigned: {
+            /** Format: uuid */
+            previous_assignee_user_id: string | null;
+            /** Format: uuid */
+            assignee_user_id: string | null;
+        };
+        ActivityItemBugReassigned: {
+            /**
+             * Format: uuid
+             * @description activity_log row id — stable React key.
+             */
+            id: string;
+            /** @enum {string} */
+            entity_type: "bug";
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            action: "bug.reassigned";
+            /** @description Server-rendered, from ACTION_LABELS — never re-derived client-side. */
+            action_label: string;
+            actor: components["schemas"]["ActivityActor"];
+            item: components["schemas"]["ActivityItemLabel"];
+            payload: components["schemas"]["ActivityPayloadBugReassigned"];
+            /** Format: date-time */
+            created_at: string;
+        };
+        ActivityPayloadBugReassigned: {
+            /** Format: uuid */
+            previous_assignee_user_id: string | null;
+            /** Format: uuid */
+            assignee_user_id: string | null;
+        };
+        ActivityItemBugUnassigned: {
+            /**
+             * Format: uuid
+             * @description activity_log row id — stable React key.
+             */
+            id: string;
+            /** @enum {string} */
+            entity_type: "bug";
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            action: "bug.unassigned";
+            /** @description Server-rendered, from ACTION_LABELS — never re-derived client-side. */
+            action_label: string;
+            actor: components["schemas"]["ActivityActor"];
+            item: components["schemas"]["ActivityItemLabel"];
+            payload: components["schemas"]["ActivityPayloadBugUnassigned"];
+            /** Format: date-time */
+            created_at: string;
+        };
+        ActivityPayloadBugUnassigned: {
+            /** Format: uuid */
+            previous_assignee_user_id: string | null;
+            /** Format: uuid */
+            assignee_user_id: string | null;
+        };
+        ActivityItemBugStatusChanged: {
+            /**
+             * Format: uuid
+             * @description activity_log row id — stable React key.
+             */
+            id: string;
+            /** @enum {string} */
+            entity_type: "bug";
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            action: "bug.status_changed";
+            /** @description Server-rendered, from ACTION_LABELS — never re-derived client-side. */
+            action_label: string;
+            actor: components["schemas"]["ActivityActor"];
+            item: components["schemas"]["ActivityItemLabel"];
+            payload: components["schemas"]["ActivityPayloadBugStatusChanged"];
+            /** Format: date-time */
+            created_at: string;
+        };
+        ActivityPayloadBugStatusChanged: {
+            /** @enum {string|null} */
+            previous_status: "open" | "in_progress" | "resolved" | "closed" | null;
+            /** @enum {string|null} */
+            status: "open" | "in_progress" | "resolved" | "closed" | null;
+            /** Format: uuid */
+            assignee_user_id: string | null;
+        };
         RunStepMarkBody: {
             /**
              * @description The step result. `pending` is never accepted — a re-mark-to-pending attempt is rejected as validation_failed.
@@ -7705,6 +9046,7 @@ export interface components {
             severity: "P1" | "P2" | "P3" | "P4";
             description?: string;
             steps_to_reproduce?: string;
+            /** @description Up to 10 evidence links. Each entry must use the `http://` or `https://` scheme — the validator is protocol-restricted, so `ftp://`, `data:`, `file://` and any other scheme are rejected with 422 `validation_failed` even though the value is a well-formed URL. */
             evidence_urls?: string[];
         };
         BugStandaloneCreateBody: {
@@ -7717,6 +9059,7 @@ export interface components {
             severity: "P1" | "P2" | "P3" | "P4";
             description?: string;
             steps_to_reproduce?: string;
+            /** @description Up to 10 evidence links. Each entry must use the `http://` or `https://` scheme — the validator is protocol-restricted, so `ftp://`, `data:`, `file://` and any other scheme are rejected with 422 `validation_failed` even though the value is a well-formed URL. */
             evidence_urls?: string[];
         };
         BugsListPage: {

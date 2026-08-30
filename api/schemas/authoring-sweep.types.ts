@@ -16,6 +16,8 @@
  * - GET  /api/v1/projects/{id}/milestones          -> MilestoneListResponse
  * - POST /api/v1/imports                           -> ImportPayload / ImportEnqueueResponse
  * - GET  /api/v1/imports/{id}                      -> ImportJobResponse
+ * - POST /api/v1/atcs                              -> AtcCreatePayload / AtcResponse (BK-499 TC3/TC4 precondition chain)
+ * - POST /api/v1/tests                             -> TestCreatePayload / TestResponse (BK-499 TC3/TC4 precondition chain)
  *
  * Consumed by: tests/components/api/AuthoringSweepApi.ts
  */
@@ -88,6 +90,30 @@ export interface ImportEnqueueResponse {
 /** Response for GET /imports/{id} — the row lives at `import_job`. */
 export interface ImportJobResponse {
   import_job: components['schemas']['ImportJob']
+}
+
+// ============================================================================
+// ATCs (product-domain "ATC" — chained by a Test, distinct from KATA's @atc)
+// ============================================================================
+
+/** Request payload for POST /atcs: { title, module_id, user_story_id, acceptance_criterion_ids, layer, tags?, steps, assertions? } */
+export type AtcCreatePayload = components['schemas']['AtcCreateBody'];
+
+/** Response for the create — the row lives at `atc`. No named OpenAPI response schema (inline in the path). */
+export interface AtcResponse {
+  atc: components['schemas']['Atc']
+}
+
+// ============================================================================
+// Tests (chains one or more ATCs)
+// ============================================================================
+
+/** Request payload for POST /tests: { title, atc_ids, workspace_id? } — `Idempotency-Key` header required. */
+export type TestCreatePayload = components['schemas']['TestCreateBody'];
+
+/** Response for the create — the row lives at `test`. No named OpenAPI response schema (inline in the path). */
+export interface TestResponse {
+  test: components['schemas']['Test']
 }
 
 // ============================================================================

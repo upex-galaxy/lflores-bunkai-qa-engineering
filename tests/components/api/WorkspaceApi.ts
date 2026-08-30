@@ -18,9 +18,14 @@ import type {
   ActiveWorkspaceError,
   ActiveWorkspaceResponse,
   ErrorEnvelope,
+  InviteAcceptBody,
+  InviteAcceptResponse,
+  WorkspaceCreateBody,
+  WorkspaceCreateResponse,
   WorkspaceInviteCreateBody,
   WorkspaceInviteCreateResponse,
   WorkspaceInviteListResponse,
+  WorkspaceLeaveResponse,
   WorkspacePatchBody,
   WorkspaceResponse,
 } from '@schemas/workspace.types';
@@ -36,10 +41,15 @@ export type {
   ActiveWorkspaceError,
   ActiveWorkspaceResponse,
   ErrorEnvelope,
+  InviteAcceptBody,
+  InviteAcceptResponse,
+  WorkspaceCreateBody,
+  WorkspaceCreateResponse,
   WorkspaceInvite,
   WorkspaceInviteCreateBody,
   WorkspaceInviteCreateResponse,
   WorkspaceInviteListResponse,
+  WorkspaceLeaveResponse,
   WorkspacePatchBody,
   WorkspaceResponse,
 } from '@schemas/workspace.types';
@@ -121,9 +131,105 @@ export class WorkspaceApi extends ApiBase {
     );
   }
 
+  /**
+   * Helper: Raw POST /api/v1/workspaces wrapper — bootstraps a new workspace
+   * and enrolls the caller as its owner.
+   *
+   * The sole genuinely capability-free write in the API (BK-499's Implementation
+   * Plan, "authenticated" posture bucket) — any PAT holding at least one scope
+   * passes. Not an ATC on its own; `createWorkspaceWithAnyScope` (BK-671) owns
+   * the fixed assertions. Also reusable as a Generate-pattern precondition by
+   * any other TC that just needs "a fresh workspace where the caller is owner"
+   * (e.g. BK-682, BK-684), without dragging in BK-671's own assertions.
+   *
+   * @param body - Workspace name and slug
+   * @returns Tuple with response, the created workspace, and sent payload
+   */
+  @step
+  async createWorkspace(
+    body: WorkspaceCreateBody,
+  ): Promise<[APIResponse, WorkspaceCreateResponse, WorkspaceCreateBody]> {
+    return this.apiPOST<WorkspaceCreateResponse, WorkspaceCreateBody>('/workspaces', body);
+  }
+
+  /**
+   * Helper: Raw GET /api/v1/workspaces/{id} wrapper — reads a workspace under
+   * whatever auth channel is currently set. Also the vehicle for one of
+   * BK-673/674's 4 sampled read-gated routes. Not an ATC on its own.
+   *
+   * @param id - Target workspace id
+   * @returns Tuple with response and the workspace
+   */
+  @step
+  async getWorkspaceById(id: string): Promise<[APIResponse, WorkspaceResponse]> {
+    return this.apiGET<WorkspaceResponse>(`/workspaces/${id}`);
+  }
+
+  /**
+   * Helper: Raw DELETE /api/v1/workspaces/{id}/membership wrapper — leaves a
+   * workspace under whatever auth channel is currently set. Session-only;
+   * blocked (409) if the caller is the workspace's only active owner or has
+   * no other active membership. Not an ATC on its own.
+   *
+   * @param workspaceId - Target workspace id
+   * @returns Tuple with response and the (possibly re-resolved active workspace) body
+   */
+  @step
+  async deleteMembership<TBody>(workspaceId: string): Promise<[APIResponse, TBody]> {
+    return this.apiDELETE<TBody>(`/workspaces/${workspaceId}/membership`);
+  }
+
+  /**
+   * Helper: Raw POST /api/v1/invites/accept wrapper — redeems an invite
+   * token under whatever auth channel (must be cookie-session; caller email
+   * must match the invite email). BK-499 TC10 precondition: gives a second,
+   * disposable identity a non-owner membership row to leave, since a freshly
+   * bootstrapped workspace's sole owner is blocked from leaving it (409
+   * `sole_owner`). Not an ATC on its own.
+   *
+   * @param body - The raw invite token
+   * @returns Tuple with response, accept result, and sent payload
+   */
+  @step
+  async acceptInvite(body: InviteAcceptBody): Promise<[APIResponse, InviteAcceptResponse, InviteAcceptBody]> {
+    return this.apiPOST<InviteAcceptResponse, InviteAcceptBody>('/invites/accept', body);
+  }
+
   // ============================================
   // ATCs - Complete Test Cases (ACTION + VERIFICATION)
   // ============================================
+
+  /**
+   * ATC: Bootstrap a new workspace with an any-scope PAT - expects success (201)
+   *
+   * Complete flow:
+   * 1. POST a fresh workspace name/slug to /api/v1/workspaces (ACTION)
+   * 2. Validate the workspace was created with an owner assigned (fixed assertions)
+   *
+   * AC1's positive scenario: any PAT holding at least one scope passes —
+   * `POST /workspaces` is the sole genuinely capability-free write (BK-499's
+   * Implementation Plan, "authenticated" posture bucket).
+   *
+   * The follow-up "is the owner specifically ME?" check (GET /me) is a
+   * test-level assertion — it composes a second endpoint and belongs in the
+   * test file, not here.
+   *
+   * @param body - Workspace name and slug
+   * @returns Tuple with response, the created workspace, and sent payload
+   */
+  @atc('BK-671')
+  async createWorkspaceWithAnyScope(
+    body: WorkspaceCreateBody,
+  ): Promise<[APIResponse, WorkspaceCreateResponse, WorkspaceCreateBody]> {
+    const [response, respBody, sentPayload] = await this.createWorkspace(body);
+
+    // Fixed assertions - validates the bootstrap succeeded and an owner was assigned
+    expect(response.status()).toBe(201);
+    expect(respBody.workspace.id).toBeDefined();
+    expect(respBody.workspace.owner_user_id).toBeDefined();
+
+    return [response, respBody, sentPayload];
+  }
 
   /**
    * ATC: Switch active workspace to one where the caller is an active member - expects success (200)
@@ -335,5 +441,114 @@ export class WorkspaceApi extends ApiBase {
     expect(body.error.message).toBe('This token is scoped to a different workspace.');
 
     return [response, body, sentPayload];
+  }
+
+  /**
+   * ATC: PAT-authenticated DELETE to the leave-workspace route - expects rejection (403)
+   *
+   * Complete flow:
+   * 1. DELETE /api/v1/workspaces/{id}/membership using a full-scope Bearer PAT (ACTION)
+   * 2. Validate the request is rejected with the verbatim channel-guard message (fixed assertions)
+   *
+   * AC5's session-only guard on the leave-workspace route — a PAT is
+   * unconditionally rejected regardless of scope, workspace_id validity, or
+   * membership state (the channel check runs before any of that).
+   *
+   * @param workspaceId - Any syntactically valid workspace id (the guard
+   *   fires before the id is resolved)
+   * @returns Tuple with response and error envelope
+   */
+  @atc('BK-678')
+  async rejectBearerOnDeleteMembership(workspaceId: string): Promise<[APIResponse, ErrorEnvelope]> {
+    const [response, body] = await this.deleteMembership<ErrorEnvelope>(workspaceId);
+
+    // Fixed assertions - validates the channel-based rejection and its verbatim message
+    expect(response.status()).toBe(403);
+    expect(body.error.message).toContain('Use a browser session.');
+
+    return [response, body];
+  }
+
+  /**
+   * ATC: PAT-authenticated POST to the switch-active-workspace route - expects rejection (403)
+   *
+   * Complete flow:
+   * 1. POST /api/v1/me/active-workspace using a full-scope Bearer PAT, WITHOUT
+   *    suspending it first (ACTION) — unlike `postActiveWorkspace`, which
+   *    exists specifically for the cookie-only positive/negative paths
+   * 2. Validate the request is rejected with the verbatim channel-guard message (fixed assertions)
+   *
+   * AC5's session-only guard on the switch-active-workspace route, paired
+   * with BK-678 as the sibling route's twin — both now carry the literal
+   * "Use a browser session." remedy sentence (BK-623, confirmed live on
+   * staging 2026-08-30; the Jira defect itself was still Open at that
+   * check, likely stale — flag for closure).
+   *
+   * @param payload - Target workspace id (any syntactically valid id — the
+   *   guard fires before it is resolved)
+   * @returns Tuple with response and error envelope
+   */
+  @atc('BK-679')
+  async rejectBearerOnPostActiveWorkspaceMessage(
+    payload: ActiveWorkspaceBody,
+  ): Promise<[APIResponse, ErrorEnvelope]> {
+    const [response, body] = await this.apiPOST<ErrorEnvelope, ActiveWorkspaceBody>('/me/active-workspace', payload);
+
+    // Fixed assertions - validates the channel-based rejection and its verbatim message
+    expect(response.status()).toBe(403);
+    expect(body.error.message).toContain('Use a browser session.');
+
+    return [response, body];
+  }
+
+  /**
+   * ATC: Cookie session on both session-only routes - expects success on both
+   *
+   * Complete flow:
+   * 1. POST the target workspace_id to /api/v1/me/active-workspace, cookie
+   *    session only (ACTION 1)
+   * 2. DELETE /api/v1/workspaces/{id}/membership on the SAME workspace,
+   *    cookie session only (ACTION 2)
+   * 3. Validate both succeed (fixed assertions)
+   *
+   * Positive-control twin of BK-678/BK-679 — proves the session-only guard
+   * is a CHANNEL check, not a blanket rejection. Embeds 2 `@step`/raw calls
+   * (not other `@atc` methods), single TC identity (one Scenario, 2
+   * When/Then pairs over the "session-only routes" bucket), same shape as
+   * `TokensApi.allowSessionAuthenticatedTokenLifecycle` (BK-545).
+   *
+   * Precondition contract: `workspaceId` must be one where the caller is a
+   * NON-owner member with at least one other active membership elsewhere —
+   * a freshly bootstrapped workspace's sole owner is blocked from leaving it
+   * (409 `sole_owner`), confirmed live on staging 2026-08-30. The calling
+   * test satisfies this via the invite+accept flow under a second identity
+   * (`config.testViewer`), never the caller's own owned workspace.
+   *
+   * @param workspaceId - A workspace the caller is a non-owner member of
+   * @returns Tuple with the switch and leave responses
+   */
+  @atc('BK-680')
+  async allowCookieSessionOnSessionOnlyRoutes(workspaceId: string): Promise<[APIResponse, APIResponse]> {
+    // authenticateSuccessfully() leaves an ambient Bearer PAT set (BK-166
+    // coexistence) alongside the session cookie — suspend it for BOTH
+    // actions (postActiveWorkspace already suspends around itself, but its
+    // `finally` restores the ambient token before ACTION 2 runs, so the
+    // DELETE would otherwise carry it and misfire the cookie-only guard).
+    const savedToken = this.authToken;
+    this.clearAuthToken();
+    try {
+      // ACTION 1: switch active workspace (cookie-session only)
+      const [switchResponse] = await this.postActiveWorkspace<ActiveWorkspaceResponse>({ workspace_id: workspaceId });
+      expect(switchResponse.status()).toBe(200);
+
+      // ACTION 2: leave that same workspace (cookie-session only)
+      const [leaveResponse] = await this.deleteMembership<WorkspaceLeaveResponse>(workspaceId);
+      expect(leaveResponse.status()).toBe(200);
+
+      return [switchResponse, leaveResponse];
+    }
+    finally {
+      if (savedToken) { this.setAuthToken(savedToken); }
+    }
   }
 }

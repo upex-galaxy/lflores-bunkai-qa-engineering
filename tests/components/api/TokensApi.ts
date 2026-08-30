@@ -279,4 +279,48 @@ export class TokensApi extends ApiBase {
 
     return [response, body];
   }
+
+  /**
+   * ATC: Session-authenticated issue with an empty scopes array - expects rejection (422)
+   *
+   * Complete flow:
+   * 1. POST a new-token body with `scopes: []` using the session cookie (ACTION)
+   * 2. Validate the request is rejected at the validation layer, before a row
+   *    is ever created (fixed assertions)
+   *
+   * BK-499 AC2 (BVA-derived): a PAT with zero scopes could authenticate but
+   * pass every capability gate trivially, so issuance itself refuses an empty
+   * array — this is the lower boundary of the scopes array, distinct from the
+   * "at least one scope" happy path already covered by BK-671/BK-545.
+   *
+   * @param overrides - Fields to override on the attempted token body
+   * @returns Tuple with response, error envelope, and sent payload
+   */
+  @atc('BK-672')
+  async rejectZeroScopeTokenIssuance(
+    overrides?: Partial<CreateTokenBody>,
+  ): Promise<[APIResponse, ErrorEnvelope, CreateTokenBody]> {
+    const body: CreateTokenBody = {
+      name: this.data.createTestId('pat-zero-scope'),
+      scopes: [],
+      ...overrides,
+    };
+
+    // authenticateSuccessfully() leaves an ambient Bearer PAT set (BK-166
+    // coexistence) alongside the session cookie — suspend it so this request
+    // actually exercises the cookie-only channel, mirroring mintPatWithScopes.
+    const savedToken = this.authToken;
+    this.clearAuthToken();
+    try {
+      const [response, respBody, sentPayload] = await this.apiPOST<ErrorEnvelope, CreateTokenBody>('/tokens', body);
+
+      // Fixed assertion - validates zero-scope issuance is rejected with a 422
+      expect(response.status()).toBe(422);
+
+      return [response, respBody, sentPayload];
+    }
+    finally {
+      if (savedToken) { this.setAuthToken(savedToken); }
+    }
+  }
 }
