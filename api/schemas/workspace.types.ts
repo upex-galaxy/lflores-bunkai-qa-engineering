@@ -61,6 +61,23 @@ export type WorkspaceInviteListResponse = components['schemas']['WorkspaceInvite
 export type WorkspaceInvite = components['schemas']['WorkspaceInvite'];
 
 // ============================================================================
+// Endpoint Types - DELETE /api/v1/workspaces/{id}/membership (BK-499)
+// ============================================================================
+
+/** Response for a successful leave — `{ newActiveWorkspaceId, newActiveWorkspaceName }`, both nullable. */
+export type WorkspaceLeaveResponse = components['schemas']['WorkspaceLeaveResponse'];
+
+// ============================================================================
+// Endpoint Types - POST /api/v1/invites/accept (BK-499 TC10 precondition)
+// ============================================================================
+
+/** Request payload: { token } — the raw invite token from `WorkspaceInviteCreateResponse.token`. */
+export type InviteAcceptBody = components['schemas']['InviteAcceptBody'];
+
+/** Response: `{ ok, workspace_id, role }`. */
+export type InviteAcceptResponse = components['schemas']['InviteAcceptResponse'];
+
+// ============================================================================
 // Shared
 // ============================================================================
 
