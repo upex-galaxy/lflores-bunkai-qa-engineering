@@ -30,6 +30,8 @@ import type { APIResponse } from '@playwright/test';
 import type {
   AcceptanceCriterionPayload,
   AcceptanceCriterionResponse,
+  AtcCreatePayload,
+  AtcResponse,
   EnvironmentListResponse,
   EnvironmentPayload,
   EnvironmentResponse,
@@ -39,6 +41,8 @@ import type {
   MilestoneListResponse,
   MilestonePayload,
   MilestoneResponse,
+  TestCreatePayload,
+  TestResponse,
   UserStoryPayload,
   UserStoryResponse,
 } from '@schemas/authoring-sweep.types';
@@ -52,6 +56,8 @@ import { atc, step } from '@utils/decorators';
 export type {
   AcceptanceCriterionPayload,
   AcceptanceCriterionResponse,
+  AtcCreatePayload,
+  AtcResponse,
   EnvironmentListResponse,
   EnvironmentPayload,
   EnvironmentResponse,
@@ -61,6 +67,8 @@ export type {
   MilestoneListResponse,
   MilestonePayload,
   MilestoneResponse,
+  TestCreatePayload,
+  TestResponse,
   UserStoryPayload,
   UserStoryResponse,
 } from '@schemas/authoring-sweep.types';
@@ -186,6 +194,30 @@ export class AuthoringSweepApi extends ApiBase {
   @step
   async getImportJob(id: string): Promise<[APIResponse, ImportJobResponse]> {
     return this.apiGET<ImportJobResponse>(`/imports/${id}`);
+  }
+
+  /**
+   * Helper: Raw POST /atcs wrapper — creates a product-domain ATC (chained
+   * by a Test, distinct from KATA's `@atc`). BK-499's TC3/TC4 precondition
+   * chain: a Test needs `atc_ids`, and an ATC needs an anchoring
+   * `user_story_id` + `acceptance_criterion_ids`. Not an ATC on its own.
+   */
+  @step
+  async createAtc(payload: AtcCreatePayload): Promise<[APIResponse, AtcResponse, AtcCreatePayload]> {
+    return this.apiPOST<AtcResponse, AtcCreatePayload>('/atcs', payload);
+  }
+
+  /**
+   * Helper: Raw POST /tests wrapper — chains one or more ATCs into a Test.
+   * Requires an `Idempotency-Key` header (BK-499's TC3/TC4 precondition
+   * chain: `GET /tests/{id}/runs` needs a real `test_id`). Not an ATC on
+   * its own.
+   */
+  @step
+  async createTest(payload: TestCreatePayload): Promise<[APIResponse, TestResponse, TestCreatePayload]> {
+    return this.apiPOST<TestResponse, TestCreatePayload>('/tests', payload, {
+      headers: { 'Idempotency-Key': this.data.createTestId('idem') },
+    });
   }
 
   /**
