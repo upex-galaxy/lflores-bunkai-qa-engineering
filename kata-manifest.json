@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-30T12:13:38.375Z",
+  "generatedAt": "2026-08-30T12:45:30.146Z",
   "components": {
     "api": [
       {
@@ -121,6 +121,28 @@
             "id": "BK-489",
             "method": "assignBugTriggersNotification",
             "line": 401
+          }
+        ]
+      },
+      {
+        "name": "CapabilityGateApi",
+        "file": "CapabilityGateApi.ts",
+        "relativePath": "tests/components/api/CapabilityGateApi.ts",
+        "atcs": [
+          {
+            "id": "BK-675",
+            "method": "rejectWriteOnlyPatOnReadGatedRoute",
+            "line": 51
+          },
+          {
+            "id": "BK-676",
+            "method": "allowReadPatWithExtraUnrelatedScope",
+            "line": 77
+          },
+          {
+            "id": "BK-681",
+            "method": "allowBrowserSessionOnGatedRouteNoScopeCheck",
+            "line": 105
           }
         ]
       },
@@ -294,9 +316,9 @@
   },
   "steps": [],
   "summary": {
-    "totalComponents": 8,
-    "totalATCs": 46,
-    "apiComponents": 7,
+    "totalComponents": 9,
+    "totalATCs": 49,
+    "apiComponents": 8,
     "uiComponents": 1,
     "stepsModules": 0
   }

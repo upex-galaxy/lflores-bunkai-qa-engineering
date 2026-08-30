@@ -53,3 +53,6 @@ export interface ActivityPageResponse {
   items: ActivityItemResponse[]
   next_cursor: string | null
 }
+
+/** Canonical error envelope — 403 when the capability gate rejects the caller. */
+export type ErrorEnvelope = components['schemas']['ErrorEnvelope'];

@@ -20,6 +20,7 @@ import { ApiBase } from '@api/ApiBase';
 import { AuthApi } from '@api/AuthApi';
 import { AuthoringSweepApi } from '@api/AuthoringSweepApi';
 import { BugsApi } from '@api/BugsApi';
+import { CapabilityGateApi } from '@api/CapabilityGateApi';
 import { ModulesApi } from '@api/ModulesApi';
 import { NotificationsApi } from '@api/NotificationsApi';
 import { TokensApi } from '@api/TokensApi';
@@ -54,6 +55,9 @@ export class ApiFixture extends ApiBase {
    */
   readonly authoringSweep: AuthoringSweepApi;
 
+  /** Capability gate component - cross-cutting proof of BK-499's scope gate itself */
+  readonly capabilityGate: CapabilityGateApi;
+
   constructor(options: TestContextOptions) {
     super(options);
 
@@ -65,6 +69,7 @@ export class ApiFixture extends ApiBase {
     this.tokens = new TokensApi(options);
     this.modules = new ModulesApi(options);
     this.authoringSweep = new AuthoringSweepApi(options);
+    this.capabilityGate = new CapabilityGateApi(options);
   }
 
   // ============================================
@@ -84,6 +89,7 @@ export class ApiFixture extends ApiBase {
     this.tokens.setAuthToken(token);
     this.modules.setAuthToken(token);
     this.authoringSweep.setAuthToken(token);
+    this.capabilityGate.setAuthToken(token);
   }
 
   /**
@@ -98,5 +104,6 @@ export class ApiFixture extends ApiBase {
     this.tokens.clearAuthToken();
     this.modules.clearAuthToken();
     this.authoringSweep.clearAuthToken();
+    this.capabilityGate.clearAuthToken();
   }
 }
