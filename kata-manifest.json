@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-29T19:33:03.891Z",
+  "generatedAt": "2026-08-30T12:13:38.375Z",
   "components": {
     "api": [
       {
@@ -216,6 +216,11 @@
             "id": "BK-553",
             "method": "rejectPatDeleteTokenRevocation",
             "line": 175
+          },
+          {
+            "id": "BK-672",
+            "method": "rejectZeroScopeTokenIssuance",
+            "line": 299
           }
         ]
       },
@@ -290,7 +295,7 @@
   "steps": [],
   "summary": {
     "totalComponents": 8,
-    "totalATCs": 45,
+    "totalATCs": 46,
     "apiComponents": 7,
     "uiComponents": 1,
     "stepsModules": 0

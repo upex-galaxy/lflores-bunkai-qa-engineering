@@ -122,8 +122,8 @@ Fixture: `{ api }`
 
 ## 6. Implementation Order
 
-- [ ] TC1 (BK-671) — `WorkspaceApi` helpers + ATC, new test file (zero data dependency — first, to validate the whole pipeline end to end)
-- [ ] TC2 (BK-672) — `TokensApi` ATC, new test file
+- [x] TC1 (BK-671) — `WorkspaceApi` helpers + ATC, new test file (zero data dependency — first, to validate the whole pipeline end to end)
+- [x] TC2 (BK-672) — `TokensApi` ATC, new test file
 - [ ] TC5, TC6, TC11 (BK-675/676/681) — `CapabilityGateApi` skeleton + the 3 zero-dependency ATCs
 - [ ] TC12, TC13 (BK-682/683) — same component, resolve the viewer-role data question first
 - [ ] TC3, TC4, TC7 (BK-673/674/677) — parametrized ATCs, resolve project/test discovery first
