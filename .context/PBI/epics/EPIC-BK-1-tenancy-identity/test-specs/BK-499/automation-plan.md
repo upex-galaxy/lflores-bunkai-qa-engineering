@@ -58,7 +58,7 @@
 | BK-676 | `CapabilityGateApi` | `allowReadPatWithExtraUnrelatedScope` | Fixed `/activity`, `atc:read`+`run:execute` PAT → 200 |
 | BK-677 | `CapabilityGateApi` | `allowAnyAuthenticatedPatOnIdentityRoute(route)` | Parametrized, 2 routes, `run:execute`-only PAT → 200 |
 | BK-678 | `WorkspaceApi` | `rejectBearerOnDeleteMembership` | DELETE membership, full-scope Bearer PAT → 403 "...Use a browser session." |
-| BK-679 | `WorkspaceApi` | `rejectBearerOnPostActiveWorkspaceMessage` | POST active-workspace, full-scope Bearer PAT → 403; **message assertion fails until BK-623 ships** |
+| BK-679 | `WorkspaceApi` | `rejectBearerOnPostActiveWorkspaceMessage` | POST active-workspace, full-scope Bearer PAT → 403; message assertion — **BK-623 confirmed fixed live on staging 2026-08-30, no longer red-by-design; Jira defect still shows Open, flagged for closure** |
 | BK-680 | `WorkspaceApi` | `allowCookieSessionOnSessionOnlyRoutes` | Cookie session on both session-only routes → succeeds |
 | BK-681 | `CapabilityGateApi` | `allowBrowserSessionOnGatedRouteNoScopeCheck` | Fixed `/activity`, cookie session (no PAT) → 200 |
 | BK-682 | `CapabilityGateApi` | `rejectOwnerRoleMissingCapability(workspaceId)` | Owner-role PAT, `run:execute`-only → 403 |
@@ -74,7 +74,9 @@
 | `WorkspaceApi` | `getWorkspaceById(id)` | `[APIResponse, WorkspaceResponse]` | Raw GET /workspaces/{id} wrapper — also the vehicle for one of BK-673/674's 4 sampled routes |
 | `WorkspaceApi` | `deleteMembership(workspaceId)` | `[APIResponse, void]` | Raw DELETE .../membership wrapper |
 | `CapabilityGateApi` | none beyond the ATCs themselves | — | Every method is directly an ATC — there is no "read-only, no assertion" sub-step to extract, since each TC's entire identity IS the gate check |
-| `ProjectsApi` | `createProject(args)` | `[APIResponse, ProjectResponse, body]` | Raw POST /workspaces/{id}/projects wrapper |
+| `ProjectsApi` | `createProject(args)` | `[APIResponse, ProjectResponse, body]` | Raw POST /workspaces/{id}/projects wrapper — built now (TC3/TC4 precondition chain), reused later by BK-684/685 |
+| `AuthoringSweepApi` | `createAtc(args)` | `[APIResponse, AtcResponse, body]` | Raw POST /atcs wrapper — new, added 2026-08-30 for the TC3/TC4 precondition chain (product-domain ATC, distinct from KATA's `@atc`) |
+| `AuthoringSweepApi` | `createTest(args)` | `[APIResponse, TestResponse, body]` | Raw POST /tests wrapper — new, added 2026-08-30 for the TC3/TC4 precondition chain (`GET /tests/{id}/runs` needs a real `test_id`) |
 
 ## 4. Test Data Strategy
 
@@ -82,17 +84,17 @@
 |---|---|---|---|---|
 | BK-671 | Any-scope PAT, no pre-existing workspace | Generate | `mintPatWithScopes()` then the ATC itself creates the workspace | Feasible |
 | BK-672 | Cookie session only, no PAT | Generate | `authenticateSuccessfully()` leaves a cookie session; nothing else | Feasible |
-| BK-673/674 | `project_id` / `test_id` / `workspace_id` for 2 of the 4 sampled routes | Discover, fallback Generate | `workspace_id` via `GET /me`'s `active_workspace_id`. `project_id`/`test_id` need a real project + test under that workspace | **Risky — resolve when coding BK-673**: confirm the QA-sandbox test user's default workspace already has a project/test, or generate one via `ProjectsApi.createProject` + existing `ModulesApi`/`AuthoringSweepApi` flows before this ATC runs |
+| BK-673/674 | `project_id` / `test_id` / `workspace_id` for the 4 sampled routes | Hybrid: reuse committed fixtures + Generate | **Resolved 2026-08-30 (revised)**: discovered `tests/data/constants.ts` already establishes a committed-fixture precedent — `BK264_DEFECT_TRIAGE_PROJECT_ID`/`BK264_QA_SANDBOX_WORKSPACE_ID`/`DEFECT_TRIAGE_MODULE_ID`, shipped by BK-498's own sweep, with the exact justification this TC needs ("cannot be safely discovered... a fixed, documented reference is the only viable Discover-adjacent strategy"). Reused those 3 named constants for `/activity`, `/workspaces/{id}`, and the traceability route's `project_id` (story discovered via `getModuleUserStories`, same fallback-create pattern as `enforceAuthoringWriteReadSweep.test.ts`). For `/tests/{id}/runs`: rather than leaning on the single hand-seeded row (`"BK499 seed Test for tests-runs validation"`, staging `tests` row `04054ddc…`, created 2026-08-27 — fragile, breaks silently if ever deleted, and not a committed constant), a fresh product-domain ATC + Test is GENERATED every run (`createAcceptanceCriterion` → `createAtc` → `createTest`, all under the same committed module/story). `ProjectsApi.createProject` (built for this) ended up used only by BK-684/685, not this chain — kept, not dead code. |
 | BK-675/676/681 | None beyond authenticated identity | Generate | `/activity` is workspace-scoped implicitly by session/PAT binding | Feasible |
 | BK-677 | `workspace_id` for the notifications route | Discover | `GET /me`'s `active_workspace_id` | Feasible |
 | BK-678/679 | `workspace_id` — irrelevant to the outcome (session-only guard fires before the handler body runs, so membership is never checked) | Discover | `GET /me`'s `active_workspace_id`, or any syntactically valid UUID | Feasible |
-| BK-680 | `workspace_id` where DELETE membership will **actually execute** (cookie session passes the guard for real) | Generate — **disposable workspace** | Create a throwaway workspace via the BK-671 flow, then delete membership on THAT one — never the caller's main/home workspace | **Risky — resolve when coding BK-680**: confirm the API allows a sole owner to delete their own membership (may be blocked by a "workspace needs an owner" invariant); if blocked, this example may need a second invited member instead |
+| BK-680 | `workspace_id` where DELETE membership will **actually execute** (cookie session passes the guard for real) | Generate — invite+accept a non-owner member | **Resolved 2026-08-30**: confirmed live on staging that a freshly bootstrapped workspace's SOLE OWNER is blocked from leaving it (409 `sole_owner`) — the originally-planned disposable-workspace-as-owner approach does not work. Fixed via the invite+accept flow instead: OWNER (`config.testUser`) creates a disposable workspace, invites `config.testViewer` as `member`, `config.testViewer` accepts (`POST /invites/accept`) and IS the caller for both session-only actions — a non-owner member with other active memberships elsewhere passes both leave-blockers. |
 | BK-682 | Owner-role PAT on a workspace the caller owns | Generate | Reuse the BK-671 bootstrap flow — caller is owner of any workspace they create | Feasible |
-| BK-683 | Viewer-role PAT on a workspace the caller is a viewer (not owner) of | Discover, fallback DB-Generate | **Risky — resolve when coding BK-683**: no self-service "become a viewer" API path is obvious yet; check whether an existing invite-accept flow or `dbhub` MCP seed is the intended route |
+| BK-683 | Viewer-role PAT on a workspace the caller is a viewer (not owner) of | Discover | **Resolved**: `config.testViewer` (BK-264 QA Sandbox, already provisioned) is a real Viewer-role member of a real workspace — no invite/DB-seed needed, `authenticateAs` + `GET /me` discovers it directly |
 | BK-684 | `atc:write` PAT + member role (>= member) | Generate | Reuse the BK-671 bootstrap flow — owner counts as member | Feasible |
-| BK-685 | PAT missing `atc:write` AND caller NOT a member of the target workspace | Discover | Same "real workspace, zero membership rows for caller" problem `WorkspaceApi.switchToNonMemberWorkspace` (BK-251) already solved — reuse whatever source that existing test uses (check `tests/integration/workspace/` when coding BK-685) |
+| BK-685 | PAT missing `atc:write` AND caller NOT a member of the target workspace | Discover + Generate (unbound PAT) | **Resolved 2026-08-30**: binding a PAT to `WORKSPACE_NOT_MEMBER_ID` at MINT time is itself rejected (403 — issuance requires the caller already be a member of the workspace being bound), so `rejectProjectCreationMissingCapability` uses an UNBOUND `atc:read`-scoped PAT (no `workspace_id` on mint) against the shared `WORKSPACE_NOT_MEMBER_ID` fixture instead — same "real workspace, zero membership rows for caller" fixture `WorkspaceApi.switchToNonMemberWorkspace` (BK-251) already established |
 
-**Never hardcoded**: the manual-QA session's sandbox IDs (`BK-264 QA Sandbox` workspace/project) are QA-tooling artifacts, not automation fixtures — no test in this plan references them directly. Every ID above is discovered or generated at runtime.
+**Committed-fixture precedent**: `tests/data/constants.ts` already establishes named, documented UUID constants for durable fixtures that "cannot be safely discovered or generated at runtime" (`WORKSPACE_NOT_MEMBER_ID`, `BK264_DEFECT_TRIAGE_PROJECT_ID`, `BK264_QA_SANDBOX_WORKSPACE_ID`, `DEFECT_TRIAGE_MODULE_ID` — the last 3 shipped by BK-498). This plan's earlier "never hardcoded, manual-sandbox IDs are QA-tooling artifacts" line (written before that file was re-examined) meant "never a bare inline UUID" — it does NOT forbid the established named-constant pattern, which BK-673/674 now also uses. Genuinely one-off/disposable ids (workspaces, projects, tests, ATCs minted per-run) are still always discovered or generated at runtime, never hardcoded.
 
 ## 5. Test Scenarios
 
@@ -110,7 +112,7 @@ Fixture: `{ api }`
 
 ### File: `tests/integration/workspace/rejectBearerOnSessionOnlyRoutes.test.ts`
 Fixture: `{ api }`
-#### Scenarios 1–2 (BK-678, BK-679 — BK-679 tagged `@blocked:BK-623`)
+#### Scenarios 1–2 (BK-678, BK-679)
 
 ### File: `tests/integration/workspace/allowCookieOnSessionOnlyRoutes.test.ts`
 Fixture: `{ api }`
@@ -125,18 +127,18 @@ Fixture: `{ api }`
 - [x] TC1 (BK-671) — `WorkspaceApi` helpers + ATC, new test file (zero data dependency — first, to validate the whole pipeline end to end)
 - [x] TC2 (BK-672) — `TokensApi` ATC, new test file
 - [x] TC5, TC6, TC11 (BK-675/676/681) — `CapabilityGateApi` skeleton + the 3 zero-dependency ATCs
-- [ ] TC12, TC13 (BK-682/683) — same component, resolve the viewer-role data question first
-- [ ] TC3, TC4, TC7 (BK-673/674/677) — parametrized ATCs, resolve project/test discovery first
-- [ ] TC8, TC9, TC10 (BK-678/679/680) — `WorkspaceApi` session-only extensions, resolve the disposable-workspace question for TC10 first
-- [ ] TC14, TC15 (BK-684/685) — new `ProjectsApi`, resolve non-member-workspace discovery first
-- [ ] `bun run kata:manifest` — regenerate registry after all components land
+- [x] TC12, TC13 (BK-682/683) — same component, viewer-role data resolved (`config.testViewer`, already provisioned)
+- [x] TC3, TC4, TC7 (BK-673/674/677) — parametrized ATCs; project/test discovery resolved via committed fixtures + fresh-generated ATC/Test
+- [x] TC8, TC9, TC10 (BK-678/679/680) — `WorkspaceApi` session-only extensions; TC10 resolved via invite+accept (sole-owner leave is blocked, confirmed live)
+- [x] TC14, TC15 (BK-684/685) — new `ProjectsApi`; non-member-workspace resolved via an unbound PAT (binding to a non-member workspace is itself rejected at mint)
+- [x] `bun run kata:manifest` — regenerated after all components landed (51→59 ATCs, 9→10 API components)
 - [ ] TMS TC transitions to Pull Request when the PR opens
 
 ## 7. Success Criteria
 
-- [ ] 15/15 TCs automated (14 green, BK-679 red-by-design and tagged `@blocked:BK-623`)
-- [ ] KATA compliance (inline locators n/a — API-only; import aliases; max-2-positional-params; ATCs don't call ATCs)
-- [ ] Fixture correct (`{ api }` throughout)
-- [ ] No hardcoded waits, no hardcoded IDs
-- [ ] Tests pass locally and on staging
-- [ ] `kata-manifest.json` regenerated and clean
+- [x] 15/15 TCs automated, all green (BK-679/BK-623 confirmed fixed live on staging 2026-08-30 — no red-by-design test remains; Jira defect still shows Open, flagged for closure)
+- [x] KATA compliance (inline locators n/a — API-only; import aliases; max-2-positional-params; ATCs don't call ATCs)
+- [x] Fixture correct (`{ api }` throughout)
+- [x] No hardcoded waits; disposable ids discovered/generated at runtime, durable fixtures via the committed `tests/data/constants.ts` pattern
+- [x] Tests pass locally and on staging (full `--project=integration` run, 69/69 green, no regressions)
+- [x] `kata-manifest.json` regenerated and clean

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-08-30T13:17:03.565Z",
+  "generatedAt": "2026-08-30T13:53:04.447Z",
   "components": {
     "api": [
       {
@@ -28,27 +28,27 @@
           {
             "id": "BK-559",
             "method": "rejectWritesAcrossFamilies",
-            "line": 299
+            "line": 331
           },
           {
             "id": "BK-561",
             "method": "acceptWritesAcrossFamilies",
-            "line": 358
+            "line": 390
           },
           {
             "id": "BK-563",
             "method": "acceptReadsAcrossFamilies",
-            "line": 433
+            "line": 465
           },
           {
             "id": "BK-566",
             "method": "rejectReadsAcrossFamilies",
-            "line": 467
+            "line": 499
           },
           {
             "id": "BK-568",
             "method": "completeImportLifecycleDualScope",
-            "line": 503
+            "line": 535
           }
         ]
       },
@@ -130,29 +130,44 @@
         "relativePath": "tests/components/api/CapabilityGateApi.ts",
         "atcs": [
           {
+            "id": "BK-673",
+            "method": "allowReadScopedPatOnGatedRoute",
+            "line": 212
+          },
+          {
+            "id": "BK-674",
+            "method": "rejectPatMissingReadScopeOnGatedRoute",
+            "line": 245
+          },
+          {
             "id": "BK-675",
             "method": "rejectWriteOnlyPatOnReadGatedRoute",
-            "line": 51
+            "line": 72
           },
           {
             "id": "BK-676",
             "method": "allowReadPatWithExtraUnrelatedScope",
-            "line": 77
+            "line": 98
+          },
+          {
+            "id": "BK-677",
+            "method": "allowAnyAuthenticatedPatOnIdentityRoute",
+            "line": 284
           },
           {
             "id": "BK-681",
             "method": "allowBrowserSessionOnGatedRouteNoScopeCheck",
-            "line": 105
+            "line": 126
           },
           {
             "id": "BK-682",
             "method": "rejectOwnerRoleMissingCapability",
-            "line": 133
+            "line": 154
           },
           {
             "id": "BK-683",
             "method": "allowViewerRoleWithCapability",
-            "line": 159
+            "line": 180
           }
         ]
       },
@@ -220,6 +235,23 @@
         "atcs": []
       },
       {
+        "name": "ProjectsApi",
+        "file": "ProjectsApi.ts",
+        "relativePath": "tests/components/api/ProjectsApi.ts",
+        "atcs": [
+          {
+            "id": "BK-684",
+            "method": "createProjectSuccessfully",
+            "line": 84
+          },
+          {
+            "id": "BK-685",
+            "method": "rejectProjectCreationMissingCapability",
+            "line": 116
+          }
+        ]
+      },
+      {
         "name": "TokensApi",
         "file": "TokensApi.ts",
         "relativePath": "tests/components/api/TokensApi.ts",
@@ -264,42 +296,57 @@
           {
             "id": "BK-250",
             "method": "switchToActiveWorkspace",
-            "line": 199
+            "line": 248
           },
           {
             "id": "BK-251",
             "method": "switchToNonMemberWorkspace",
-            "line": 228
+            "line": 277
           },
           {
             "id": "BK-252",
             "method": "switchToSuspendedWorkspace",
-            "line": 257
+            "line": 306
           },
           {
             "id": "BK-544",
             "method": "rejectInviteCreationWithReadOnlyPat",
-            "line": 288
+            "line": 337
           },
           {
             "id": "BK-548",
             "method": "rejectRevokeInviteWithoutAdminScope",
-            "line": 319
+            "line": 368
           },
           {
             "id": "BK-550",
             "method": "allowWorkspaceAdminActionWithBoundPat",
-            "line": 349
+            "line": 398
           },
           {
             "id": "BK-551",
             "method": "rejectCrossWorkspaceAdminPat",
-            "line": 381
+            "line": 430
           },
           {
             "id": "BK-671",
             "method": "createWorkspaceWithAnyScope",
-            "line": 171
+            "line": 220
+          },
+          {
+            "id": "BK-678",
+            "method": "rejectBearerOnDeleteMembership",
+            "line": 461
+          },
+          {
+            "id": "BK-679",
+            "method": "rejectBearerOnPostActiveWorkspaceMessage",
+            "line": 491
+          },
+          {
+            "id": "BK-680",
+            "method": "allowCookieSessionOnSessionOnlyRoutes",
+            "line": 530
           }
         ]
       }
@@ -326,9 +373,9 @@
   },
   "steps": [],
   "summary": {
-    "totalComponents": 9,
-    "totalATCs": 51,
-    "apiComponents": 8,
+    "totalComponents": 10,
+    "totalATCs": 59,
+    "apiComponents": 9,
     "uiComponents": 1,
     "stepsModules": 0
   }
