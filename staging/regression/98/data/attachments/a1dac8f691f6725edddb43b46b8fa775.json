@@ -1,0 +1,24 @@
+{
+  "user": {
+    "id": "b3a09a86-3381-4925-936f-988b2b53dc60",
+    "email": "bk569-nonmember@ambuusteln.resend.app"
+  },
+  "session": {
+    "access_token": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImUzNTEyOTEwLTY0ZDEtNGY4OS04ZDk2LTI4NjA5NzQ2ZTQ1YyIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2ZtYnBpa3pwa2FmcHRxeGltaHhuLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJiM2EwOWE4Ni0zMzgxLTQ5MjUtOTM2Zi05ODhiMmI1M2RjNjAiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzg4MDYzODY4LCJpYXQiOjE3ODgwNjAyNjgsImVtYWlsIjoiYms1Njktbm9ubWVtYmVyQGFtYnV1c3RlbG4ucmVzZW5kLmFwcCIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWwiOiJiazU2OS1ub25tZW1iZXJAYW1idXVzdGVsbi5yZXNlbmQuYXBwIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBob25lX3ZlcmlmaWVkIjpmYWxzZSwic3ViIjoiYjNhMDlhODYtMzM4MS00OTI1LTkzNmYtOTg4YjJiNTNkYzYwIn0sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3ODgwNjAyNjh9XSwic2Vzc2lvbl9pZCI6IjFiMzUyMjkwLTkzNjItNGRiNS05ZjRjLTc4OTBmZjE2MDI3MiIsImlzX2Fub255bW91cyI6ZmFsc2V9.GmG769TrwVRqX0zXktK6JDOVExFHrGiUVfkIrW_w35kHq3R3Tq7qsnTGhSl2h09h91q8zpf_LMt793GFbaif6Q",
+    "refresh_token": "qu2oblnw65ku",
+    "expires_at": 1788063868,
+    "token_type": "bearer"
+  },
+  "pat": {
+    "token": "bk_pat_ip1UZ0TMgmM2.m8K3EYb0q2TU3PeNOf4s1YSM-xNh7gk",
+    "id": "8764f043-4df0-40e7-bd54-30089458136b",
+    "name": "cli-signin",
+    "scopes": [
+      "atc:read",
+      "atc:write",
+      "run:execute"
+    ],
+    "expires_at": null
+  },
+  "warning": "Store the PAT token now — it cannot be retrieved later."
+}

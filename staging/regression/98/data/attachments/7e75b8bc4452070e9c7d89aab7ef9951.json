@@ -1,0 +1,10 @@
+{
+  "error": {
+    "code": "validation_failed",
+    "message": "The assignee must be an active member of this workspace.",
+    "details": {
+      "reason": "assignee_not_workspace_member"
+    },
+    "request_id": "fa3e9a83-82f7-487a-98f5-e652e7debf2a"
+  }
+}

@@ -1,1 +1,0 @@
-{"id":"f57e2ac05e05d086ffe8f270d416fefd","fullName":"integration/bugs/fieldIndependence.test.ts:27:3","name":"BK-264: should keep status unchanged when reassigning a closed bug","status":"passed","testResultsByEnv":{"default":"9c0ccb231c3383a475979f500e442235"}}
