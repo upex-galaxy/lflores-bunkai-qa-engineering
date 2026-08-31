@@ -56,7 +56,7 @@ Source: `.agents/project.yaml` §`environments`. Only `local` and `staging` are 
 
 ## Tools and Access
 
-- Issue tracker: Jira Cloud — resolved via `[ISSUE_TRACKER_TOOL]` → `/acli` skill. Site: `https://upexgalaxy71.atlassian.net/` (`.agents/project.yaml` §`issue_tracker`)
+- Issue tracker: Jira Cloud — resolved via `[ISSUE_TRACKER_TOOL]` → `/acli` skill. Site: `https://upexgalaxy72.atlassian.net` (`.agents/project.yaml` §`issue_tracker`)
 - Project key: `BK`
 - TMS modality: Jira-native (no Xray) — `.agents/project.yaml` `testing.tms_cli: acli` (same as `issue_tracker_cli`)
 - Database: resolved via `[DB_TOOL]` → `staging-dbhub` MCP (staging) / `local-dbhub` MCP (local)
