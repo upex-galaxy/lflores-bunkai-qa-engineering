@@ -1,0 +1,15 @@
+{
+  "test": {
+    "id": "b98e3f11-155d-4f42-a7a1-f10e7e7eb408",
+    "steps": [
+      {
+        "atc_id": "99e188bf-5d78-4999-aabb-37a6493aa893",
+        "position": 1
+      }
+    ],
+    "title": "gate-fixture-test-1788163125058-omnNGW",
+    "created_at": "2026-08-31T07:58:45.229067+00:00",
+    "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+    "workspace_id": "6646f244-a28c-441e-8486-9af33bdb5c11"
+  }
+}

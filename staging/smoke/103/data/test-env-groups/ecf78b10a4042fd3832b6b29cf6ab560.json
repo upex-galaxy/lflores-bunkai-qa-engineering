@@ -1,0 +1,1 @@
+{"id":"ecf78b10a4042fd3832b6b29cf6ab560","fullName":"integration/capability/enforceCapabilityGate.test.ts:133:3","name":"BK-499: should serve a capability-gated route to a browser session with no scope check","status":"passed","testResultsByEnv":{"default":"4cb955fc89f3569b9b8e3f7503d676cb"}}

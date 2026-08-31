@@ -1,0 +1,13 @@
+{
+  "id": "b3bab454-c3dd-44a4-a7e7-a7f9114ee031",
+  "token": "bk_pat_CuNdJd92smkt.i-cAXQlokEQlGcpUMIYEpKYe1scxQSk",
+  "name": "pat-1788163118870-ZDwKSA",
+  "scopes": [
+    "atc:read",
+    "run:execute"
+  ],
+  "workspace_id": null,
+  "expires_at": null,
+  "created_at": "2026-08-31T07:58:38.969385+00:00",
+  "warning": "Store this token now — it cannot be retrieved later."
+}

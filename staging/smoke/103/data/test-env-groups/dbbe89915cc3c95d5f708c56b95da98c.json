@@ -1,0 +1,1 @@
+{"id":"dbbe89915cc3c95d5f708c56b95da98c","fullName":"integration/capability/enforceCapabilityGate.test.ts:224:3","name":"BK-499: should return 200 with data given PAT scoped atc:read","status":"passed","testResultsByEnv":{"default":"12fc7644336c6f0fc702f79e7d3d1a70"}}
