@@ -1,0 +1,192 @@
+{
+  "user": {
+    "id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+    "email": "bunkai-staging-userlf@ambuusteln.resend.app"
+  },
+  "workspaces": [
+    {
+      "id": "a808499e-f437-43b8-9fdb-8cee7dcceb3e",
+      "slug": "bunkai-qa",
+      "name": "Bünkāï QA",
+      "plan": "community",
+      "owner_user_id": "0cdfea29-cbf7-4762-b4aa-f6d152492f43",
+      "created_at": "2026-06-05T21:28:04.92533+00:00"
+    },
+    {
+      "id": "9a2c3de7-18af-45e5-a36f-e0ef9377af69",
+      "slug": "extra-test",
+      "name": "Extra Test",
+      "plan": "community",
+      "owner_user_id": "0cdfea29-cbf7-4762-b4aa-f6d152492f43",
+      "created_at": "2026-06-05T21:28:05.494154+00:00"
+    },
+    {
+      "id": "6646f244-a28c-441e-8486-9af33bdb5c11",
+      "slug": "bk264-qa-sandbox",
+      "name": "BK-264 QA Sandbox",
+      "plan": "community",
+      "owner_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-14T11:28:55.737364+00:00"
+    },
+    {
+      "id": "fde92560-7fbd-4a40-8b29-314fcc7a6531",
+      "slug": "bk499-tc1-1787828492",
+      "name": "BK499 TC1 1787828492",
+      "plan": "community",
+      "owner_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-27T11:01:34.731399+00:00"
+    },
+    {
+      "id": "58a8b229-5414-48f0-ace1-26d1cce6cdac",
+      "slug": "ws-1788031940350-bwcgx5",
+      "name": "Workspace-1788031940350-BYa0Tc",
+      "plan": "community",
+      "owner_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-29T19:32:20.952954+00:00"
+    },
+    {
+      "id": "04879e6b-f143-4b04-8d8c-14e048d2e9e5",
+      "slug": "ws-1788031943701-nlg51p",
+      "name": "Workspace-1788031943701-s8Uoe4",
+      "plan": "community",
+      "owner_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-29T19:32:24.441399+00:00"
+    },
+    {
+      "id": "bace2318-3795-4195-876e-cc2c0761abea",
+      "slug": "ws-1788095483853-c2lfhd",
+      "name": "Workspace-1788095483852-eLk0FZ",
+      "plan": "community",
+      "owner_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-30T13:11:25.090106+00:00"
+    },
+    {
+      "id": "63760413-bb3b-42e2-9076-ce43731397f1",
+      "slug": "ws-1788095495779-yvxj2y",
+      "name": "Workspace-1788095495779-CEl76F",
+      "plan": "community",
+      "owner_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-30T13:11:37.74116+00:00"
+    },
+    {
+      "id": "08c0b561-7a87-4d6e-bf5a-8c756b7e490f",
+      "slug": "ws-1788095789692-a38rcm",
+      "name": "Workspace-1788095789691-i288hz",
+      "plan": "community",
+      "owner_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-30T13:16:30.829345+00:00"
+    },
+    {
+      "id": "2f5dc1fd-b041-4ab5-9d31-c8890df63b82",
+      "slug": "ws-1788095796021-274wkq",
+      "name": "Workspace-1788095796021-Nt5jk3",
+      "plan": "community",
+      "owner_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-30T13:16:37.447308+00:00"
+    },
+    {
+      "id": "c14a2269-00d4-4dc4-981b-d2022a7099ab",
+      "slug": "ws-1788097794574-wkmqte",
+      "name": "Workspace-1788097794574-8o2Qfe",
+      "plan": "community",
+      "owner_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-30T13:49:56.965984+00:00"
+    },
+    {
+      "id": "5d09eaa5-28cb-49cc-a42d-ef0f52b9ecee",
+      "slug": "ws-1788097807190-nwdv4r",
+      "name": "Workspace-1788097807190-EqdL3v",
+      "plan": "community",
+      "owner_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-30T13:50:07.809753+00:00"
+    },
+    {
+      "id": "f68a8190-bbf3-4ee0-aadd-7fc579b4b39e",
+      "slug": "ws-1788097874029-o7iwfr",
+      "name": "Workspace-1788097874029-mrtcmY",
+      "plan": "community",
+      "owner_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-30T13:51:14.700788+00:00"
+    },
+    {
+      "id": "7a0dded9-e5de-449c-bcb8-e9f42809f2d6",
+      "slug": "ws-1788097879338-7kdxgj",
+      "name": "Workspace-1788097879338-uTE3rT",
+      "plan": "community",
+      "owner_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-30T13:51:20.315897+00:00"
+    },
+    {
+      "id": "174c5e9c-ae82-4ec7-bf79-6b1802ff8b09",
+      "slug": "ws-1788097949196-ydgojf",
+      "name": "Workspace-1788097949196-Zg1IY0",
+      "plan": "community",
+      "owner_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-30T13:52:30.289768+00:00"
+    },
+    {
+      "id": "f37c1f0e-6e69-4f58-bd1d-a88856897463",
+      "slug": "ws-1788097954747-ym3yxg",
+      "name": "Workspace-1788097954746-4qEJqv",
+      "plan": "community",
+      "owner_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-30T13:52:36.209075+00:00"
+    },
+    {
+      "id": "54949463-62e0-46db-9e6d-12439077e79e",
+      "slug": "ws-1788098084579-9hp9or",
+      "name": "Workspace-1788098084579-dBosS8",
+      "plan": "community",
+      "owner_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-30T13:54:45.563653+00:00"
+    },
+    {
+      "id": "38a7cd43-7f72-42ac-bca5-1d953f93eb16",
+      "slug": "ws-1788098119145-homb4l",
+      "name": "Workspace-1788098119145-7ew2Is",
+      "plan": "community",
+      "owner_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-30T13:55:20.129037+00:00"
+    },
+    {
+      "id": "95bb08f7-8054-4ff4-88d6-79222062fb26",
+      "slug": "ws-1788098134481-llzdqs",
+      "name": "Workspace-1788098134481-E9ZlfJ",
+      "plan": "community",
+      "owner_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-30T13:55:36.435372+00:00"
+    },
+    {
+      "id": "c97f6505-1192-4fad-9c22-d85b6909a35e",
+      "slug": "ws-1788098139065-nl3fxl",
+      "name": "Workspace-1788098139065-SHnigM",
+      "plan": "community",
+      "owner_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-30T13:55:41.321976+00:00"
+    },
+    {
+      "id": "9a03076a-9fc7-4e86-973f-ddd10e023c90",
+      "slug": "ws-1788111342809-zk1odg",
+      "name": "Workspace-1788111342809-WKaBik",
+      "plan": "community",
+      "owner_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-30T17:35:45.487272+00:00"
+    },
+    {
+      "id": "a9e66b1d-84ca-450d-895f-aee7b56e5ef4",
+      "slug": "ws-1788111443336-vcyxxl",
+      "name": "Workspace-1788111443336-MT5cPb",
+      "plan": "community",
+      "owner_user_id": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-30T17:37:25.5912+00:00"
+    }
+  ],
+  "active_workspace_id": "a808499e-f437-43b8-9fdb-8cee7dcceb3e",
+  "active_workspace_role": "member",
+  "auth": {
+    "source": "bearer",
+    "scopes": [
+      "atc:write"
+    ]
+  }
+}

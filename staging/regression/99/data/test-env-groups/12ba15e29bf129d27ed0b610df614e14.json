@@ -1,0 +1,1 @@
+{"id":"12ba15e29bf129d27ed0b610df614e14","fullName":"integration/capability/enforceCapabilityGate.test.ts:107:3","name":"BK-499: should pass given PAT holds required scope plus an unrelated extra scope","status":"passed","testResultsByEnv":{"default":"e9cc3b10c837cb983b9fe233e1efd307"}}

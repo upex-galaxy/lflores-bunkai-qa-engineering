@@ -1,0 +1,10 @@
+{
+  "error": {
+    "code": "validation_failed",
+    "message": "A view-only workspace member cannot be assigned bugs.",
+    "details": {
+      "reason": "assignee_view_only"
+    },
+    "request_id": "ae6c2b72-10dc-44af-bb7a-373219fcd4fa"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "pat-1788146553469-AlydPw",
+  "scopes": [
+    "atc:read",
+    "atc:write",
+    "run:execute"
+  ]
+}

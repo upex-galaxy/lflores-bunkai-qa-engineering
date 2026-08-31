@@ -1,1 +1,0 @@
-{"id":"5910bc692b6dc693a7a3069d2ce85b06","fullName":"integration/bugs/notDisclosingNotFound.test.ts:30:5","name":"BK-264: should return a non-disclosing 404 given the bug does not exist or is outside the caller's workspace (\"foreign-workspace-id\")","status":"passed","testResultsByEnv":{"default":"9dcd38d065571e6e44ef96a3759efdab"}}

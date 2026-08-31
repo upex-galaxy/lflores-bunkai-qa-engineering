@@ -1,0 +1,1 @@
+{"id":"661c3a3238bd171ac4200c21c1acd620","fullName":"integration/tokens/enforceTokenRouteCookieOnlyPosture.test.ts:76:3","name":"BK-497: should allow a PAT-authenticated GET to the token-listing route","status":"passed","testResultsByEnv":{"default":"3a6da7d26e2baf7141e42cddcd0c154a"}}

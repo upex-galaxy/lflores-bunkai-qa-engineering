@@ -1,0 +1,1 @@
+{"id":"e2954fd9af2f117a2a306f90cd5e0284","fullName":"integration/bugs/assignmentRejections.test.ts:49:3","name":"BK-264: should reject assignment given the target is a Viewer-role member","status":"passed","testResultsByEnv":{"default":"668f5cbded321c8d85b52abad4baa485"}}

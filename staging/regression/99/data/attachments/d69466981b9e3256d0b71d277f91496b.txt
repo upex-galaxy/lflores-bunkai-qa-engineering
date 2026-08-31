@@ -1,0 +1,13 @@
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/auth/signin
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
+✅ [BK-311] authenticateSuccessfully - PASS (697ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/modules/175f8a08-20b9-4c96-a21a-e02dcae2837e/user-stories
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/user-stories/39fa4539-096b-41d8-86f7-8a6869896a10/acceptance-criteria
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/atcs
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/tests
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/tokens
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/activity
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/projects/2fee236f-1246-40c4-bfc4-d332287f9548/traceability
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/tests/7005313f-030c-49bc-b925-a43aee5cbc73/runs
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/workspaces/6646f244-a28c-441e-8486-9af33bdb5c11
+✅ [BK-673] allowReadScopedPatOnGatedRoute - PASS (1322ms)

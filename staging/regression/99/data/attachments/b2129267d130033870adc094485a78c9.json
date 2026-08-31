@@ -1,0 +1,319 @@
+{
+  "milestones": [
+    {
+      "id": "15bb81ee-a668-4d92-b2e4-a927a7b3cfa8",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787310683821-lHpwsx",
+      "target_date": "2026-08-28",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-21T11:11:24.656176+00:00"
+    },
+    {
+      "id": "32fa222a-30bc-444c-b488-f40fd56254de",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787310667088-RIOw1K",
+      "target_date": "2026-08-28",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-21T11:11:07.626126+00:00"
+    },
+    {
+      "id": "3cf76158-717b-4059-8b2a-17572999301b",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787310450522-Z7RlkX",
+      "target_date": "2026-08-28",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-21T11:07:31.31191+00:00"
+    },
+    {
+      "id": "3edbdc1d-ad5c-4be3-a546-27000d178cec",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787310745254-3owmmx",
+      "target_date": "2026-08-28",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-21T11:12:25.976942+00:00"
+    },
+    {
+      "id": "56f2525e-d2fb-4a13-adbd-68789589bf9b",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787310711889-AMMa5g",
+      "target_date": "2026-08-28",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-21T11:11:52.727217+00:00"
+    },
+    {
+      "id": "6a1d41cf-1f9b-4bae-a01b-98a0a29a9836",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787310537802-mobEzt",
+      "target_date": "2026-08-28",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-21T11:08:58.295976+00:00"
+    },
+    {
+      "id": "9156573b-0ba4-4c29-8153-ac5fdc23eeee",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787310520707-FjRZyv",
+      "target_date": "2026-08-28",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-21T11:08:41.68467+00:00"
+    },
+    {
+      "id": "a2f6689c-789a-48c2-97ce-d7d5bba3e868",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787310846442-trYacO",
+      "target_date": "2026-08-28",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-21T11:14:07.436188+00:00"
+    },
+    {
+      "id": "e5fa8cf9-5ec8-411e-96a3-ae3db3de6175",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787310880227-orpfpQ",
+      "target_date": "2026-08-28",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-21T11:14:41.144151+00:00"
+    },
+    {
+      "id": "fd9ae278-6e70-4004-8c1f-5a252b4ad369",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787310461890-PtVXFv",
+      "target_date": "2026-08-28",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-21T11:07:42.918067+00:00"
+    },
+    {
+      "id": "adb0b619-ae90-4b3c-9557-8e94524c76f0",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787366934706-qBS1hj",
+      "target_date": "2026-08-29",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-22T02:48:54.955248+00:00"
+    },
+    {
+      "id": "b10295ad-1b9c-4129-bff6-90cfaaaa773c",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787360441586-ju7pz8",
+      "target_date": "2026-08-29",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-22T01:00:41.975428+00:00"
+    },
+    {
+      "id": "4462b756-1863-48d2-b864-92684323dd9e",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787453777353-9PI6FC",
+      "target_date": "2026-08-30",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-23T02:56:17.478874+00:00"
+    },
+    {
+      "id": "5b718323-065c-456b-8456-35b6b7fb10a0",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787447111789-PjQZ36",
+      "target_date": "2026-08-30",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-23T01:05:12.039204+00:00"
+    },
+    {
+      "id": "0861eff4-636e-4228-860d-484965aac095",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787533416526-bJ4fTe",
+      "target_date": "2026-08-31",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-24T01:03:36.813032+00:00"
+    },
+    {
+      "id": "dcac8b37-53a8-45a3-a513-e4c293e5f7c1",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787540237748-HosGkO",
+      "target_date": "2026-08-31",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-24T02:57:17.897881+00:00"
+    },
+    {
+      "id": "478ed5ca-7d83-470f-aa25-a0ce1cc3d320",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787619732575-xupK0O",
+      "target_date": "2026-09-01",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-25T01:02:12.752356+00:00"
+    },
+    {
+      "id": "6a690a42-419f-4119-8715-7f3fdc840554",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787626369037-beYEsP",
+      "target_date": "2026-09-01",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-25T02:52:49.289335+00:00"
+    },
+    {
+      "id": "19b41fd7-aff4-42fb-9d5b-cc92f839f89a",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787742710840-nP6da4",
+      "target_date": "2026-09-02",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-26T11:11:51.201988+00:00"
+    },
+    {
+      "id": "7d567e24-2c5e-4221-a77a-78fa52c38f64",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787739351617-sJNHbZ",
+      "target_date": "2026-09-02",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-26T10:15:51.866358+00:00"
+    },
+    {
+      "id": "9a317d73-a93b-4056-aeb1-287f937e9cea",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787743095271-XWdV1l",
+      "target_date": "2026-09-02",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-26T11:18:15.531793+00:00"
+    },
+    {
+      "id": "be1791de-aecc-4d8d-847c-eab25b449975",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787706260670-F9vB78",
+      "target_date": "2026-09-02",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-26T01:04:20.90534+00:00"
+    },
+    {
+      "id": "ee1f6e9b-2bec-4b2f-b69d-7fff90184198",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787713126410-SERkq8",
+      "target_date": "2026-09-02",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-26T02:58:46.615767+00:00"
+    },
+    {
+      "id": "55d6f228-1285-4802-bd47-1fabced5bae7",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787832850014-3lHOfJ",
+      "target_date": "2026-09-03",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-27T12:14:10.256391+00:00"
+    },
+    {
+      "id": "996bb978-f64b-4004-a3c8-b7f4bdf0f606",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787814210461-aWvFVu",
+      "target_date": "2026-09-03",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-27T07:03:30.750303+00:00"
+    },
+    {
+      "id": "2618cd0c-9157-42ad-937b-1485afc4ff2c",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787907073077-w2l6qM",
+      "target_date": "2026-09-04",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-28T08:51:13.285004+00:00"
+    },
+    {
+      "id": "6acd4215-9259-4d86-bb98-94684ebb003f",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787924358521-47sLuh",
+      "target_date": "2026-09-04",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-28T13:39:18.888361+00:00"
+    },
+    {
+      "id": "2a48dd28-4378-40fe-8e70-f4e3f655ab9e",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787981246393-baO4I7",
+      "target_date": "2026-09-05",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-29T05:27:26.747535+00:00"
+    },
+    {
+      "id": "e6e7e330-8252-43fc-9a95-04e922254ff2",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1787992222223-N0O78M",
+      "target_date": "2026-09-05",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-29T08:30:22.402221+00:00"
+    },
+    {
+      "id": "60dec9ff-eace-4004-9c18-d7804e36e76a",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1788097998400-F0jaRQ",
+      "target_date": "2026-09-06",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-30T13:53:20.433935+00:00"
+    },
+    {
+      "id": "848e9af0-7b14-4030-b11a-1f03039eacc9",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1788060228713-q5Hq8X",
+      "target_date": "2026-09-06",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-30T03:23:48.881984+00:00"
+    },
+    {
+      "id": "87263aa4-1bf2-4c74-8aed-b7cfd6803d15",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1788110558335-jmBEZz",
+      "target_date": "2026-09-06",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-30T17:22:39.287543+00:00"
+    },
+    {
+      "id": "e80537f3-e3f4-4a2c-bc98-20129d537696",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1788075838747-LV9nU7",
+      "target_date": "2026-09-06",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-30T07:43:59.033288+00:00"
+    },
+    {
+      "id": "c0fa4dc3-244b-4dd5-afad-a921b613fc1a",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "sweep-ms-1788146438416-Zen04J",
+      "target_date": "2026-09-07",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-31T03:20:38.704484+00:00"
+    },
+    {
+      "id": "4859ef2a-26e7-42b2-a921-e2a98ad1d6f3",
+      "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+      "name": "QA-Milestone-1787269325",
+      "target_date": "2027-06-01",
+      "description": "",
+      "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+      "created_at": "2026-08-20T23:42:05.958584+00:00"
+    }
+  ]
+}

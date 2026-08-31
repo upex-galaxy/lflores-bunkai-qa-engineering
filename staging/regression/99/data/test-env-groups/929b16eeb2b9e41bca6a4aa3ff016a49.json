@@ -1,0 +1,1 @@
+{"id":"929b16eeb2b9e41bca6a4aa3ff016a49","fullName":"integration/workspace/rejectBearerOnSessionOnlyRoutes.test.ts:23:3","name":"BK-499: should reject given full-scope Bearer PAT on the leave-workspace route","status":"passed","testResultsByEnv":{"default":"4f8e5be8debea817bc871e9ec6cc981f"}}

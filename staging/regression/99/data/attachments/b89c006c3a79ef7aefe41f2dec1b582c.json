@@ -1,0 +1,15 @@
+{
+  "title": "gate-fixture-atc-1788146506726-vvxNDA",
+  "module_id": "175f8a08-20b9-4c96-a21a-e02dcae2837e",
+  "user_story_id": "39fa4539-096b-41d8-86f7-8a6869896a10",
+  "acceptance_criterion_ids": [
+    "b21d271c-d5d2-4a32-b10c-8b3012c81e5c"
+  ],
+  "layer": "API",
+  "steps": [
+    {
+      "position": 1,
+      "content": "Verify the capability gate sampling fixture."
+    }
+  ]
+}
