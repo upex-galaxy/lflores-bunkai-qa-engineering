@@ -101,7 +101,7 @@
   "title": "User can sign in with email + password",
   "description": "As a returning user, I want to sign in with my email and password so I can access my workspace.",
   "external_id": "BK-166",
-  "external_url": "https://upexgalaxy71.atlassian.net/browse/BK-166",
+  "external_url": "https://upexgalaxy72.atlassian.net/browse/BK-166",
   "status": "ready_to_test",
   "archived_at": null
 }
