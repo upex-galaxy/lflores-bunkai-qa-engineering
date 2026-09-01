@@ -1,0 +1,1 @@
+{"id":"920dc1ed748bd628f40c0c030b400907","fullName":"integration/bugs/reassignAndUnassign.test.ts:52:3","name":"BK-264: should clear the assignee when unassigning","status":"passed","testResultsByEnv":{"default":"3be948e37873ba48032ce0d07d3e0a4c"}}

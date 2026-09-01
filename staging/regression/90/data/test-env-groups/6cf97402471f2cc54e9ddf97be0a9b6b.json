@@ -1,1 +1,0 @@
-{"id":"6cf97402471f2cc54e9ddf97be0a9b6b","fullName":"integration/bugs/rejectViewerWrite.test.ts:57:5","name":"BK-264: should reject a write action when the actor is Viewer-role given action is \"assign\"","status":"passed","testResultsByEnv":{"default":"df5c0debf757eff0fccfd31878b8d0de"}}

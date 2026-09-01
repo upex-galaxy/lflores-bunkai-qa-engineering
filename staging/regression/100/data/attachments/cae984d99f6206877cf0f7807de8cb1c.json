@@ -1,0 +1,15 @@
+{
+  "title": "gate-fixture-atc-1788232981816-PDdr8t",
+  "module_id": "175f8a08-20b9-4c96-a21a-e02dcae2837e",
+  "user_story_id": "b21c563a-8b91-4e11-aa4f-de20dcfad493",
+  "acceptance_criterion_ids": [
+    "135666a7-2de7-45d2-bd7e-356aa656e5e8"
+  ],
+  "layer": "API",
+  "steps": [
+    {
+      "position": 1,
+      "content": "Verify the capability gate sampling fixture."
+    }
+  ]
+}

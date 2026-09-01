@@ -1,0 +1,1 @@
+{"id":"d7ad8ef0e770f09f9492480e85db5b2f","fullName":"integration/bugs/assignTriggersNotification.test.ts:41:3","name":"BK-264: should write a notifications row given a bug is assigned","status":"passed","testResultsByEnv":{"default":"e930c404063748327652ad9c7b66b4d8"}}

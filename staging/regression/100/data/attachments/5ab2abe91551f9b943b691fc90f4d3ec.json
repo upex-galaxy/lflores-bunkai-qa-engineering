@@ -1,0 +1,10 @@
+{
+  "error": {
+    "code": "not_found",
+    "message": "Bug not found.",
+    "details": {
+      "reason": "not_found"
+    },
+    "request_id": "c7d7bede-b2bc-4d86-8cec-e82bc6825c62"
+  }
+}
