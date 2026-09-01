@@ -1,1 +1,0 @@
-{"id":"c4dd0dd97f108f5380390f5974304872","fullName":"integration/modules/enforceModuleCapabilityScope.test.ts:97:3","name":"BK-498: should create module successfully given an unbound atc:write PAT held by a real workspace member","status":"passed","testResultsByEnv":{"default":"cc2efcfa43490dbe6e3b50205634ef8e"}}

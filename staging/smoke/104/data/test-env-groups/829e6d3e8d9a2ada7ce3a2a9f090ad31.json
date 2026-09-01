@@ -1,0 +1,1 @@
+{"id":"829e6d3e8d9a2ada7ce3a2a9f090ad31","fullName":"integration/tokens/rejectZeroScopeTokenIssuance.test.ts:20:3","name":"BK-499: should reject token issuance given zero scopes requested","status":"passed","testResultsByEnv":{"default":"c752bd2aa2cacaee718077792bb75a7b"}}
