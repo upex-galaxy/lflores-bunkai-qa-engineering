@@ -1,0 +1,11 @@
+{
+  "acceptance_criterion": {
+    "id": "6ed17036-fdf8-42b7-b720-f26e47f8e823",
+    "title": "gate-fixture-ac-1788331368948-mmEram",
+    "position": 2,
+    "created_at": "2026-09-02T06:42:49.246079+00:00",
+    "archived_at": null,
+    "description": null,
+    "user_story_id": "b0d17a58-3d3f-429e-9b6e-d5618584b719"
+  }
+}

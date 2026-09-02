@@ -1,0 +1,12 @@
+{
+  "id": "3bcd7fea-52c8-4c64-928c-f36dfbd70478",
+  "token": "bk_pat_rL_07Zjh7M5o.qFUUEUlgDcxQbztDM9hG-nFgJoIHvjQ",
+  "name": "pat-1788331355409-J0cwEH",
+  "scopes": [
+    "atc:write"
+  ],
+  "workspace_id": null,
+  "expires_at": null,
+  "created_at": "2026-09-02T06:42:35.653487+00:00",
+  "warning": "Store this token now — it cannot be retrieved later."
+}

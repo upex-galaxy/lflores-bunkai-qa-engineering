@@ -1,1 +1,0 @@
-{"id":"2890d86a85c3b4c66e383e007791b77f","fullName":"integration/modules/enforceModuleCapabilityScope.test.ts:173:3","name":"BK-498: should return 401 unauthenticated when no token is presented","status":"passed","testResultsByEnv":{"default":"7e5d545e47718687ca6b489b00f5f6cb"}}

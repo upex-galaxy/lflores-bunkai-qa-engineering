@@ -1,0 +1,19 @@
+{
+  "error": {
+    "code": "validation_failed",
+    "message": "Request body failed validation.",
+    "details": [
+      {
+        "origin": "array",
+        "code": "too_small",
+        "minimum": 1,
+        "inclusive": true,
+        "path": [
+          "scopes"
+        ],
+        "message": "Invalid input"
+      }
+    ],
+    "request_id": "886ba449-e808-4bdb-bd2c-67afb5498841"
+  }
+}

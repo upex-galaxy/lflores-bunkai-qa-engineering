@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "forbidden",
+    "message": "Personal access tokens cannot leave a workspace. Use a browser session.",
+    "request_id": "7515113b-0879-4a33-b23c-d3f02984b31d"
+  }
+}

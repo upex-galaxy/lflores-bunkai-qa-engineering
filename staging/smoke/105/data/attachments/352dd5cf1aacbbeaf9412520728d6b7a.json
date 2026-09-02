@@ -1,0 +1,12 @@
+{
+  "id": "505ee687-aee2-4d8f-ba16-1aa86b5b1cdf",
+  "token": "bk_pat_RqmXGgMwtUX7.hGJuVamoS-Ovtf-txIoh2Mipka4okX0",
+  "name": "pat-session-lifecycle-1788331390908-QFiArm",
+  "scopes": [
+    "atc:read"
+  ],
+  "workspace_id": null,
+  "expires_at": null,
+  "created_at": "2026-09-02T06:43:11.116459+00:00",
+  "warning": "Store this token now — it cannot be retrieved later."
+}

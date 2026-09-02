@@ -1,0 +1,1 @@
+{"id":"11010feb1ffd1da282cf36c8fb139c46","fullName":"integration/capability/enforceCapabilityGate.test.ts:164:3","name":"BK-499: should reject given owner role missing the required capability","status":"passed","testResultsByEnv":{"default":"95635031764961dbe35383a2cb42b0ea"}}
