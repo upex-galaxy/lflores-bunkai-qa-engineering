@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "forbidden",
+    "message": "Personal access tokens cannot issue tokens. Use a browser session.",
+    "request_id": "f3bac72e-dd08-43b8-900b-f73fbd9d2c54"
+  }
+}

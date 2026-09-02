@@ -1,1 +1,0 @@
-{"id":"21a3a37e5186c3fc18fe6da7fe8b06dd","fullName":"integration/tokens/enforceTokenRouteCookieOnlyPosture.test.ts:49:3","name":"BK-497: should reject a PAT-authenticated DELETE to the token-revocation route","status":"passed","testResultsByEnv":{"default":"3cc26815a366a78106e65b7e32597740"}}

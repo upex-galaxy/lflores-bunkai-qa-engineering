@@ -1,0 +1,1 @@
+{"id":"0b705c1e48b769581815d231c6d7157f","fullName":"integration/projects/createProject.test.ts:62:3","name":"BK-499: should reject project creation with 403 naming the capability given a PAT missing atc:write on a non-member workspace","status":"passed","testResultsByEnv":{"default":"57355e6842a182a659ee4b7106265ecd"}}

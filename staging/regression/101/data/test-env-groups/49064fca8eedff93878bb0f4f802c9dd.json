@@ -1,0 +1,1 @@
+{"id":"49064fca8eedff93878bb0f4f802c9dd","fullName":"integration/workspace/enforceWorkspaceAdminCapabilityScope.test.ts:63:3","name":"BK-497: should reject a workspace-admin action when the PAT is bound to a different workspace","status":"passed","testResultsByEnv":{"default":"45c5ee399d90cf3eaa065ed3c09e9d0c"}}

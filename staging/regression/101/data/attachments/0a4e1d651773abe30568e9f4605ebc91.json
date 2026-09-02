@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "forbidden",
+    "message": "Missing required capability: atc:read",
+    "request_id": "d8016027-f5c4-4267-b151-5e76819d528a"
+  }
+}

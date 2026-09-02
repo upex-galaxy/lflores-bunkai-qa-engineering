@@ -1,0 +1,11 @@
+{
+  "acceptance_criterion": {
+    "id": "13e94e83-9812-4dab-ad9a-a46756f83059",
+    "title": "gate-fixture-ac-1788316893093-dkinny",
+    "position": 2,
+    "created_at": "2026-09-02T02:41:33.354594+00:00",
+    "archived_at": null,
+    "description": null,
+    "user_story_id": "6f73854a-ccfa-47bb-b2ee-c5792a9c1269"
+  }
+}
