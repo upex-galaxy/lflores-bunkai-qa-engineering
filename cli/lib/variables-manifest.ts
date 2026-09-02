@@ -174,124 +174,6 @@ export const VAR_MANIFEST: VarSpec[] = [
     note: 'Staging test user password. Required when TEST_ENV=staging. Project-dependent — set later.',
   },
 
-  // --- Secondary role identities (optional, per-environment) ---
-  // Only needed by TCs that must log in as a non-owner actor (member/viewer),
-  // not just reference their user_id. Exposed via config.testMember / config.testViewer.
-  // BUNKAI-SPECIFIC — this repo's own customization, not part of the generic
-  // boilerplate manifest. `cli/lib/variables-manifest.ts` is on the updater's
-  // `excludePaths` + `PROTECTED_WATCHLIST` (cli/update-boilerplate.ts) precisely
-  // so `bun run up` never drops this block again — it dropped it once already
-  // (2026-08-22) because upstream's generic manifest has no equivalent entries.
-  // Used by tests/integration/bugs/*.test.ts (BK-486/TC7, BK-487/TC13).
-  {
-    name: 'LOCAL_MEMBER_EMAIL',
-    destinations: ['local', 'github'],
-    secret: false,
-    required: false,
-    critical: false,
-    obtainHint: 'member-role test-user creds for your project-under-test; set only if a TC needs to log in as a member.',
-    note: 'Local member-role identity email. Optional — empty-string safe in config/variables.ts.',
-  },
-  {
-    name: 'LOCAL_MEMBER_PASSWORD',
-    destinations: ['local', 'github'],
-    secret: true,
-    required: false,
-    critical: false,
-    obtainHint: 'member-role test-user creds for your project-under-test; set only if a TC needs to log in as a member.',
-    note: 'Local member-role identity password. Optional — empty-string safe in config/variables.ts.',
-  },
-  {
-    name: 'LOCAL_VIEWER_EMAIL',
-    destinations: ['local', 'github'],
-    secret: false,
-    required: false,
-    critical: false,
-    obtainHint: 'viewer-role test-user creds for your project-under-test; set only if a TC needs to log in as a viewer.',
-    note: 'Local viewer-role identity email. Optional — empty-string safe in config/variables.ts.',
-  },
-  {
-    name: 'LOCAL_VIEWER_PASSWORD',
-    destinations: ['local', 'github'],
-    secret: true,
-    required: false,
-    critical: false,
-    obtainHint: 'viewer-role test-user creds for your project-under-test; set only if a TC needs to log in as a viewer.',
-    note: 'Local viewer-role identity password. Optional — empty-string safe in config/variables.ts.',
-  },
-  {
-    name: 'STAGING_MEMBER_EMAIL',
-    destinations: ['local', 'github'],
-    secret: false,
-    required: false,
-    critical: false,
-    obtainHint: 'member-role test-user creds for your project-under-test; set only if a TC needs to log in as a member.',
-    note: 'Staging member-role identity email. Optional — empty-string safe in config/variables.ts.',
-  },
-  {
-    name: 'STAGING_MEMBER_PASSWORD',
-    destinations: ['local', 'github'],
-    secret: true,
-    required: false,
-    critical: false,
-    obtainHint: 'member-role test-user creds for your project-under-test; set only if a TC needs to log in as a member.',
-    note: 'Staging member-role identity password. Optional — empty-string safe in config/variables.ts.',
-  },
-  {
-    name: 'STAGING_VIEWER_EMAIL',
-    destinations: ['local', 'github'],
-    secret: false,
-    required: false,
-    critical: false,
-    obtainHint: 'viewer-role test-user creds for your project-under-test; set only if a TC needs to log in as a viewer.',
-    note: 'Staging viewer-role identity email. Optional — empty-string safe in config/variables.ts.',
-  },
-  {
-    name: 'STAGING_VIEWER_PASSWORD',
-    destinations: ['local', 'github'],
-    secret: true,
-    required: false,
-    critical: false,
-    obtainHint: 'viewer-role test-user creds for your project-under-test; set only if a TC needs to log in as a viewer.',
-    note: 'Staging viewer-role identity password. Optional — empty-string safe in config/variables.ts.',
-  },
-  {
-    name: 'LOCAL_NON_MEMBER_EMAIL',
-    destinations: ['local', 'github'],
-    secret: false,
-    required: false,
-    critical: false,
-    obtainHint: 'a real user deliberately excluded from every workspace under test; set only if a TC needs a membership-403 distinct from a capability-403.',
-    note: 'Local non-member identity email. Optional — empty-string safe in config/variables.ts.',
-  },
-  {
-    name: 'LOCAL_NON_MEMBER_PASSWORD',
-    destinations: ['local', 'github'],
-    secret: true,
-    required: false,
-    critical: false,
-    obtainHint: 'a real user deliberately excluded from every workspace under test; set only if a TC needs a membership-403 distinct from a capability-403.',
-    note: 'Local non-member identity password. Optional — empty-string safe in config/variables.ts.',
-  },
-  {
-    name: 'STAGING_NON_MEMBER_EMAIL',
-    destinations: ['local', 'github'],
-    secret: false,
-    required: false,
-    critical: false,
-    obtainHint: 'a real user deliberately excluded from every workspace under test; set only if a TC needs a membership-403 distinct from a capability-403.',
-    note: 'Staging non-member identity email. Optional — empty-string safe in config/variables.ts.',
-  },
-  {
-    name: 'STAGING_NON_MEMBER_PASSWORD',
-    destinations: ['local', 'github'],
-    secret: true,
-    required: false,
-    critical: false,
-    obtainHint: 'a real user deliberately excluded from every workspace under test; set only if a TC needs a membership-403 distinct from a capability-403.',
-    note: 'Staging non-member identity password. Optional — empty-string safe in config/variables.ts.',
-  },
-
   // --- Xray (TMS, optional) ---
   {
     name: 'XRAY_CLIENT_ID',
@@ -300,7 +182,7 @@ export const VAR_MANIFEST: VarSpec[] = [
     required: false,
     critical: false,
     obtainHint: 'Xray Cloud → API keys (only if your project uses Xray TMS).',
-    note: 'Xray Cloud client id. Referenced by regression.yml:46; optional (needed only when AUTO_SYNC && xray).',
+    note: 'Xray Cloud client id. Referenced by regression.yml §env; optional (needed only when AUTO_SYNC && xray).',
   },
   {
     name: 'XRAY_CLIENT_SECRET',
@@ -309,7 +191,7 @@ export const VAR_MANIFEST: VarSpec[] = [
     required: false,
     critical: false,
     obtainHint: 'Xray Cloud → API keys (only if your project uses Xray TMS).',
-    note: 'Xray Cloud client secret. Referenced by regression.yml:47; optional (needed only when AUTO_SYNC && xray).',
+    note: 'Xray Cloud client secret. Referenced by regression.yml §env; optional (needed only when AUTO_SYNC && xray).',
   },
   {
     name: 'XRAY_PROJECT_KEY',
@@ -320,6 +202,26 @@ export const VAR_MANIFEST: VarSpec[] = [
     obtainHint: 'your Xray project key (only if your project uses Xray TMS).',
     note: 'Xray project key. Optional operational param.',
   },
+  {
+    name: 'STP_EXECUTION_KEY',
+    destinations: ['local', 'github'],
+    secret: false,
+    required: false,
+    critical: false,
+    obtainHint: 'key of the STR — the Test Execution linked to the sprint STP, already hanging off the "QA Test Artifacts" epic. NOT the key of the STP itself.',
+    // Without it, an import mints a NEW Test Execution on every run. Xray's
+    // import API cannot set a parent (`info` is `additionalProperties: false`),
+    // so that item is orphaned: no QA-process epic, outside the ladder. Pointing
+    // at an already-parented Execution is the only way results land where the
+    // artifact ladder expects them. CI refuses to import without it rather than
+    // industrialising the orphan.
+    //
+    // The name says which Plan the Execution belongs to, not which issue to
+    // pass: a Test Plan derives its status from its Executions and is never
+    // written into, so handing this the STP key is a mistake the sync detects
+    // and refuses. Xray-only — Modality jira-native has no Test Executions.
+    note: 'Target STR Test Execution for the results write-back (never the STP itself). Referenced by regression.yml; Xray-only, optional.',
+  },
 
   // --- Operational CI flag ---
   {
@@ -329,7 +231,7 @@ export const VAR_MANIFEST: VarSpec[] = [
     required: false,
     critical: false,
     obtainHint: 'CI flag — set to "true" in GitHub secrets only if you auto-sync Xray results from CI.',
-    note: 'CI operational flag (default false). Referenced by regression.yml:45. GitHub-only.',
+    note: 'CI operational flag (default false). Referenced by regression.yml §env. GitHub-only.',
   },
 
   // --- Atlassian (Day-0 credentials) ---
