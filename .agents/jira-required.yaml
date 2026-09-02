@@ -522,7 +522,7 @@ work_types:
       `ATS:*` linked to a coverable issue feeds cascade rung 1 of sync-jira-issues: its member
       Tests (Xray GraphQL membership, or TC→ATS Jira links in Modality jira-native) materialize
       under that issue's test-cases/. Feature-level `TS:*` Sets stay ignored.
-    sync: never
+    sync: discovery
     local_dir: test-sets
 
   test_execution:
@@ -540,7 +540,7 @@ work_types:
   precondition:
     jira_issue_type: Precondition
     description: Xray Precondition — reusable test prerequisite (not synced)
-    sync: never
+    sync: discovery
     local_dir: preconditions
 
   re_test_execution:
@@ -783,6 +783,11 @@ work_types:
     # instance uses "Task". Consumed by /shift-left-testing for the per-Story
     # "[QA] Shift-Left Review" tracking subtask (find-or-create; skip with a
     # warning when the project has no subtask-level type).
+    # PENDING: upstream (2026-09-02 sync) moved this to an ordered-alternatives
+    # format ("Sub-task | Task | Subtarea"). Not adopted yet — check-jira-setup.ts
+    # line 611 compares this value literally, no "|" split logic, so switching
+    # now would fail `bun run jira:check`. Adopt once the full `bun run up`
+    # brings the patched checking script.
     jira_issue_type: Task
     description: Generic subtask under a Story — tracking-only, never synced as its own folder
     sync: never
