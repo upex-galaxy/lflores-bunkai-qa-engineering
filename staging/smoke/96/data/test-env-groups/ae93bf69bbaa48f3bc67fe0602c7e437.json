@@ -1,1 +1,0 @@
-{"id":"ae93bf69bbaa48f3bc67fe0602c7e437","fullName":"integration/bugs/statusTransitions.test.ts:56:3","name":"BK-264: should advance status through every legal forward transition","status":"passed","testResultsByEnv":{"default":"257869e5198242377cd4e0390b657ff2"}}

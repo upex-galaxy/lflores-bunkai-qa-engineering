@@ -1,0 +1,24 @@
+{
+  "user": {
+    "id": "23673d9a-4aac-46eb-ba63-c9d58a245458",
+    "email": "bk264-viewer2@ambuusteln.resend.app"
+  },
+  "session": {
+    "access_token": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImUzNTEyOTEwLTY0ZDEtNGY4OS04ZDk2LTI4NjA5NzQ2ZTQ1YyIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2ZtYnBpa3pwa2FmcHRxeGltaHhuLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiIyMzY3M2Q5YS00YWFjLTQ2ZWItYmE2My1jOWQ1OGEyNDU0NTgiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzg4NDIxNTE1LCJpYXQiOjE3ODg0MTc5MTUsImVtYWlsIjoiYmsyNjQtdmlld2VyMkBhbWJ1dXN0ZWxuLnJlc2VuZC5hcHAiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsIjoiYmsyNjQtdmlld2VyMkBhbWJ1dXN0ZWxuLnJlc2VuZC5hcHAiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicGhvbmVfdmVyaWZpZWQiOmZhbHNlLCJzdWIiOiIyMzY3M2Q5YS00YWFjLTQ2ZWItYmE2My1jOWQ1OGEyNDU0NTgifSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc4ODQxNzkxNX1dLCJzZXNzaW9uX2lkIjoiNWIwY2U5NGEtNjhiOS00MDY2LTk1YmYtMTQ2MmFkMmZiMDA1IiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.c3IviJ3DQmySPxQ8Y-cleKsWry8GhT6KIPLNWL5sbUPfBG1iSbGEJPHCI9VcuFMAZx6UksUI_Qn3CMWNngMMYA",
+    "refresh_token": "els6uk3lefy4",
+    "expires_at": 1788421515,
+    "token_type": "bearer"
+  },
+  "pat": {
+    "token": "bk_pat_LEDU4OIRf9wJ.xb0JbiiIgd-uPxxEX5S4mtQj5Arm3MQ",
+    "id": "b19e4b31-0e4c-41e1-8939-738abd94ac03",
+    "name": "cli-signin",
+    "scopes": [
+      "atc:read",
+      "atc:write",
+      "run:execute"
+    ],
+    "expires_at": null
+  },
+  "warning": "Store the PAT token now — it cannot be retrieved later."
+}

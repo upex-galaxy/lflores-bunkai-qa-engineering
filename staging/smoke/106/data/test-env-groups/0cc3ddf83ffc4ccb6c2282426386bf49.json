@@ -1,0 +1,1 @@
+{"id":"0cc3ddf83ffc4ccb6c2282426386bf49","fullName":"integration/workspace/createWorkspace.test.ts:21:3","name":"BK-499: should create workspace given PAT holds at least one scope","status":"passed","testResultsByEnv":{"default":"e4c109e62d5078396e70ac1fe71e6d53"}}
