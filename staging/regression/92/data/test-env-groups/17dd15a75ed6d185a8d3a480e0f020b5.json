@@ -1,1 +1,0 @@
-{"id":"17dd15a75ed6d185a8d3a480e0f020b5","fullName":"integration/bugs/rejectViewerWrite.test.ts:57:5","name":"BK-264: should reject a write action when the actor is Viewer-role given action is \"status-change\"","status":"passed","testResultsByEnv":{"default":"2d5221598e7dff11b4a23a7802b56d9b"}}
