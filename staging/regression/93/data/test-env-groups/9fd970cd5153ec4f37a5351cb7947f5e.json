@@ -1,1 +1,0 @@
-{"id":"9fd970cd5153ec4f37a5351cb7947f5e","fullName":"integration/modules/enforceModuleCapabilityScope.test.ts:221:3","name":"BK-498: should continue succeeding on both read and write given a default-scoped PAT","status":"passed","testResultsByEnv":{"default":"b30b11c8750bb3bb5810a0bbcc22a0bb"}}

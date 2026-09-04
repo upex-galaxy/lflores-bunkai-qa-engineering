@@ -1,0 +1,1 @@
+{"id":"1a89288369e3ff7b52ac228018b9f562","fullName":"integration/authoring/enforceAuthoringWriteReadSweep.test.ts:42:3","name":"BK-498: should accept writes and reads across all authoring families given correctly-scoped PATs, and reject reads for a write-only PAT","status":"passed","testResultsByEnv":{"default":"ed36169f31653820085e7f1bf08586ef"}}

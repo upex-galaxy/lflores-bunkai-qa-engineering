@@ -1,0 +1,11 @@
+{
+  "acceptance_criterion": {
+    "id": "b6769ae1-a83d-4c45-b591-d20220239e2b",
+    "title": "gate-fixture-ac-1788489882960-Is7tpl",
+    "position": 2,
+    "created_at": "2026-09-04T02:44:43.154083+00:00",
+    "archived_at": null,
+    "description": null,
+    "user_story_id": "31be3569-2509-4ec7-ab1f-7d1ae41bccec"
+  }
+}

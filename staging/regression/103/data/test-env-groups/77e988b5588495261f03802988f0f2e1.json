@@ -1,0 +1,1 @@
+{"id":"77e988b5588495261f03802988f0f2e1","fullName":"integration/authoring/rejectWritesAcrossAuthoringFamilies.test.ts:30:3","name":"BK-498: should reject writes across all authoring families given a PAT scoped exactly atc:read","status":"passed","testResultsByEnv":{"default":"5e9d6c02e93d3b12de3e5683eeb611cd"}}

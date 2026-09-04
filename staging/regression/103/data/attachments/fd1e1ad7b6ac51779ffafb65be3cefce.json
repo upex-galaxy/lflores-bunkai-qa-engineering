@@ -1,0 +1,10 @@
+{
+  "error": {
+    "code": "forbidden",
+    "message": "You must be a member of this project to create a module.",
+    "details": {
+      "reason": "not_a_member"
+    },
+    "request_id": "f36709bd-b5bc-48df-817c-2595d6a092a1"
+  }
+}

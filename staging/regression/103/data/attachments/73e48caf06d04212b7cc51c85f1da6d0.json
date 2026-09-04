@@ -1,0 +1,10 @@
+{
+  "error": {
+    "code": "forbidden",
+    "message": "You must be a member of this workspace with write access.",
+    "details": {
+      "reason": "not_a_member"
+    },
+    "request_id": "d7a98b9d-a7fe-4231-b186-e62929be9349"
+  }
+}
