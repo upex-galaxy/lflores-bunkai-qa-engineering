@@ -1,0 +1,1 @@
+{"id":"f27e32965bde2b0d2ddeb8112359fa64","fullName":"integration/capability/enforceCapabilityGate.test.ts:275:3","name":"BK-499: should succeed for any authenticated PAT regardless of scope given identity or notification route","status":"passed","testResultsByEnv":{"default":"58400b749f2dde692aacd764e00beacb"}}

@@ -1,0 +1,1 @@
+{"id":"4fdbe4fb2c3ae9fd51c88208ac23f152","fullName":"integration/bugs/assignBug.test.ts:47:5","name":"BK-264: should set assignee when assigning an open bug to an eligible member given the target role is \"owner\"","status":"passed","testResultsByEnv":{"default":"3b7b7fe8b17ba9e2465314360c4d7736"}}
