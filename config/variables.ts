@@ -81,6 +81,14 @@ const {
   // === TMS Configuration ===
   TMS_PROVIDER = 'xray', // Used: config.tms.provider (jiraSync) - 'xray' | 'jira'
   AUTO_SYNC = 'false', // Used: config.tms.autoSync (jiraSync, global.teardown)
+  // Key of the STR — the Test Execution linked to the sprint's STP — that this
+  // run writes results ONTO. NOT the STP's own key: an Xray Test Plan derives
+  // its status from its Executions and is never written into. The item is
+  // created by /regression-testing or /sprint-testing, already parented to the
+  // "QA Test Artifacts" epic. Empty = the sync mints its own Execution, which
+  // no API call can parent afterwards. Read only when TMS_PROVIDER=xray.
+  // See tests/utils/jiraSync.ts.
+  STP_EXECUTION_KEY = '', // Used: config.tms.stpExecutionKey (jiraSync)
 
   // === Xray Cloud (required only if TMS_PROVIDER=xray AND AUTO_SYNC=true) ===
   XRAY_CLIENT_ID = '', // Required if AUTO_SYNC=true (jiraSync)
@@ -97,10 +105,11 @@ const {
   ATLASSIAN_EMAIL = '',
   ATLASSIAN_API_TOKEN = '',
   // === Jira-specific operational params (NOT credentials) ===
-  // Verified against live Jira (upexgalaxy71.atlassian.net) 2026-08-02 — matches
-  // .agents/jira-fields.json -> test_status. Re-verify if Jira reassigns field IDs
-  // (regenerate catalog with `bun run jira:sync-fields --force`).
-  JIRA_TEST_STATUS_FIELD = 'customfield_10082', // Used: config.tms.jira.testStatusField
+  // Optional override. Left empty on purpose: custom-field ids are per-instance
+  // data and must not be hardcoded here (see the `acli` skill, anti-pattern T2).
+  // When empty, it resolves at runtime from `.agents/jira-fields.json` -> the
+  // `test_status` slug. Regenerate that catalog with `bun run jira:sync-fields --force`.
+  JIRA_TEST_STATUS_FIELD = '', // Used: config.tms.jira.testStatusField
 
   // === Browser Configuration ===
   HEADLESS = 'true', // Used: config.browser.headless (playwright.config)
@@ -230,6 +239,7 @@ export const config = {
   tms: {
     provider: TMS_PROVIDER as 'xray' | 'jira' | 'none',
     autoSync: AUTO_SYNC === 'true',
+    stpExecutionKey: STP_EXECUTION_KEY,
     xray: {
       clientId: XRAY_CLIENT_ID,
       clientSecret: XRAY_CLIENT_SECRET,

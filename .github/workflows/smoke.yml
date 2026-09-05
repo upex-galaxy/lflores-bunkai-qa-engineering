@@ -27,6 +27,11 @@ on:
         default: true
         type: boolean
 
+concurrency:
+  # Same gh-pages publish race as regression.yml — queue, never cancel.
+  group: smoke-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
   CI: true
   TEST_ENV: ${{ github.event.inputs.environment || 'staging' }}
@@ -170,7 +175,7 @@ jobs:
       # served directly, trends via historyPath), real retention, latest redirect.
       # PRIVATE portal mode is opt-in: when the PORTAL_URL secret is set, the
       # report goes to the auth-walled Test Report Portal (R2) INSTEAD of
-      # public GitHub Pages. Runbook: .claude/skills/regression-testing/
+      # public GitHub Pages. Runbook: .agents/skills/regression-testing/
       # references/private-hosting-setup.md
       - name: Build & Publish Allure Report (Allure 3)
         if: steps.check_allure.outputs.has_results == 'true'

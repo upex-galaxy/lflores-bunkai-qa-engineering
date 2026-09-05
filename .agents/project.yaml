@@ -92,7 +92,7 @@ environments:
 git_strategy:
   strategy: solo-main # null until Strategy Setup runs; then one of: solo-main | main-integration | enterprise | trunk-based | gitflow | github-flow | gitlab-flow | sdet
   description: >
-    Single long-lived branch (main); single maintainer (this repo is the boilerplate template itself). Work lands via PR only (direct pushes to main forbidden, changed 2026-08-20 per user decision) — every code-touching change goes through a work branch + gh pr create. Exception added 2026-08-21 per user decision: a change whose staged files are ALL `.md` (documentation-only — no code, no config, no scripts) may push directly to main; any change touching a single non-`.md` file goes through a work branch + PR as usual. No integration branch, no promotion path, no hotfix ceremony.
+    Single long-lived branch (main); single maintainer. Work lands via PR only (direct pushes to main forbidden, changed 2026-08-20 per user decision) — every code-touching change goes through a work branch + gh pr create. Exception added 2026-08-21 per user decision: a change whose staged files are ALL `.md` (documentation-only — no code, no config, no scripts) may push directly to main; any change touching a single non-`.md` file goes through a work branch + PR as usual. No integration branch, no promotion path, no hotfix ceremony.
   branches:
     production: main # release / default branch
     integration: null # long-lived integration branch name (e.g. staging), or null
@@ -137,3 +137,9 @@ git_strategy:
   meta:
     setup_version: 1
     created: 2026-06-20 # YYYY-MM-DD stamped by Strategy Setup
+    policy_verified: 2026-09-05 # stamped by `bun run git:policy verify --stamp` when in parity
+    policy_source: accepted # verified | accepted — stamped alongside policy_verified
+    strategy_source: chosen # inherited | chosen — this project ran Strategy Setup on 2026-06-20, not a default nobody picked
+
+updater:
+  protected_paths: [] # extra synced files this project has hand-merged and wants the updater to stop overwriting (same semantics as the built-in watchlist)
