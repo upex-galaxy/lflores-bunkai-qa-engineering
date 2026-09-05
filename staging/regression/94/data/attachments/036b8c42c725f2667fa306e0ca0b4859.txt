@@ -1,8 +1,0 @@
----- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/auth/signin
----- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
-✅ [BK-311] authenticateSuccessfully - PASS (897ms)
----- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
----- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/bugs
----- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/54a949f8-54e0-4f44-aa49-575d5c1c086f/assign
----- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/activity
-✅ [BK-487] attributeActionToActualCaller - PASS (834ms)

@@ -1,0 +1,1 @@
+{"id":"e8e9291dc7eeeba5c4c5013c8d602984","fullName":"integration/workspace/enforceInviteCapabilityScope.test.ts:64:3","name":"BK-497: should reject pending-invite revocation when the PAT lacks workspace:admin","status":"passed","testResultsByEnv":{"default":"8f443811001f1ff853dd27c026d07832"}}

@@ -1,0 +1,8 @@
+{
+  "name": "pat-1788576485797-kExgeA",
+  "scopes": [
+    "atc:read",
+    "atc:write",
+    "run:execute"
+  ]
+}

@@ -1,0 +1,1 @@
+{"id":"a47b37f05378ddc26c76be68139b670e","fullName":"integration/bugs/fieldIndependence.test.ts:53:3","name":"BK-264: should keep assignee unchanged when advancing status","status":"passed","testResultsByEnv":{"default":"13d9619c603b9acea69e4f3ee0060ec7"}}
