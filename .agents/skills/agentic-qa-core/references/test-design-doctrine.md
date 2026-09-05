@@ -129,6 +129,35 @@ min-1 | min | min+1 ............ max-1 | max | max+1
   length, collection size, date/time window, pagination, quota, or limit → BVA
   cases are mandatory. EP without BVA misses off-by-one defects.
 
+#### BVA on the derived value — REQUIRED wherever the functionality transforms data
+
+The boundary of the **raw input** is not the boundary of what gets displayed or
+returned. When a feature computes a value from other fields — rounding,
+truncation, aggregation, percentage, ratio — that computed value has its own
+boundary, sitting at whatever raw inputs are the *last ones* to still map to the
+extreme output. That boundary is frequently far from the raw field's own min/max.
+
+- **Trigger (binding):** the AC or its implementation transforms data through
+  rounding, truncation, averaging, aggregation, or any many-to-one mapping →
+  derive BVA cases against the **output boundary**, not only the input boundary.
+  Concretely: find the raw inputs nearest the point where the transform's result
+  crosses into (or out of) the displayed extreme, and test those — in addition
+  to, never instead of, the literal input min/max.
+- **Why input-only BVA is not enough:** input min/max cases (e.g. `bound = 0`,
+  `bound = total`) only prove the literal extremes render correctly. They say
+  nothing about near-extreme inputs that the transform still folds into the same
+  displayed extreme.
+- **Real case (BK-259 / BK-881):** `coveragePercent = Math.round(bound / total *
+  100)`. Input-boundary BVA covered `bound = 0` → `0%` and `bound = total` →
+  `100%` (the literal counts). It missed `coveragePercent(199, 200)` → `100` and
+  `coveragePercent(1, 201)` → `0` — inputs nowhere near the literal count
+  boundary, but that round through `Math.round` into the same displayed extreme,
+  contradicting the breakdown chips shown on the same card. Filed as a defect
+  only after manual exploration asked "what happens near 100%, not just at it."
+- **How to find the case:** identify the transform, then solve for the input
+  closest to (but not at) the input boundary that still produces the extreme
+  output — not just adjacent integers of one field when two fields interact.
+
 ### State-Transition testing — REQUIRED for stateful entities
 
 When an entity moves through states (draft → submitted → approved; cart → paid →
@@ -239,6 +268,9 @@ a justified N/A) to each is not done.
         silent on?
 [ ] EP   Partitions identified (valid + each distinct invalid)?
 [ ] BVA  Every range/limit/length/date-window has boundary cases? (or N/A: no ranges)
+[ ] BVA-D Does the feature transform data (round/truncate/aggregate)? If so, are
+         there cases at the OUTPUT boundary, not just the raw-input boundary?
+         (or N/A: no data transformation)
 [ ] ST   Stateful entity → transition table covered, incl. invalid transitions?
          (or N/A: stateless)
 [ ] DT   2+ interacting conditions → decision table built? (or N/A: ≤1 condition)
