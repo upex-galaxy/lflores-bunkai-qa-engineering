@@ -571,6 +571,7 @@ work_types:
         { from: planning, to: in_progress, description: 'Planning done, epic work begins' }
       complete: { from: in_progress, to: done, description: Epic finished }
       aborted: { from: any, to: aborted, description: Cancel the epic (global transition) }
+    used_by: [product-management/epic-creation, sprint-development]
 
   defect:
     jira_issue_type: Defect
@@ -627,6 +628,7 @@ work_types:
 
       resume_fix: { from: deferred, to: in_progress, description: Resume work on a deferred defect }
       aborted: { from: any, to: aborted, description: Abandon the defect (global transition) }
+    used_by: [acli, sprint-development]
 
   improvement:
     jira_issue_type: Improvement
@@ -686,6 +688,7 @@ work_types:
       resume_fix:
         { from: deferred, to: in_progress, description: Resume work on a deferred improvement }
       aborted: { from: any, to: aborted, description: Abandon the improvement (global transition) }
+    used_by: [acli, sprint-development, product-management]
 
   tech_story:
     jira_issue_type: Tech Story
@@ -729,6 +732,7 @@ work_types:
       back_from_automated:
         { from: automated, to: in_review, description: Re-open automated work for review }
       recovered: { from: aborted, to: to_do, description: Restore an aborted item back to To Do }
+    used_by: [sprint-development]
 
   tech_debt:
     jira_issue_type: Tech Debt
@@ -772,6 +776,7 @@ work_types:
       back_from_automated:
         { from: automated, to: in_review, description: Re-open automated work for review }
       recovered: { from: aborted, to: to_do, description: Restore an aborted item back to To Do }
+    used_by: [sprint-development]
 
   subtask:
     # Instances map this to their own subtask-level issue type — this Bunkai
