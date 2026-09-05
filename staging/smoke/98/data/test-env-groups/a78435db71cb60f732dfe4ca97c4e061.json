@@ -1,1 +1,0 @@
-{"id":"a78435db71cb60f732dfe4ca97c4e061","fullName":"integration/modules/enforceModuleCapabilityScope.test.ts:196:3","name":"BK-498: should reject module creation with a membership-403 given a correctly-scoped atc:write PAT whose user is not a workspace member","status":"passed","testResultsByEnv":{"default":"3dbd46986cdf40057adc0a418a355f8f"}}

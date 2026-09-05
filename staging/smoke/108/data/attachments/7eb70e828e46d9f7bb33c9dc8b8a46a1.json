@@ -1,0 +1,15 @@
+{
+  "title": "gate-fixture-atc-1788590130428-T2tamo",
+  "module_id": "175f8a08-20b9-4c96-a21a-e02dcae2837e",
+  "user_story_id": "d81d5bc0-a52e-40f0-a048-fac8e734250c",
+  "acceptance_criterion_ids": [
+    "f008dd0b-7502-49e0-801a-9eb1904c43f9"
+  ],
+  "layer": "API",
+  "steps": [
+    {
+      "position": 1,
+      "content": "Verify the capability gate sampling fixture."
+    }
+  ]
+}

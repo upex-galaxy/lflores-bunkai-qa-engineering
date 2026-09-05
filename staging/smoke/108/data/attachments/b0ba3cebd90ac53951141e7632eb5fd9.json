@@ -1,0 +1,30 @@
+{
+  "atc": {
+    "id": "7822d900-55a2-4edd-80a0-a8181b2a3dfa",
+    "slug": "defect-triage-module/atc-ca358b10",
+    "tags": [],
+    "layer": "API",
+    "steps": [
+      {
+        "id": "3e90c72c-9e16-4c37-9f3b-a086efcb3708",
+        "content": "Verify the capability gate sampling fixture.",
+        "expected": null,
+        "position": 1,
+        "input_data": null
+      }
+    ],
+    "title": "gate-fixture-atc-1788590130428-T2tamo",
+    "status": "unrun",
+    "version": 1,
+    "module_id": "175f8a08-20b9-4c96-a21a-e02dcae2837e",
+    "assertions": [],
+    "created_at": "2026-09-05T06:35:30.668828+00:00",
+    "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+    "updated_at": "2026-09-05T06:35:30.668828+00:00",
+    "archived_at": null,
+    "user_story_id": "d81d5bc0-a52e-40f0-a048-fac8e734250c",
+    "acceptance_criterion_ids": [
+      "f008dd0b-7502-49e0-801a-9eb1904c43f9"
+    ]
+  }
+}

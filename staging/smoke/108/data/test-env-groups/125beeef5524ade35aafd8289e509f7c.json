@@ -1,0 +1,1 @@
+{"id":"125beeef5524ade35aafd8289e509f7c","fullName":"integration/authoring/enforceAuthoringWriteReadSweep.test.ts:102:3","name":"BK-498: should complete a full import lifecycle successfully given a PAT scoped both atc:write and atc:read","status":"passed","testResultsByEnv":{"default":"311b5f0e74ee1c39a6466144a794d97d"}}
