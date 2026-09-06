@@ -1,0 +1,1 @@
+{"id":"a5a1d0c508c5c8847697b9a14d22e708","fullName":"integration/tokens/enforceTokenRouteCookieOnlyPosture.test.ts:98:3","name":"BK-497: should return 401 for an invalid Bearer token before the cookie-only posture check runs","status":"passed","testResultsByEnv":{"default":"6e770ecca0703e8ccece39f983484d8d"}}
