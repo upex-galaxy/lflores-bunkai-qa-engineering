@@ -1,0 +1,14 @@
+{
+  "id": "0fe5f21b-3fb8-44b8-a8b8-71b426ee4284",
+  "token": "bk_pat_hjY0-cZR-B_W.Zdf4mHqmikczJKNZ0UI1XVuNwitK8lM",
+  "name": "pat-1788677079451-VsSinG",
+  "scopes": [
+    "atc:read",
+    "atc:write",
+    "run:execute"
+  ],
+  "workspace_id": "6646f244-a28c-441e-8486-9af33bdb5c11",
+  "expires_at": null,
+  "created_at": "2026-09-06T06:44:39.567662+00:00",
+  "warning": "Store this token now — it cannot be retrieved later."
+}

@@ -1,1 +1,0 @@
-{"id":"1443fa1fba16af4e8424b58851feb383","fullName":"integration/workspace/switchActiveWorkspace.test.ts:37:3","name":"BK-6: should update active workspace context when switching to a workspace given the user is an active member","status":"passed","testResultsByEnv":{"default":"53f23103dd6a576af571cf1108b7202a"}}

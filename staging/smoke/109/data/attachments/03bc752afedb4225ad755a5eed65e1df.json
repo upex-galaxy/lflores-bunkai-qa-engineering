@@ -1,0 +1,15 @@
+{
+  "title": "gate-fixture-atc-1788677072295-LFimul",
+  "module_id": "175f8a08-20b9-4c96-a21a-e02dcae2837e",
+  "user_story_id": "4d9a0bbc-5a6e-450b-84da-be635e1570d4",
+  "acceptance_criterion_ids": [
+    "16af0914-e73e-44f4-98f4-780a2551f6fb"
+  ],
+  "layer": "API",
+  "steps": [
+    {
+      "position": 1,
+      "content": "Verify the capability gate sampling fixture."
+    }
+  ]
+}

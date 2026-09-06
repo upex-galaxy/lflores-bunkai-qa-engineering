@@ -1,0 +1,1 @@
+{"id":"e5198c022b0df947534d3533fe66e4f0","fullName":"integration/modules/enforceModuleCapabilityScope.test.ts:59:3","name":"BK-498: should reject module creation with 403 and no side effect given a PAT scoped exactly atc:read","status":"passed","testResultsByEnv":{"default":"3ed673e2abb6ba75f1ba61870795fd4e"}}

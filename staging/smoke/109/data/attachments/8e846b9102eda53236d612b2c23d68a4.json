@@ -1,0 +1,12 @@
+{
+  "invite": {
+    "id": "d02e570a-ce44-4dfe-932f-c00a5854efea",
+    "email": "bk264-viewer2@ambuusteln.resend.app",
+    "role": "member",
+    "expires_at": "2026-09-13T06:44:48.483058+00:00",
+    "created_at": "2026-09-06T06:44:48.483058+00:00"
+  },
+  "token": "bk_inv__G5I93nklVA6LgnJwcoGmq1QVJ1Fkc_ZpYL-70heR5I",
+  "accept_url": "https://staging-upexbunkai.vercel.app/invites/accept?token=bk_inv__G5I93nklVA6LgnJwcoGmq1QVJ1Fkc_ZpYL-70heR5I",
+  "warning": "Copy this URL now — the token cannot be retrieved later."
+}

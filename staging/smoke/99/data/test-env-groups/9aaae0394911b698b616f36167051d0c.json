@@ -1,1 +1,0 @@
-{"id":"9aaae0394911b698b616f36167051d0c","fullName":"integration/bugs/statusTransitions.test.ts:105:5","name":"BK-264: should reject a status change that moves backward or repeats the current status (\"resolved->open\")","status":"passed","testResultsByEnv":{"default":"878cbd35a92f8bee24c4c67040e28829"}}

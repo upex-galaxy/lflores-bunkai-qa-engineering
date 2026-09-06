@@ -1,1 +1,0 @@
-{"id":"05c81e9f50223bdcdf91c9f7a51b7ee0","fullName":"integration/modules/enforceModuleCapabilityScope.test.ts:32:3","name":"BK-498: should create module successfully given a PAT scoped exactly atc:write","status":"passed","testResultsByEnv":{"default":"5235581b455d83f5c4b8598618d5c0d3"}}

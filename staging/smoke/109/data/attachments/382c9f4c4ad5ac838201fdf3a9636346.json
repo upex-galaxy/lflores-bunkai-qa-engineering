@@ -1,0 +1,30 @@
+{
+  "atc": {
+    "id": "fb86011d-dfb5-455d-af5e-f6284efa0264",
+    "slug": "defect-triage-module/atc-8ad46490",
+    "tags": [],
+    "layer": "API",
+    "steps": [
+      {
+        "id": "05ea8a83-d4f4-45b8-ac6e-0bc40db44f5e",
+        "content": "Verify the capability gate sampling fixture.",
+        "expected": null,
+        "position": 1,
+        "input_data": null
+      }
+    ],
+    "title": "gate-fixture-atc-1788677072295-LFimul",
+    "status": "unrun",
+    "version": 1,
+    "module_id": "175f8a08-20b9-4c96-a21a-e02dcae2837e",
+    "assertions": [],
+    "created_at": "2026-09-06T06:44:32.407086+00:00",
+    "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+    "updated_at": "2026-09-06T06:44:32.407086+00:00",
+    "archived_at": null,
+    "user_story_id": "4d9a0bbc-5a6e-450b-84da-be635e1570d4",
+    "acceptance_criterion_ids": [
+      "16af0914-e73e-44f4-98f4-780a2551f6fb"
+    ]
+  }
+}
