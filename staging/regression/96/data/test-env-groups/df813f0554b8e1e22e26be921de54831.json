@@ -1,1 +1,0 @@
-{"id":"df813f0554b8e1e22e26be921de54831","fullName":"integration/workspace/enforceWorkspaceAdminCapabilityScope.test.ts:26:3","name":"BK-497: should allow a workspace-admin action when the PAT is correctly scoped and bound to the target workspace","status":"passed","testResultsByEnv":{"default":"68320d2f4414e8cce8a5ff6e5a0b2c39"}}

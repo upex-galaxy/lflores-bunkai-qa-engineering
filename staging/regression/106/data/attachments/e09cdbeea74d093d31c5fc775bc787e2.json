@@ -1,0 +1,8 @@
+{
+  "name": "pat-1788748978446-LOU0rm",
+  "scopes": [
+    "atc:read",
+    "atc:write",
+    "run:execute"
+  ]
+}

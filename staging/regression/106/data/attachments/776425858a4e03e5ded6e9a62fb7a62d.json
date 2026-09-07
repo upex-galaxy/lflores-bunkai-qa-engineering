@@ -1,0 +1,15 @@
+{
+  "title": "gate-fixture-atc-1788748935943-BrpSEN",
+  "module_id": "175f8a08-20b9-4c96-a21a-e02dcae2837e",
+  "user_story_id": "4142e98b-83ba-48ea-8ba9-cbf366eacc87",
+  "acceptance_criterion_ids": [
+    "71dfa84e-b394-41ff-a5fc-22059173d2d0"
+  ],
+  "layer": "API",
+  "steps": [
+    {
+      "position": 1,
+      "content": "Verify the capability gate sampling fixture."
+    }
+  ]
+}

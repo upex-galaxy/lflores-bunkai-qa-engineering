@@ -1,0 +1,1 @@
+{"id":"09e054775a5379c7d431be9ba7a99796","fullName":"integration/capability/enforceCapabilityGate.test.ts:81:3","name":"BK-499: should reject given PAT scoped atc:write only on a read-gated route","status":"passed","testResultsByEnv":{"default":"7d04d12a02d9ebe4f374598f4ee0e612"}}

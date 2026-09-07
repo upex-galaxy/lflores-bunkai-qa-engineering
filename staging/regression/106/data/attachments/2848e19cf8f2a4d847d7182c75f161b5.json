@@ -1,0 +1,51 @@
+{
+  "items": [
+    {
+      "id": "c5f502a7-b26c-4ff7-bee3-afbf5f9451a4",
+      "payload": {
+        "title": "Executed criterion test",
+        "reason": "Auto-closed by inactivity sweep: no step activity for 4h (closed 2026-09-06 00:30 UTC)",
+        "project_slug": "bk-259-boundary-seed"
+      },
+      "read_at": null,
+      "entity_id": "6216be97-defa-423d-8fbd-42c2a83121fd",
+      "created_at": "2026-09-06T00:30:00.019794+00:00",
+      "event_type": "run.aborted",
+      "entity_type": "run",
+      "workspace_id": "a808499e-f437-43b8-9fdb-8cee7dcceb3e",
+      "entity_available": true
+    },
+    {
+      "id": "ea65f29e-16e4-41cb-9e99-90deef342061",
+      "payload": {
+        "title": "Boundary toggle test",
+        "reason": "Auto-closed by inactivity sweep: no step activity for 4h (closed 2026-09-06 00:15 UTC)",
+        "project_slug": "bk-259-boundary-seed"
+      },
+      "read_at": null,
+      "entity_id": "82db8d62-169c-4887-a615-7768456958f5",
+      "created_at": "2026-09-06T00:15:00.031565+00:00",
+      "event_type": "run.aborted",
+      "entity_type": "run",
+      "workspace_id": "a808499e-f437-43b8-9fdb-8cee7dcceb3e",
+      "entity_available": true
+    },
+    {
+      "id": "b1073690-dbbe-41ff-bd4a-00d20d0323a6",
+      "payload": {
+        "title": "Boundary toggle test",
+        "reason": "Auto-closed by inactivity sweep: no step activity for 4h (closed 2026-09-06 00:15 UTC)",
+        "project_slug": "bk-259-boundary-seed"
+      },
+      "read_at": null,
+      "entity_id": "704b85ec-05c7-40d4-bf36-e3647c7a8bc9",
+      "created_at": "2026-09-06T00:15:00.031565+00:00",
+      "event_type": "run.aborted",
+      "entity_type": "run",
+      "workspace_id": "a808499e-f437-43b8-9fdb-8cee7dcceb3e",
+      "entity_available": true
+    }
+  ],
+  "unread_count": 3,
+  "next_cursor": null
+}

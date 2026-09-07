@@ -1,0 +1,1 @@
+{"id":"870c72b8dd2628b2ff3555d545cfd018","fullName":"integration/bugs/assignBug.test.ts:47:5","name":"BK-264: should set assignee when assigning an open bug to an eligible member given the target role is \"member\"","status":"passed","testResultsByEnv":{"default":"d07d0e4a8b335a6f8e64b11e40503711"}}
