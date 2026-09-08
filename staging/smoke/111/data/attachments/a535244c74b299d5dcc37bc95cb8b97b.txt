@@ -1,0 +1,8 @@
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/auth/signin
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
+✅ [BK-311] authenticateSuccessfully - PASS (477ms)
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/tokens
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/tokens
+---- API NOK: 403 - https://staging-upexbunkai.vercel.app/api/v1/tokens/4ce47e0a-4bf1-4471-b5fa-c065b206303b
+✅ [BK-553] rejectPatDeleteTokenRevocation - PASS (135ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/tokens
