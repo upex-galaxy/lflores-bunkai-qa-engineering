@@ -1,0 +1,15 @@
+{
+  "test": {
+    "id": "fd92473f-6add-437b-87f0-322b37b3f224",
+    "steps": [
+      {
+        "atc_id": "a5c702cb-f933-4e0e-ac32-9b91c473d949",
+        "position": 1
+      }
+    ],
+    "title": "gate-fixture-test-1788922488189-cMkE96",
+    "created_at": "2026-09-09T02:54:48.522187+00:00",
+    "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+    "workspace_id": "6646f244-a28c-441e-8486-9af33bdb5c11"
+  }
+}
