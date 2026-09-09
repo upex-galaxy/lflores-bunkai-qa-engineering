@@ -1,0 +1,15 @@
+{
+  "test": {
+    "id": "36cf22fa-3d15-4320-bb77-801c27db29a1",
+    "steps": [
+      {
+        "atc_id": "b2d49053-3858-48d7-8cf8-20b73c6f719c",
+        "position": 1
+      }
+    ],
+    "title": "gate-fixture-test-1788937094424-WewImg",
+    "created_at": "2026-09-09T06:58:14.589134+00:00",
+    "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+    "workspace_id": "6646f244-a28c-441e-8486-9af33bdb5c11"
+  }
+}
