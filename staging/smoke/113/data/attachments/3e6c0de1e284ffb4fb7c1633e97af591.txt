@@ -1,0 +1,9 @@
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/auth/signin
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
+✅ [BK-311] authenticateSuccessfully - PASS (734ms)
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/tokens
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/workspaces
+✅ [BK-671] createWorkspaceWithAnyScope - PASS (401ms)
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/tokens
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/workspaces/27f4803e-52a8-4b46-b41f-23cfd6f1e113/projects
+✅ [BK-684] createProjectSuccessfully - PASS (517ms)

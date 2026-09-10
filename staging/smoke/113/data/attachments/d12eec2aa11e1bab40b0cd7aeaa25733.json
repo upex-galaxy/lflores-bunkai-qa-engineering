@@ -1,0 +1,8 @@
+{
+  "name": "pat-1789023362758-lDnQri",
+  "scopes": [
+    "atc:read",
+    "atc:write",
+    "run:execute"
+  ]
+}

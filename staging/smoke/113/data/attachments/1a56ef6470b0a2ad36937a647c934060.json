@@ -1,0 +1,10 @@
+{
+  "error": {
+    "code": "validation_failed",
+    "message": "A bug's status cannot move backward.",
+    "details": {
+      "reason": "status_transition_backward"
+    },
+    "request_id": "04f38936-853b-4700-94ff-93cc99511240"
+  }
+}

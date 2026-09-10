@@ -1,0 +1,15 @@
+{
+  "title": "gate-fixture-atc-1789023317098-LB2FHZ",
+  "module_id": "175f8a08-20b9-4c96-a21a-e02dcae2837e",
+  "user_story_id": "8c8eaa2e-8ecf-4d1b-b6b3-06bcc8ad4bdd",
+  "acceptance_criterion_ids": [
+    "472de975-49c8-404e-9c2d-a15e883d9a40"
+  ],
+  "layer": "API",
+  "steps": [
+    {
+      "position": 1,
+      "content": "Verify the capability gate sampling fixture."
+    }
+  ]
+}
