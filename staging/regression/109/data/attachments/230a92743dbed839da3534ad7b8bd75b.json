@@ -1,0 +1,15 @@
+{
+  "test": {
+    "id": "053d894e-35b5-40cd-8549-4d6d364be6c3",
+    "steps": [
+      {
+        "atc_id": "8d5f8d1a-3110-4ded-a0c9-ebd27ae7d79b",
+        "position": 1
+      }
+    ],
+    "title": "gate-fixture-test-1789008917260-IpENfO",
+    "created_at": "2026-09-10T02:55:17.488299+00:00",
+    "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+    "workspace_id": "6646f244-a28c-441e-8486-9af33bdb5c11"
+  }
+}
