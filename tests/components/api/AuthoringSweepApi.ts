@@ -130,7 +130,7 @@ export class AuthoringSweepApi extends ApiBase {
   /** Helper: Raw POST /modules/{id}/user-stories wrapper. */
   @step
   async createUserStory(moduleId: string, payload: UserStoryPayload): Promise<[APIResponse, UserStoryResponse, UserStoryPayload]> {
-    return this.apiPOST<UserStoryResponse, UserStoryPayload>(`/modules/${moduleId}/user-stories`, payload);
+    return this.apiPOST<UserStoryResponse, UserStoryPayload>(`/modules/${moduleId}/user-stories`, payload, { headers: { 'Idempotency-Key': this.data.createTestId('idem') } });
   }
 
   /** Helper: Raw GET /user-stories/{id} wrapper. */
@@ -204,7 +204,7 @@ export class AuthoringSweepApi extends ApiBase {
    */
   @step
   async createAtc(payload: AtcCreatePayload): Promise<[APIResponse, AtcResponse, AtcCreatePayload]> {
-    return this.apiPOST<AtcResponse, AtcCreatePayload>('/atcs', payload);
+    return this.apiPOST<AtcResponse, AtcCreatePayload>('/atcs', payload, { headers: { 'Idempotency-Key': this.data.createTestId('idem') } });
   }
 
   /**

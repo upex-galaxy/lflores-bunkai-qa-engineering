@@ -149,7 +149,7 @@ export class WorkspaceApi extends ApiBase {
   async createWorkspace(
     body: WorkspaceCreateBody,
   ): Promise<[APIResponse, WorkspaceCreateResponse, WorkspaceCreateBody]> {
-    return this.apiPOST<WorkspaceCreateResponse, WorkspaceCreateBody>('/workspaces', body);
+    return this.apiPOST<WorkspaceCreateResponse, WorkspaceCreateBody>('/workspaces', body, { headers: { 'Idempotency-Key': this.data.createTestId('idem') } });
   }
 
   /**
