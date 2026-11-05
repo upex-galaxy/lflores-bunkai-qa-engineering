@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-11-04T23:33:57.277Z",
+  "generatedAt": "2026-11-05T01:49:16.467Z",
   "components": {
     "api": [
       {
@@ -60,67 +60,67 @@
           {
             "id": "BK-477",
             "method": "assignBugToEligibleMember",
-            "line": 108
+            "line": 109
           },
           {
             "id": "BK-478",
             "method": "rejectStatusSkip",
-            "line": 172
+            "line": 173
           },
           {
             "id": "BK-479",
             "method": "advanceStatusLegally",
-            "line": 200
+            "line": 201
           },
           {
             "id": "BK-480",
             "method": "rejectAssignToNonMember",
-            "line": 224
+            "line": 225
           },
           {
             "id": "BK-481",
             "method": "rejectAssignToViewer",
-            "line": 248
+            "line": 249
           },
           {
             "id": "BK-482",
             "method": "rejectStatusBackwardOrSame",
-            "line": 276
+            "line": 277
           },
           {
             "id": "BK-483",
             "method": "reassignBugToDifferentMember",
-            "line": 300
+            "line": 301
           },
           {
             "id": "BK-484",
             "method": "keepAssigneeAndStatusIndependent",
-            "line": 349
+            "line": 350
           },
           {
             "id": "BK-485",
             "method": "unassignBug",
-            "line": 323
+            "line": 324
           },
           {
             "id": "BK-486",
             "method": "rejectWriteActionForViewer",
-            "line": 145
+            "line": 146
           },
           {
             "id": "BK-487",
             "method": "attributeActionToActualCaller",
-            "line": 441
+            "line": 442
           },
           {
             "id": "BK-488",
             "method": "rejectNonDisclosingNotFound",
-            "line": 376
+            "line": 377
           },
           {
             "id": "BK-489",
             "method": "assignBugTriggersNotification",
-            "line": 401
+            "line": 402
           }
         ]
       },

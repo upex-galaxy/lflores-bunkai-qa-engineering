@@ -63,6 +63,7 @@ export class BugsApi extends ApiBase {
     const [response, body, sentPayload] = await this.apiPOST<{ bug: BugDetail }, BugStandaloneCreateBody>(
       '/bugs',
       payload,
+      { headers: { 'Idempotency-Key': this.data.createTestId('idem') } },
     );
     expect(response.status()).toBe(201);
     expect(body.bug.id).toBeDefined();

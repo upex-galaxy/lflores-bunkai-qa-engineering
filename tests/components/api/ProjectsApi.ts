@@ -56,7 +56,7 @@ export class ProjectsApi extends ApiBase {
   async createProject(
     args: { workspaceId: string, body: ProjectCreateBody },
   ): Promise<[APIResponse, ProjectCreateResponse, ProjectCreateBody]> {
-    return this.apiPOST<ProjectCreateResponse, ProjectCreateBody>(`/workspaces/${args.workspaceId}/projects`, args.body);
+    return this.apiPOST<ProjectCreateResponse, ProjectCreateBody>(`/workspaces/${args.workspaceId}/projects`, args.body, { headers: { 'Idempotency-Key': this.data.createTestId('idem') } });
   }
 
   // ============================================
@@ -117,7 +117,7 @@ export class ProjectsApi extends ApiBase {
   async rejectProjectCreationMissingCapability(workspaceId: string): Promise<[APIResponse, ErrorEnvelope]> {
     const [response, body] = await this.apiPOST<ErrorEnvelope, ProjectCreateBody>(`/workspaces/${workspaceId}/projects`, {
       name: this.data.createTestId('Project'),
-    });
+    }, { headers: { 'Idempotency-Key': this.data.createTestId('idem') } });
 
     // Fixed assertions - validates the gate-before-membership ordering: the
     // error names the missing capability, never a membership complaint
