@@ -4,7 +4,7 @@
 
 Stage 2 Execution playbook for in-sprint manual / exploratory QA: smoke test, then UI / API / DB exploration as applicable to the ticket. Session notes written into the ticket PBI folder; bugs filed via `reporting-templates.md`.
 
-This reference is for IN-SPRINT manual execution RIGHT NOW. It does NOT cover:
+This reference is for IN-SPRINT manual execution (Stage 2). It does NOT cover:
 - Stage 1 planning, Discover-Modify-Generate data classification, test-outline naming, or traceability checks (see `acceptance-test-planning.md`).
 - Stage 5 automated-test coding patterns (see `test-automation`).
 - Stage 6 CI regression-suite execution (see `regression-testing`).
@@ -28,16 +28,18 @@ Every feature validates through up to three layers. Pick by feature type:
 
 ## Finding triage — blocking vs non-blocking (graduated pause)
 
-A FAIL found during deep exploration is NOT automatically a Critical bug and does NOT automatically halt the pass. Triage first, then decide whether to stop or keep going. Pausing the whole 17-TC pass on a cosmetic finding wastes the dispatch and loses coverage; a genuine blocker must still stop immediately.
+A FAIL found during deep exploration is NOT automatically a Critical bug and does NOT automatically halt the pass. Triage first, then decide whether to stop or keep going. Pausing the whole pass on a cosmetic finding wastes the dispatch and loses coverage; a genuine blocker must still stop immediately.
 
 | Finding class | Examples | Action |
 |---------------|----------|--------|
 | **Blocking** | smoke down, env down, data corruption / integrity loss, security-exploitable (auth bypass, cross-tenant read/write, RLS `VULNERABLE`) | **STOP the pass immediately.** Surface to the orchestrator/user, do not continue deep exploration. |
 | **Non-blocking** | cosmetic, minor validation gap, edge-case on a non-critical TC, a security/auth/framework-default finding pending recalibration | **Log it and CONTINUE the pass.** Record in `test-session-memory.md` Findings, mark the TC FAILED, finish the remaining TCs, and surface all non-blocking findings together at Stage 2 close. |
 
+**Before a finding becomes a bug proposal**, a data-integrity, money or security finding (or any whose mechanism is still a hypothesis) runs the refute mandate of `../../agentic-qa-core/references/adversarial-verification.md`: a verifier tries to explain it away, the row's own invariant is checked, and the competing hypotheses are executed side by side.
+
 Severity is assigned per `reporting-templates.md` §1.4 (a FAIL is not auto-Critical), and security/auth/framework-default findings are recalibrated at Stage 3 per `reporting-templates.md` §5.0 — so do not pre-file a Critical bug from inside the pass. The point of finishing the pass is full coverage: one non-blocking finding should not abort the other TCs.
 
-**Visual/positional findings — annotate before filing.** If a confirmed finding is visual or positional — overlapping elements, misalignment, a wrong date/offset on a chart axis, anything a raw screenshot needs a paragraph to explain — load the `bug-screenshot-annotation` skill to produce a marked-up capture (circles, arrows, callouts, corner badge) before the Stage 3 filing loop. Skip it for purely textual findings (an error message, a wrong number in a field) where the raw capture already reads clearly. The annotated PNG becomes the lead evidence in the bug report and the Evidence Handoff.
+**Visual/positional findings — annotate before filing.** If a confirmed finding is visual or positional — overlapping elements, misalignment, a wrong date/offset on a chart axis, anything a raw screenshot needs a paragraph to explain — load the `bug-screenshot-annotation` skill to produce a marked-up capture (circles, arrows, callouts, corner badge) before the Stage 3 filing loop. Skip it for purely textual findings (an error message, a wrong number in a field) where the raw capture already reads clearly. The annotated PNG becomes the lead evidence in the bug report and the first defect image of the bug's evidence pack, so it leads the evidence page the Evidence Handoff links.
 
 ---
 
@@ -55,7 +57,11 @@ Deep-dive the UI on `{{WEB_URL}}` via `[AUTOMATION_TOOL]`. Goal: validate ACs, d
 | Screenshot | `[AUTOMATION_TOOL]` | Evidence |
 | Console + Network | `[AUTOMATION_TOOL]` | Observe errors / requests |
 
-Before any `[AUTOMATION_TOOL]` call, set `.playwright/cli.config.json` `outputDir` to `.context/PBI/epics/EPIC-<KEY>-<slug>/stories/STORY-<KEY>-<slug>/evidence/`. Screenshots still need the full path in `--filename` because `outputDir` does not apply to `.png`.
+Before any `[AUTOMATION_TOOL]` call, capture with an explicit destination path resolving to the ticket's `evidence/` folder — never repoint the shared `.playwright/cli.config.json` `outputDir` (see `agentic-qa-core/references/evidence-conventions.md` §1 Bucket B and §5). Screenshots still need the full path in `--filename` because `outputDir` does not apply to `.png`.
+
+**Evidence pack.** When the ticket will get an evidence page, record each observed case in the evidence pack beside the screenshots as you go, with marks placed from the element's real box (`getBoundingClientRect` through `eval`), never by eye: the `evidence-artifact` skill, `references/workflow.md` §2.
+
+**Session and login.** One named session per ticket (`-s=<KEY>`), in memory. The app's login comes from the role's state file, never from a login typed inside the exploration session: `open`, then `state-load <repo>/.auth/<env>-<role>.json`, then `goto`. Two roles = two sessions (`-s=<KEY>-admin`, `-s=<KEY>-member`). Missing file or a login page after `goto` → produce the file first (suite setup, or the one-off login recipe). Before the first session of the project, check `testing.browser.pair_mode` in `.agents/project.yaml` (`null` = ask once). `close` every session before reporting, and prove it with `playwright-cli list`. Canon: `agentic-qa-core/references/browser-sessions.md`.
 
 ### 1.2 Scenario loop (per AC)
 
@@ -125,7 +131,7 @@ curl -s -H "Authorization: Bearer $API_TOKEN_<ROLE>_<ENV>" "$API_BASE_URL/<path>
 
 ```
 OpenAPI MCP  list-api-endpoints
-  - source: {OpenAPI spec — local file or live URL, commonly the localhost backend}
+  - source: {OpenAPI spec — the full spec URL (commonly the localhost backend) or a file path relative to the repo root; never the endpoint route alone}
 
 OpenAPI MCP  get-api-endpoint-schema
   - endpoint: {method + path}
@@ -328,7 +334,7 @@ Options, in priority order:
 2. **Clock-mock.** If the stack supports injecting/freezing time (test hooks, a mockable clock, `sinon`-style fake timers on the backend, or a DB-side `now()` override in a transaction), advance the clock past the TTL and assert the expiry. Use only when option 1 is unavailable and the mock genuinely drives the production expiry logic (not a parallel test-only branch).
 3. **Explicit manual-defer with a written follow-up.** Last resort. Document the boundary you could not exercise, why (no fixture, no clock-mock), and the concrete follow-up (e.g. "add a `MAGIC_LINK_TTL` test override" or "automate with fake timers in Stage 5"). File it so coverage is not lost silently.
 
-**Rule.** When a time-dependent TC cannot run live, mark it `BLOCKED — needs time fixture` in `test-session-memory.md` with the option chosen (1/2/3) and a one-line rationale. Never record a bare `BLOCKED` with no decision path — that loses coverage silently. The §5.4 "no NOT RUN" rule still applies: a deferred time-boundary TC carries its `BLOCKED — needs time fixture` reason into the Findings list for Stage 3.
+**Rule.** When a time-dependent TC cannot run live, mark it `BLOCKED — needs time fixture` in `test-session-memory.md` while option 1 or 2 is still being tried, with the option and a one-line rationale; once option 3 is chosen it becomes `DEFERRED (execution) <date> by QA decision: <reason>; follow-up <KEY>`, and that is the line the results carry. Never record a bare `BLOCKED` with no decision path — that loses coverage silently. The §5.4 observation rule applies: until a fixture or clock-mock lets it be observed, the TC is NOT RUN, and option 3 is the ladder's QA deferral (`DEFERRED (execution)` with the follow-up named); its reason goes into the Findings list for Stage 3.
 
 ---
 
@@ -351,7 +357,7 @@ Two files are updated during Stage 2: `test-session-memory.md` (live log, in the
   test-session-memory.md      # Stage 2 live log (hand-authored)
 ```
 
-The whole PBI tree is a gitignored Jira cache (`AGENTS.md` §9). The live log sits in `.session/` so a re-sync cannot clobber it mid-execution.
+The whole PBI tree is a gitignored Jira cache (`.agents/instructions/agent-local-context-pbi.md`). The live log sits in `.session/` so a re-sync cannot clobber it mid-execution.
 
 ### 5.2 `test-session-memory.md` stage 2 block
 
@@ -401,7 +407,7 @@ The whole PBI tree is a gitignored Jira cache (`AGENTS.md` §9). The live log si
 
 ### 5.4 Status propagation
 
-At end of Stage 2, each Stage-1 test outline / TC must have PASSED or FAILED. No NOT RUN. If one remains NOT RUN, it is either out of scope (mark why in Notes) or incomplete (return to the loop).
+At end of Stage 2, each Stage-1 test outline / TC is PASSED or FAILED only when it was observed in the environment its precondition names; anything else is NOT RUN, whatever indirect evidence exists (a unit test, green CI, reading code, a local or lower environment). A NOT RUN case runs the blocking ladder (`../../agentic-qa-core/references/discovery-driven-doctrine.md` §5) and ends Stage 2 with its reason recorded: `BLOCKED` while the ladder is open, `DEFERRED (execution)` once QA deferred it with a follow-up. Out of scope stays a stated note in Notes.
 
 ### 5.5 Handoff to Stage 3
 
@@ -411,7 +417,7 @@ At end of Stage 2, each Stage-1 test outline / TC must have PASSED or FAILED. No
 
 ## §6. Pre-flight checklist
 
-- [ ] Playwright / automation tool config `outputDir` set to `evidence/` folder BEFORE first action
+- [ ] Capture destination is an explicit full path into the ticket's `evidence/` folder per capture — the shared `.playwright/cli.config.json` `outputDir` is never repointed (§1.1, `agentic-qa-core/references/evidence-conventions.md` §1 Bucket A + §5)
 - [ ] Credentials pulled from `.env` (no hardcoding)
 - [ ] Smoke test ran FIRST and produced Go decision
 - [ ] Triforce layers selected based on feature type (UI / API / DB)
@@ -419,5 +425,5 @@ At end of Stage 2, each Stage-1 test outline / TC must have PASSED or FAILED. No
 - [ ] Evidence screenshots named per §5.3 and stored under the ticket's `evidence/` folder
 - [ ] RLS / authorization probes run when multi-tenant or role-sensitive
 - [ ] DB constraint probes wrapped in transactions and rolled back
-- [ ] All TCs / outlines ended Stage 2 with PASSED or FAILED (no NOT RUN)
+- [ ] Every TC / outline ended Stage 2 PASSED or FAILED on observation in its precondition's environment, or NOT RUN with its ladder reason (`BLOCKED` / `DEFERRED (execution)`) recorded
 - [ ] Findings list populated for Stage 3 handoff

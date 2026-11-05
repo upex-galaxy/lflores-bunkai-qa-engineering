@@ -29,7 +29,7 @@ When in doubt, the sibling doctrine doc is canonical for its concern. This file 
 
 ## 3. Storage layout
 
-Every retrofitted skill writes its session state under a single tree at the repo root:
+Every retrofitted skill writes its session state under a single tree at `<<PRIMARY_ROOT>>`, the PRIMARY checkout (`.agents/README.md` §"Checkout roots"). In the primary it is the repo root; in a linked worktree it is NOT the worktree's root, because everything git ignores inside a worktree is deleted with it. Every `.session/...` path in this document, and in every skill that cites it, resolves under `<<PRIMARY_ROOT>>` and is passed to a subagent as an absolute path:
 
 ```
 .session/
@@ -49,14 +49,59 @@ Rules:
 - `<scope>` is invocation-specific (see §9 for the naming convention per skill). Project-scope skills omit it entirely — files live directly at `.session/<skill-slug>/{plan.md, progress.md}`.
 - `.session/` is **gitignored** in both repos. The contents are work-in-progress orchestration scaffolding, not committed deliverables. Audit history lives in (a) Engram observations under the `session/...` topic prefix, (b) the canonical domain artifacts each skill already commits to `.context/...`.
 - `.session/.archive/` is also gitignored. The archive exists for local resume-replay and human inspection during the same session; long-term audit is delegated to Engram.
-- A skill MUST NOT write anywhere else under `.session/`. Sibling directories under `.session/` are reserved for future use.
+- A skill MUST NOT write anywhere else under `.session/`. Sibling directories under `.session/` are reserved for future use, with one registered exception: `.session/orchestration/<slug>/` (see below).
+
+### Registered sibling: `.session/orchestration/<slug>/`
+
+Fleet coordination (one conductor, several launched workers) is shared vocabulary across every workflow skill's dispatch, not a single skill's own scope — so it does not fit the `.session/<skill-slug>/<scope>/` shape above. It lives at the top-level sibling `.session/orchestration/<slug>/` instead, gitignored and LOCAL like every other `.session/` path, owned and documented by `.agents/skills/orca-orchestration/SKILL.md`. It holds `run.md`, `roster.md`, `COMMON.md`, `W-<label>.md`, `launch.txt`, `claims.md`, `learnings.md`, `skill-improvements.md`, `kickoff.md` and `reports/<label>.md`; schemas and companion-file rules for that scope are owned by `orca-orchestration`, not by this document. `<slug>` is the run identifier a conductor picks at session start (kebab-case). This sibling is exempt from the `SESSION_RETROFITTED_SKILLS` lint (`scripts/lint-skills.ts`), which validates only the `<skill-slug>` shape: `orca-orchestration` does not write `.session/orca-orchestration/`, so its scope is not a candidate for that check.
+
+### Companion files inside a scope
+
+`plan.md` and `progress.md` are the contract and the only two files this doctrine governs. A scope MAY hold additional **companion files** when the skill genuinely needs state that is neither the plan nor the append-only log — as long as they sit INSIDE that scope directory (the rule above still binds: nothing is written elsewhere under `.session/`) and nothing outside the machine depends on one existing. They are disposable by construction: `.session/` is gitignored and local.
+
+Registered companions, all owned by `sprint-testing`:
+
+| File | Altitude | What it is |
+|---|---|---|
+| `test-session-memory.md` | issue (`<KEY>/` or `sprint-<N>/<KEY>/`) | the domain payload shared across that issue's four stage dispatches: TMS modality, issue context, stage results, checklist |
+| `<KEY>/brief.md` | issue, inside a sprint scope | the payload a conductor seeds for a launched worker before it exists |
+| `roster.md` | sprint (`sprint-<N>/`) | one row per worker: label · issue · session label · handles · state |
+| `launch.txt` | sprint | one self-contained launch line per issue; regenerated whole, never patched |
+| `claims.md` | sprint | append-only ledger of declared read/write intents on shared fixture data |
+| `reports/<label>.md` | sprint | a worker's long report, referenced from its done-message |
+
+The four sprint-altitude ones exist only when the run has more than one executor (`sprint-testing/references/fleet-conductor.md`). A single-executor run has none of them, and a resume must treat every one of them as optional.
+
+Two companions any workflow skill may write inside its own scope, both governed by `agentic-qa-core/references/skill-refinement-protocol.md` and `agentic-qa-core/references/upstream-feedback.md`: `refinements.md` (append-only proposals for a skill edit, never the edit itself) and `upstream-issue-NN.md` (a redacted draft of an issue against the boilerplate, filed only on explicit OK). A resume treats both as optional.
+
+### `## Live Progress` — the heartbeat contract
+
+A long-running session cannot be observed through `progress.md`: that file is written by the **orchestrator** at phase boundaries, so while a phase is in flight it says nothing, and a session running unattended (a launched worker, an unattended routine) has no orchestrator standing by to write it.
+
+So a session that must be observable while it works appends **one line per stage boundary** to a `## Live Progress` section of its own `test-session-memory.md` (or, for a skill without that companion, of the scope's plan-adjacent companion it already owns):
+
+```
+## Live Progress
+- 14:02 Session Start done · preflight GREEN (ui, api, db)
+- 14:31 Stage 1 done · ATP <KEY> · ATS <KEY> · 7 TCs
+- 15:10 Stage 2 running · smoke GO · 4/7 PASSED
+```
+
+Rules:
+
+- **One line per stage boundary**, prefixed `HH:MM`, append-only, shortest useful form. It is a liveness signal, not a report.
+- **A blocker goes in the line**, as a `BLOCKED_<REASON>` token (the observer greps for `BLOCKED_`), in addition to whatever channel the session uses to escalate. The token survives a dead channel; the channel is the reinforcement.
+- **It is a file, not a message.** Nothing pushes it anywhere: an observer reads it when it wants to. Periodic "still alive" messages to a coordinator are a separate thing and are prohibited by the worker contract.
+- **It does not replace `progress.md`** and never carries a phase entry's fields. `progress.md` stays the resume signal (§7); `## Live Progress` answers only "is this session moving, and when did it last move?". Staleness is judged from the last line's timestamp.
+- **For an Orca-supervised worker, this timestamp is corroboration, not the primary liveness signal.** The primary signal is the on-screen spinner line, per `orca-orchestration/references/coordinator-playbook.md` §5.
+- **Optional by default.** A skill that runs attended in the foreground has no reason to write it, and a resume never requires it.
 
 ## 4. Phase 0 — Resume contract (MANDATORY)
 
 Every retrofitted skill runs Phase 0 as the **first** thing it does, before any subagent dispatch, before any user prompt beyond the initial trigger. The decision tree is:
 
 1. Resolve `<scope>` for this invocation (see §9 for the skill's rule).
-2. Check whether `.session/<skill-slug>/<scope>/progress.md` exists.
+2. Check whether `<<PRIMARY_ROOT>>/.session/<skill-slug>/<scope>/progress.md` exists. When the session runs in a linked worktree (`<<REPO_ROOT>>` differs from `<<PRIMARY_ROOT>>`), say so in one line and look in the primary; a check against the worktree's own `.session/` finds nothing and silently restarts work that was already done.
 3. If it does NOT exist → proceed to Phase 1 (write a new `plan.md`).
 4. If it DOES exist:
    1. Read `.session/<skill-slug>/<scope>/plan.md` in full.
@@ -77,15 +122,9 @@ The Phase 0 check is NOT optional — even on first invocation the orchestrator 
 
 ### Skills that opt out
 
-A small set of short skills bypass Phase 0 because they have no meaningful interruption point. These are explicitly excluded:
+A small set of short skills bypass Phase 0 because they have no meaningful interruption point: utility, core and single-turn skills (CLI cookbooks, atomic operators, informational walkthroughs, within-session-only operators, reference-only hosts) opt out and say so in their SKILL.md; `SESSION_RETROFITTED_SKILLS` in `scripts/lint-skills.ts` names the ones that do NOT.
 
-- Command-driven CLI cookbooks: `acli`, `xray-cli`
-- Atomic operators: `git-flow-master`
-- Informational walkthroughs: `agentic-qa-onboard`
-- Within-session-only operators: `judgment-day`
-- Meta / reference-only: `agentic-qa-core`
-
-A skill in this list MUST state its opt-out explicitly in its SKILL.md so future readers don't expect a `.session/` directory.
+A skill that opts out MUST state its opt-out explicitly in its SKILL.md so future readers don't expect a `.session/` directory.
 
 ## 5. Phase 1 — Plan-first contract
 
@@ -249,18 +288,22 @@ The shape of `<scope>` is decided per skill, not per invocation. Each retrofitte
 | Skill | Scope shape | Identifier source |
 |---|---|---|
 | `sprint-testing` | `<JIRA-KEY>` (single-issue); `sprint-<N>` (sprint-wide — a scope in its own right, holding one nested `<JIRA-KEY>/` sub-scope per issue) | Jira issue key or sprint number |
-| `test-automation` | `<JIRA-KEY>` (ticket-driven, regression-driven); `<module-slug>` (module-driven) | Jira ticket or module name from scope-picker |
-| `test-documentation` | `<JIRA-KEY>` (ticket / bug); `<module-slug>` (module); `<YYYY-MM-DD>-adhoc` (ad-hoc) | Scope-picker output |
+| `test-automation` | `<JIRA-KEY>` (ticket-driven, bug-driven, discovery-driven per gap); `<module-slug>` (module-driven, discovery-driven per module) | Jira ticket or module name from scope-picker |
+| `test-documentation` | `<JIRA-KEY>` (ticket / bug / discovery per gap); `<module-slug>` (module / discovery per module); `<YYYY-MM-DD>-adhoc` (ad-hoc) | Scope-picker output |
 | `framework-development` | `<change-name>` (kebab-case) | User-provided at session start |
 | `regression-testing` | `<env>-<YYYY-MM-DD>` (e.g. `staging-2026-05-20`) | Invocation env + date |
 | `shift-left-testing` | `<YYYY-MM-DD>-<descriptor>` | Session init |
+| `exploratory-testing` | `<YYYY-MM-DD>-<scope-slug>` (the module, the flow, or `sweep`) | Session init, from the scope mode |
+| `sprint-conductor` | `sprint-<N>` (the session plan and the boot and resume state only: `plan.md`, `kickoff.md`, `passes.md`, `refinements.md`; the fleet files stay in `sprint-testing`'s `sprint-<N>/`) | The sprint number at boot |
 | `project-discovery` | (none — project scope) | — |
+
+`orca-orchestration` is not in this table: it does not write `.session/<skill-slug>/<scope>/` at all. Its scope lives under the registered sibling `.session/orchestration/<slug>/` (§3), so it is exempt from the shape check below.
 
 A skill MUST validate its `<scope>` matches its declared shape before writing the directory. Mismatch is a lint failure.
 
 ### Nested scopes
 
-A scope MAY itself contain sub-scopes when the skill genuinely runs at two altitudes. Today only `sprint-testing` does: `sprint-<N>` is a scope AND the parent of one `<JIRA-KEY>/` sub-scope per issue in the sprint.
+A scope MAY itself contain sub-scopes when the skill genuinely runs at two altitudes. `sprint-testing` is the registered nested-scope skill: `sprint-<N>` is a scope AND the parent of one `<JIRA-KEY>/` sub-scope per issue in the sprint.
 
 ```
 .session/sprint-testing/
@@ -341,8 +384,8 @@ Goal: <one sentence>
 Context docs:
   - /abs/path/file1.md
   - /abs/path/file2.ts
-  - .session/<skill-slug>/<scope>/plan.md           ← session artifact path
-  - .session/<skill-slug>/<scope>/progress.md       ← session artifact path
+  - <<PRIMARY_ROOT>>/.session/<skill-slug>/<scope>/plan.md       ← session artifact path
+  - <<PRIMARY_ROOT>>/.session/<skill-slug>/<scope>/progress.md   ← session artifact path
 
 ... (remaining 5 components per briefing-template.md)
 ```
@@ -353,11 +396,7 @@ The subagent treats `plan.md` and `progress.md` as read-only context. Only the o
 
 ### Skills retrofitted with the full pattern (plan.md + progress.md)
 
-`test-automation`, `sprint-testing`, `project-discovery`, `regression-testing`, `test-documentation`, `shift-left-testing`.
-
-### Skill that pioneered the pattern
-
-`framework-development`. The original implementation used `.scratch/framework-changes/<change>/{plan.md, apply-progress.md}`. Migrated to this doctrine at `.session/framework-development/<change>/{plan.md, progress.md}`. The `.scratch/` path is grandfathered for one release so in-flight local state does not vanish on upgrade.
+The ones `SESSION_RETROFITTED_SKILLS` in `scripts/lint-skills.ts` names (the constant the lint reads).
 
 ### Skills explicitly excluded
 
@@ -365,7 +404,7 @@ See §4 "Skills that opt out".
 
 ## 14. Lint checks
 
-`scripts/lint-skills.ts` enforces three checks on top of the existing skill-registry lints:
+`scripts/lint-skills.ts` enforces the session checks below on top of the existing skill-registry lints:
 
 1. **Banner present.** Every retrofitted SKILL.md (per §13) contains the §10 banner verbatim. Missing banner → ERROR.
 2. **Phase 0 present.** Every retrofitted SKILL.md has a section titled `## Phase 0` (or `## Phase -1` for skills with a pre-existing `## Phase 0` like `test-documentation`) that mentions `.session/` path read. Missing Phase 0 → ERROR.

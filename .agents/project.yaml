@@ -25,11 +25,14 @@ database:
 issue_tracker:
   issue_tracker: Jira # Issue tracking tool (e.g. Jira)
   issue_tracker_cli: acli # CLI command to query tickets (e.g. acli (Jira) / gh issue (GitHub))
-  atlassian_url: 'https://upexgalaxy72.atlassian.net' # Atlassian site base URL (e.g. https://company.atlassian.net) — only place the host is written, NOT mirrored in .env
+  atlassian_url: 'https://upexgalaxy74.atlassian.net' # Atlassian site base URL (e.g. https://company.atlassian.net) — only place the host is written, NOT mirrored in .env
 
 testing:
   default_env: staging # Default testing environment — must match a key under `environments:` (e.g. staging)
   tms_cli: bun xray # Test management CLI command (e.g. bun xray). Set to acli (== issue_tracker_cli) -> Modality jira-native, no Xray on Jira.
+  tc_creation_stage: auto # When to create Test issues (see .agents/project.schema.yaml). Unset or unrecognized is treated as auto.
+
+harnesses: null
 
 qa:
   formal_blocked_gate: true # When true and the substrate exposes a `blocked` story status, FAILED stories dispatch `defect_reported` (in_test -> blocked). When false (or no `blocked` slug), the skill leaves the story in `in_test` with the linked bug — non-strict fallback. See sprint-testing/references/sprint-orchestration.md Briefing 4 Step 5.
@@ -56,6 +59,38 @@ qa:
     defect_epic:
       name: QA Defect Management # convention name; the `QA ` prefix marks a process epic, not product
       key: BK-183 # discovered/created at runtime, then cached here (e.g. PROJ-123)
+
+board:
+  source: auto
+  tickets_file: .context/sprint/tickets.yaml
+  jql: null
+  bug_jql: null
+  ticket_key_pattern: null
+  timezone: null
+  statuses:
+    tickets:
+      not_ready: null
+      in_test: null
+      tested: null
+      blocked: null
+      dropped: null
+    bugs:
+      open: null
+      fixed: null
+      resolved: null
+      discarded: null
+    tests:
+      PASSED: [PASSED, passed]
+      FAILED: [FAILED, failed]
+      NOT RUN: [TODO, EXECUTING, ABORTED, n_r]
+      BLOCKED: [blocked]
+      DEFERRED: []
+  people: null
+  evidence:
+    allowed_hosts: [claude.ai]
+  brand:
+    name: null
+    logo: null
 
 # Per-environment config. Add/remove environments freely (production, dev, qa, uat, etc.).
 # Each environment must define ALL four keys: web_url, api_url, db_mcp, api_mcp.
@@ -141,5 +176,35 @@ git_strategy:
     policy_source: accepted # verified | accepted — stamped alongside policy_verified
     strategy_source: chosen # inherited | chosen — this project ran Strategy Setup on 2026-06-20, not a default nobody picked
 
+orchestration:
+  max_workers: 4
+  default_agent: claude
+  default_model: claude-sonnet-5-5
+  default_effort: medium
+  conductor_model: claude-opus-5-5
+  conductor_effort: high
+  subagent_model: sonnet
+  permission_modes:
+    conductor: auto
+    worker: bypass
+    subagent: inherit
+  model_overrides:
+    - topics: [security, auth, migration, rollback, architecture]
+      tier: worker
+      model: claude-opus-5-5
+      effort: high
+  orchestrator_name: Orca
+  orchestrator_cli: orca
+  message_verb: orca orchestration
+  terminal_verb: orca terminal
+  orchestrator_skills: [orca-cli, orchestration]
+
 updater:
   protected_paths: [] # extra synced files this project has hand-merged and wants the updater to stop overwriting (same semantics as the built-in watchlist)
+
+secrets:
+  provider: local
+  onepassword:
+    vault: null
+    account: null
+    auth: app

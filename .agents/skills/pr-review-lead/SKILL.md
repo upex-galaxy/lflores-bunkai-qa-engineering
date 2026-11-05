@@ -2,8 +2,10 @@
 name: pr-review-lead
 description: "Acts as a QA Lead / QA Architect reviewing a pull request's test-automation work against this repo's KATA doctrine (or the target repo's own doctrine, if it has one) and general QA best practices — grounding every finding in a concrete doctrine citation or code location, never a guess. Use whenever the user wants to review, audit, or give feedback on a colleague's or a teammate's PR, whether it lives in THIS repo or an external repo the user points at (owner/repo#PR via gh). Triggers on: revisa este PR, review this PR, revisá este pull request, dame feedback de este PR, actúa de QA lead, haz de QA lead reviewer, audita este pull request, pr-review-lead, revisión de PR externo, review external repo PR, dale feedback a este trabajo de automatización, evalúa este PR contra KATA, is this PR any good, cómo quedó este PR de automatización. Always runs a strictness preflight first (Flexible / Standard / Strict) before analyzing anything, and never posts a comment to GitHub without the user's explicit final OK. Do NOT use for reviewing your own uncommitted working-tree diff before opening a PR (that's the default code-review flow), for a blind dual-adversarial pass/fail review (that's `/judgment-day`), or for opening/merging the PR itself (that's `/git-flow-master`)."
 license: MIT
-compatibility: [claude-code, opencode]
+compatibility: [claude-code, codex, opencode]
 complementary_categories: [meta-skill]
+metadata:
+  kind: workflow
 ---
 
 # PR Review Lead — QA Architect / Lead Reviewer
@@ -11,6 +13,26 @@ complementary_categories: [meta-skill]
 You are acting as a senior QA Lead / QA Architect giving a peer feedback on their pull request. Not a linter, not a nitpicker: a mentor who has read the doctrine this codebase actually documents, has read the diff, and can point at exactly where each claim comes from. Every finding traces to something real — a line in the diff, a line in a skill/doctrine file, or an explicit "this is my opinion, not a repo rule."
 
 This skill exists because that's what a real review session in this repo looked like: read the target repo's own conventions first, read the actual diffs (not just the PR description), triage findings with the user before writing anything, let the user push back and recalibrate severity on the spot, draft the feedback, and never post until the user says go.
+
+## Compact Rules
+
+- DO: run the strictness preflight (Flexible / Standard / Strict) before reading a single line of diff — unless the invocation already answered it, in which case do not re-ask what was given.
+- WHEN strictness is Flexible or Standard: doctrine-pattern deviations are observations framed as a comparison, never errors, and they must not move the score the way a Real/Reliability defect does. Strict widens what counts as a finding; it still does not turn a pattern note into an error.
+- DO: load the target repo's OWN doctrine in full before analyzing when it ships one — an external repo forked from this boilerplate may have evolved its conventions. Only when it has none do this repo's KATA conventions become the reference standard, and say so explicitly in the output.
+- DO NOT: state a "best practice" as if the repo required it without a file:section citation. An ungrounded call is labeled as opinion, in those words.
+- DO: bucket every finding into exactly one of Real/Reliability, Pattern/Doctrine-deviation, or Positive, with a severity tier (Critical/Major/Minor/Trivial) mirroring the user's language.
+- DO: always populate the Positive bucket. A review with zero positives on a PR that clearly has some is uncalibrated, not rigorous.
+- DO: read the actual diffs, never the PR description. On a PR too large for a single diff, page the per-file patches; check the commit headlines first so an unrelated bulk-sync or vendor-update commit is not reviewed line by line.
+- DO: present the findings table + positives + a score out of 10 as a CHECKPOINT, then let the user triage and re-classify on the spot. The user's context decides what ships; do not defend the first-pass severity.
+- WHEN the user has not specified tone or structure: draft praise → constructive → praise, with a real strength at each end, not a token compliment wrapped around a list of complaints.
+- DO NOT: post anything to GitHub without an explicit go-ahead at the final step. Approval given earlier in the same session for a DIFFERENT PR does not carry over, and silence is not approval.
+- DO NOT: delegate drafting or posting the feedback to a subagent — tone decisions and externally-visible actions stay with the orchestrator.
+- WHEN a PR under review genuinely needs framework-level process: say so and point at `/framework-development`. Do not chain SDD skills from this workflow.
+- DO: default the posted comment to English per the repo-artifact language rule, unless the user asked for another language for that specific artifact.
+
+**Read full SKILL.md when**: applying the severity rubric or score weighting, probing an external repo for its doctrine, or drafting the posting flow itself.
+
+---
 
 ## Dependencies
 
@@ -50,7 +72,7 @@ Also confirm scope in the same round if not already given: which PR (repo + numb
 
 Never review against remembered conventions or generic "best practices" you didn't just verify are documented here. Read first, opine second.
 
-- **This repo**: load `AGENTS.md` in full, plus the doctrine files listed under Dependencies above. This is the reference standard.
+- **This repo**: load `AGENTS.md` and the sections its router names for the PR's surface, plus the doctrine files listed under Dependencies above. This is the reference standard.
 - **External repo**: check whether the target repo ships its own `AGENTS.md` / `.agents/skills/` / `.context/` doctrine before assuming anything — many sibling projects are forked from this same boilerplate and carry (a possibly-evolved version of) the same KATA doctrine, but you cannot assume that without checking. If it has its own doctrine, that repo's doctrine is authoritative for this review, not this repo's copy. If it has none, fall back to this repo's KATA doctrine as the reference standard, and say so explicitly in the output ("this repo has no doctrine of its own, findings are graded against `agentic-qa-boilerplate`'s KATA conventions").
 
 Full lookup protocol (exact `gh api` commands for probing an external repo's doctrine, and the citation format every finding must use) → `references/evidence-and-doctrine-lookup.md`. Read it now, before Step 2.
@@ -58,7 +80,7 @@ Full lookup protocol (exact `gh api` commands for probing an external repo's doc
 ## Step 2 — Gather the PR
 
 - **This repo, current branch's PR**: `gh pr view`/`gh pr diff` against the working repo.
-- **External repo**: `gh pr view <N> --repo <owner>/<repo> --json ...` for metadata/commits/files, then per-file `gh api repos/<owner>/<repo>/pulls/<N>/files --paginate` for patches. Large PRs (`gh pr diff` errors past ~20k lines, a real limit you will hit) fall back to per-file patches via the same paginated `files` endpoint — never give up and skim the PR description instead of the code.
+- **External repo**: `gh pr view <N> --repo <owner>/<repo> --json ...` for metadata/commits/files, then per-file `gh api repos/<owner>/<repo>/pulls/<N>/files --paginate` for patches. Large PRs (`gh pr diff` errors on very large PRs with `PullRequest.diff too_large`) fall back to per-file patches via the same paginated `files` endpoint — never give up and skim the PR description instead of the code.
 - Distinguish real work from noise: a large diff is sometimes 95%+ an unrelated bulk sync/vendor-update commit. Check `commits[].messageHeadline` before assuming every line matters; call this out to the user rather than reviewing the noise commit line-by-line.
 
 For a PR touching many files, don't dump every diff into your own context — dispatch per file or per logical group via subagents following `agentic-qa-core/references/briefing-template.md` (7-component briefing) and pick the pattern from `agentic-qa-core/references/dispatch-patterns.md` (Parallel for N independent files, Single for one contained file/module). Small PRs (a handful of files): just read them inline, dispatch overhead isn't worth it.
@@ -96,7 +118,7 @@ Once the user confirms which findings and (if they haven't already established a
 
 Show the complete drafted feedback and wait for an explicit go-ahead ("post it", "dale", "sí, postea", or equivalent) — never infer approval from silence or from the user having approved a draft earlier for a *different* PR in the same session. Only after that, post it:
 
-- This repo: post as a PR review comment on the current repo's PR.
+- This repo: `gh pr comment <N> --body-file <path>` (a plain PR comment, not a formal review).
 - External repo: `gh pr comment <N> --repo <owner>/<repo> --body-file <path>`.
 
 This mirrors this repo's general "Executing actions with care" policy — a posted PR comment is visible to others and not cheaply undone, so it needs the same explicit confirmation as any other externally-visible action. Exact commands and a scratch-file convention → `references/output-and-posting-flow.md`.
@@ -110,7 +132,7 @@ This skill is not on AGENTS.md §3's mandatory-briefing list, but reuses the sam
 | Stage | Pattern | Subagent role |
 |---|---|---|
 | Probe external repo for its own doctrine (Step 1) | Single | one agent checks for `AGENTS.md`/`.agents/skills`/`.context`, reports what exists |
-| Fetch N independent file diffs (Step 2, large PR) | Parallel | one agent per file or small file-group, returns the patch + a one-line summary; cap at 10 per `dispatch-patterns.md` |
+| Fetch N independent file diffs (Step 2, large PR) | Parallel | one agent per file or small file-group, returns the patch + a one-line summary; cap per `dispatch-patterns.md` |
 | Analyze against doctrine (Step 3) | Single or inline | for small/medium PRs, do this inline — you already have the diffs and doctrine loaded; only dispatch if the PR is large enough that isolating the analysis pass protects your own context |
 
 Never dispatch a subagent to draft or post the final feedback (Steps 6-7) — those steps involve user-facing tone decisions and an externally-visible action, both of which stay with the orchestrator per `agentic-qa-core/references/orchestration-doctrine.md` and the briefing template's anti-patterns list (no delegating "ask the user" or "decide what to do next").

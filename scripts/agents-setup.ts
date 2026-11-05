@@ -46,6 +46,7 @@
  *   bun run agents:setup --non-interactive        # env-driven, no prompts
  *   bun run agents:setup --dry-run                # print result, do not write
  *   bun run agents:setup --reset                  # set every field back to null
+ *   bun run agents:setup --reseed                 # replace a copied maintainer yaml with the template
  *   bun run agents:setup --help                   # show help
  *
  * ENV-VAR MAPPING (--non-interactive):
@@ -77,6 +78,13 @@
  * Fields without a corresponding env var keep their current value. Validation
  * is identical to the interactive flow; failures print to stderr and exit 1.
  *
+ * BOARD STATUSES: when `.agents/jira-workflows.json` exists and the board source is
+ * a Jira one, the workflow statuses no `board.statuses` bucket lists yet are shown
+ * with a suggested bucket (from the status category and its name,
+ * `cli/lib/sprint-source/suggest-statuses.ts`). The interactive flow asks once and
+ * appends the accepted ones to their bucket lines; --non-interactive only prints
+ * them. No catalog yet: one line says to run `bun run jira:sync-workflows` first.
+ *
  * ============================================================================
  * EXIT CODES
  * ============================================================================
@@ -88,10 +96,17 @@
  * ============================================================================
  */
 
+import type { StatusSuggestion } from '../cli/lib/sprint-source/suggest-statuses.ts';
+import { execSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
+
 import { confirm, input, select } from '@inquirer/prompts';
 import { parse as parseYaml } from 'yaml';
+
+import { classifyProjectYaml, SCHEMA_FILE, seedFromSchema } from '../cli/lib/agents-schema.ts';
+import { boardStatusPlan, defaultBoardJql, fillBoardIfValid, loadSyncedCatalogs } from '../cli/lib/board-setup.ts';
+import { currentBuckets } from '../cli/lib/sprint-source/suggest-statuses.ts';
 
 // ============================================================================
 // CONSTANTS
@@ -214,6 +229,7 @@ interface CliFlags {
   nonInteractive: boolean
   dryRun: boolean
   reset: boolean
+  reseed: boolean
   help: boolean
 }
 
@@ -222,6 +238,7 @@ function parseArgs(argv: string[]): CliFlags {
     nonInteractive: false,
     dryRun: false,
     reset: false,
+    reseed: false,
     help: false,
   };
   for (const arg of argv) {
@@ -234,6 +251,9 @@ function parseArgs(argv: string[]): CliFlags {
         break;
       case '--reset':
         flags.reset = true;
+        break;
+      case '--reseed':
+        flags.reseed = true;
         break;
       case '--help':
       case '-h':
@@ -261,9 +281,12 @@ FLAGS:
                        of writing the file. Combine with --non-interactive
                        for scripted previews; combine with no flags for an
                        interactive preview that does not persist.
-  --reset              Reset every field back to \`null\` and restore the
-                       original \`# TODO:\` prefix on each comment. Asks for
+  --reset              Reset every field back to \`null\`. Asks for
                        confirmation. Useful for re-onboarding.
+  --reseed             Consent, for --non-interactive runs, to replace a
+                       .agents/project.yaml copied from the boilerplate (GitHub
+                       "Use this template") with the blank template. Interactive
+                       runs ask instead.
   --help, -h           Show this help.
 
 VARIABLE MODEL:
@@ -288,12 +311,13 @@ INTERACTIVE FLOW (default):
   - Asks which environments to keep / add / remove (default: local + staging).
   - For each environment, prompts for the four env-scoped vars.
   - Validates that default_env matches a real env (re-prompts if not).
-  - For unfilled fields: prompts with the # TODO: description as helper text,
-    suggests the example value as a default, and validates input. Empty input
-    keeps the field as null (skip).
+  - For unfilled fields: prompts with the field's description from
+    .agents/project.schema.yaml (the documented template) as helper text,
+    shows the example next to the question (never as the default), and
+    validates input. Empty input keeps the field as null (skip).
   - For filled fields: shows current value and asks keep / change / clear.
   - At the end: shows a summary, asks for confirmation, then writes the file
-    back preserving every comment, blank line and section header.
+    back in place, every untouched line byte for byte.
   - Ctrl+C aborts cleanly without writing.
 
 ENV-VAR MAPPING (--non-interactive):
@@ -325,10 +349,15 @@ VALIDATION RULES:
   default_env               must match a key under \`environments:\`
   all others                non-empty
 
+BOARD STATUSES:
+  Workflow statuses no board.statuses bucket lists yet are shown with a suggested
+  bucket; interactive mode asks once and appends the accepted ones, --non-interactive
+  only prints them. Needs .agents/jira-workflows.json (bun run jira:sync-workflows).
+
 OUTPUT:
-  .agents/project.yaml is rewritten in place. Comments are preserved
-  byte-for-byte for untouched fields; the \`# TODO:\` prefix is stripped from
-  filled fields' comments (kept on null fields).
+  .agents/project.yaml is rewritten in place, values only (ADR-0025): every
+  untouched line stays byte for byte, and no comment is added. Each key is
+  documented in .agents/project.schema.yaml.
 
 EXIT CODES:
   0  success (file written, dry-run printed, or no-op)
@@ -415,6 +444,25 @@ function coerceToString(v: unknown): string | null {
 // ============================================================================
 // EXAMPLE / DESCRIPTION EXTRACTION — pulls the inline `# TODO:` comment
 // ============================================================================
+
+/**
+ * The help text of one field. It comes from the documented template
+ * (`.agents/project.schema.yaml`, ADR-0025): the project's own yaml carries
+ * values only, so its comments are the last resort, not the source. An
+ * environment the template does not ship (`uat`) gets the generic help of the
+ * same leaf.
+ */
+function fieldHelp(rawText: string, key: string, envName?: string): { description: string | null, example: string | null } {
+  const schemaPath = join(REPO_ROOT, SCHEMA_FILE);
+  const docs = existsSync(schemaPath) ? readFileSync(schemaPath, 'utf8') : null;
+  if (docs !== null) {
+    const meta = extractCommentMeta(docs, key, envName);
+    if (meta.description !== null || meta.example !== null) { return meta; }
+  }
+  const own = extractCommentMeta(rawText, key, envName);
+  if (own.description !== null || own.example !== null || envName === undefined) { return own; }
+  return envLeafHelp(envName, key);
+}
 
 /**
  * Match the value line for a key. If `parentKey` is provided, the match is
@@ -569,7 +617,7 @@ async function promptFlatField(
   currentValue: string | null,
   knownEnvs: string[],
 ): Promise<string | null> {
-  const { description, example } = extractCommentMeta(rawText, field.key);
+  const { description, example } = fieldHelp(rawText, field.key);
   const desc = description ?? `Value for ${field.key}`;
 
   if (field.validator === 'env_select') {
@@ -586,9 +634,11 @@ async function promptFlatField(
   }
 
   while (true) {
+    // The example is shown, never pre-filled: Enter on an empty field must not
+    // write a made-up value (analysis §8 #12).
     const answer = await input({
-      message: `${field.section}.${field.key} — ${desc}`,
-      default: currentValue ?? example ?? undefined,
+      message: `${field.section}.${field.key} — ${desc}${!currentValue && example ? ` (e.g. ${example})` : ''}`,
+      default: currentValue ?? undefined,
     });
     if (!answer.trim()) {
       log.dim('  (skipped — kept as null)');
@@ -634,13 +684,13 @@ async function promptEnvScopedField(
   rawText: string,
   currentValue: string | null,
 ): Promise<string | null> {
-  const { description, example } = extractCommentMeta(rawText, field.key, envName);
+  const { description, example } = fieldHelp(rawText, field.key, envName);
   const desc = description ?? `${field.label} for ${envName}`;
 
   while (true) {
     const answer = await input({
-      message: `environments.${envName}.${field.key} — ${desc}`,
-      default: currentValue ?? example ?? undefined,
+      message: `environments.${envName}.${field.key} — ${desc}${!currentValue && example ? ` (e.g. ${example})` : ''}`,
+      default: currentValue ?? undefined,
     });
     if (!answer.trim()) {
       log.dim('  (skipped — kept as null)');
@@ -926,10 +976,8 @@ function renderUpdatedYaml(
         const path = `environments.${envName}.${sf.key}`;
         const val = updates.get(path) ?? null;
         const scalar = val === null ? 'null' : formatYamlValue(val);
-        // Comment shape mirrors the existing local/staging blocks: filled
-        // values use `# <description>`, null values use `# TODO: <description>`.
-        const comment = renderCommentForEnvLeaf(envName, sf, val !== null);
-        inserts.push(`    ${sf.key}: ${scalar}${comment ? `              ${comment}` : ''}`);
+        // Values only (ADR-0025): the template documents the leaf.
+        inserts.push(`    ${sf.key}: ${scalar}`);
       }
     }
     outLines.splice(environmentsEndIndex, 0, ...inserts);
@@ -943,16 +991,16 @@ function collapseBlankRuns(text: string): string {
   return text.replace(/\n{3,}/g, '\n\n');
 }
 
-function renderCommentForEnvLeaf(envName: string, sf: EnvScopedFieldSpec, filled: boolean): string {
-  const descriptions: Record<string, string> = {
-    web_url: `Frontend URL for ${envName} env (e.g. https://example.com)`,
-    api_url: `API base URL for ${envName} env (e.g. https://api.example.com)`,
-    db_mcp: `MCP server name for ${envName} DB (e.g. myproject-${envName}-db)`,
-    api_mcp: `MCP server name for ${envName} API (e.g. myproject-${envName}-api)`,
+/** Generic help for an env-scoped leaf of an environment the template does not ship. */
+function envLeafHelp(envName: string, key: string): { description: string | null, example: string | null } {
+  const help: Record<string, [string, string]> = {
+    web_url: [`Frontend URL for ${envName} env`, 'https://example.com'],
+    api_url: [`API base URL for ${envName} env`, 'https://api.example.com'],
+    db_mcp: [`MCP server name for ${envName} DB`, `myproject-${envName}-db`],
+    api_mcp: [`MCP server name for ${envName} API`, `myproject-${envName}-api`],
   };
-  const desc = descriptions[sf.key];
-  if (!desc) { return ''; }
-  return filled ? `# ${desc}` : `# TODO: ${desc}`;
+  const entry = help[key];
+  return entry ? { description: entry[0], example: entry[1] } : { description: null, example: null };
 }
 
 /**
@@ -1112,6 +1160,9 @@ async function runInteractive(loaded: LoadedConfig, dryRun: boolean): Promise<vo
     }
   }
 
+  // Step 5: workflow statuses no board bucket lists yet, and the board's ticket query.
+  const boardChoice = await promptBoard(loaded.rawText, newFlat.project_key ?? null);
+
   printSummary(newFlat, desiredEnvs, newEnvValues);
 
   const proceed = await confirm({
@@ -1125,7 +1176,7 @@ async function runInteractive(loaded: LoadedConfig, dryRun: boolean): Promise<vo
   }
 
   const updates = buildUpdateMap(newFlat, newEnvValues);
-  const updated = renderUpdatedYaml(loaded.rawText, desiredEnvs, updates);
+  const updated = withBoard(renderUpdatedYaml(loaded.rawText, desiredEnvs, updates), boardChoice);
   if (dryRun) {
     out(updated);
     log.success('Dry run complete — file NOT written.');
@@ -1136,11 +1187,86 @@ async function runInteractive(loaded: LoadedConfig, dryRun: boolean): Promise<vo
 }
 
 // ============================================================================
+// BOARD STATUSES — suggested buckets for the workflow statuses no bucket lists
+// ============================================================================
+
+function printStatusSuggestions(suggestions: readonly StatusSuggestion[]): void {
+  log.header('[board.statuses]');
+  log.info(`${suggestions.length} workflow status(es) are in no bucket yet; a ticket or bug in one fails the board snapshot. Suggested from the status category and its name:`);
+  for (const s of suggestions) {
+    err(`  ${s.domain.padEnd(8)} ${s.slug.padEnd(28)} ${(s.category ?? '?').padEnd(14)} -> ${s.bucket}`);
+  }
+}
+
+/** What the interactive run decided for the `board:` block; `write: false` leaves it untouched. */
+interface BoardChoice { suggestions: StatusSuggestion[], jql: string | null, write: boolean }
+
+const NO_BOARD_CHANGE: BoardChoice = { suggestions: [], jql: null, write: false };
+
+/** Whether any ticket or bug bucket is already filled (the board is adopted). */
+function boardAdopted(rawText: string): boolean {
+  try {
+    const buckets = currentBuckets(parseYaml(rawText));
+    return [...Object.values(buckets.tickets), ...Object.values(buckets.bugs)].some(ids => ids !== null);
+  }
+  catch { return false; }
+}
+
+/**
+ * Interactive: show the suggested buckets and ask once; then, for a Jira source
+ * whose `board.jql` is still null, ask the ticket query (default built from the
+ * project key typed in this run). Also asked when the board is already adopted
+ * and only the query is missing.
+ */
+async function promptBoard(rawText: string, projectKey: string | null): Promise<BoardChoice> {
+  const plan = boardStatusPlan(rawText, loadSyncedCatalogs(REPO_ROOT).workflows);
+  if (plan.note !== null) { log.warn(plan.note); }
+  let suggestions: StatusSuggestion[] = [];
+  if (plan.suggestions.length > 0) {
+    printStatusSuggestions(plan.suggestions);
+    const accept = await confirm({ message: 'Add these statuses to their suggested buckets? (empty buckets become [], bun run board:check validates the result)', default: true });
+    if (!accept) { return NO_BOARD_CHANGE; }
+    suggestions = plan.suggestions;
+  }
+  else if (!boardAdopted(rawText)) {
+    return NO_BOARD_CHANGE;
+  }
+  let jql: string | null = null;
+  if (plan.needsJql) {
+    const fallback = defaultBoardJql(projectKey);
+    const answer = await input({ message: 'Sprint Board ticket query (board.jql):', ...(fallback !== null ? { default: fallback } : {}) });
+    jql = answer.trim() === '' ? null : answer.trim();
+  }
+  return { suggestions, jql, write: true };
+}
+
+/** Write the board choice, only if `board:check` would accept the result; otherwise the text stays as it was. */
+function withBoard(text: string, choice: BoardChoice): string {
+  if (!choice.write) { return text; }
+  const result = fillBoardIfValid(text, choice, loadSyncedCatalogs(REPO_ROOT));
+  if (!result.ok) {
+    log.warn('board: not written, because bun run board:check would refuse the result:');
+    for (const e of result.errors) { log.dim(`  ${e}`); }
+    log.dim('Fill what it names, then run bun run agents:setup again.');
+    return text;
+  }
+  log.success(`board: ${choice.suggestions.length} status(es) bucketed, empty buckets set to []${choice.jql !== null ? ', board.jql set' : ''}. Check it with bun run board:check.`);
+  return result.text;
+}
+
+// ============================================================================
 // FLOW: NON-INTERACTIVE
 // ============================================================================
 
 function runNonInteractive(loaded: LoadedConfig, dryRun: boolean): void {
   log.header('agents-setup — non-interactive mode');
+  // Suggested board buckets are printed, never written without a person confirming them.
+  const { suggestions, note } = boardStatusPlan(loaded.rawText, loadSyncedCatalogs(REPO_ROOT).workflows);
+  if (note !== null) { log.warn(note); }
+  if (suggestions.length > 0) {
+    printStatusSuggestions(suggestions);
+    log.dim('Not written in --non-interactive mode: run bun run agents:setup to confirm them, or copy them into board.statuses.');
+  }
   const newFlat: Record<string, string | null> = { ...loaded.flatValues };
   const newEnvValues: Record<string, Record<string, string | null>> = {};
   // Seed with existing envs.
@@ -1228,7 +1354,7 @@ function runNonInteractive(loaded: LoadedConfig, dryRun: boolean): void {
 
 async function runReset(loaded: LoadedConfig): Promise<void> {
   log.header('agents-setup — reset mode');
-  log.warn('This will set every field in .agents/project.yaml back to null and restore # TODO: comments.');
+  log.warn('This will set every field in .agents/project.yaml back to null.');
 
   const proceed = await confirm({
     message: 'Reset all values to null?',
@@ -1259,6 +1385,55 @@ async function runReset(loaded: LoadedConfig): Promise<void> {
 }
 
 // ============================================================================
+// COPIED TEMPLATE — GitHub "Use this template" carries the maintainers' yaml
+// ============================================================================
+
+function gitOrigin(): string | null {
+  try {
+    return execSync('git remote get-url origin', { cwd: REPO_ROOT, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim() || null;
+  }
+  catch { return null; }
+}
+
+/**
+ * Replace a `.agents/project.yaml` copied from the boilerplate with the blank
+ * template, BEFORE any field is read: every value in that file is the
+ * maintainers' (their Jira, their URLs, their chosen push authorization), so
+ * nothing of this project's is lost. Asks once; `--non-interactive` needs
+ * `--reseed` as its consent; a refusal exits 1 before anything else runs.
+ */
+async function reseedCopiedTemplate(flags: CliFlags): Promise<void> {
+  if (!existsSync(PROJECT_YAML_PATH)) { return; }
+  const current = readFileSync(PROJECT_YAML_PATH, 'utf8');
+  if (classifyProjectYaml(current, gitOrigin()) !== 'copied-template') { return; }
+
+  const schemaPath = join(REPO_ROOT, SCHEMA_FILE);
+  const seeded = existsSync(schemaPath) ? seedFromSchema(readFileSync(schemaPath, 'utf8')) : null;
+  if (seeded === null) {
+    log.error(`.agents/project.yaml is the boilerplate maintainers' copy, and ${SCHEMA_FILE} is missing or malformed, so there is no template to reseed it from. Restore it from upstream, then re-run.`);
+    process.exit(1);
+  }
+
+  log.warn('.agents/project.yaml is the boilerplate maintainers\' own copy (GitHub "Use this template" carried it over): their project, their Jira, their standing push authorization.');
+  if (flags.dryRun) {
+    log.info(`Dry run: would replace it with the blank template from ${SCHEMA_FILE}. Nothing written.`);
+    return;
+  }
+  let proceed = flags.reseed;
+  if (!proceed && !flags.nonInteractive) {
+    proceed = await confirm({ message: `Replace it with the blank template from ${SCHEMA_FILE}? (nothing of this project's is in it)`, default: true });
+  }
+  if (!proceed) {
+    log.error(flags.nonInteractive
+      ? 'Refusing to fill the maintainers\' copy. Re-run with --reseed to replace it with the template first.'
+      : 'Kept as is. Nothing else ran: filling the maintainers\' copy would mix their identity into this project. Re-run when ready.');
+    process.exit(1);
+  }
+  writeFileSync(PROJECT_YAML_PATH, seeded, 'utf8');
+  log.success(`Reseeded ${relative(process.cwd(), PROJECT_YAML_PATH)} from ${SCHEMA_FILE}: every field is null, git_strategy is inherited.`);
+}
+
+// ============================================================================
 // MAIN
 // ============================================================================
 
@@ -1276,6 +1451,7 @@ async function main(): Promise<void> {
     process.exit(1);
   });
 
+  await reseedCopiedTemplate(flags);
   const loaded = loadProjectYaml();
 
   if (flags.reset) {

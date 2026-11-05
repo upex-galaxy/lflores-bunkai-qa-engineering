@@ -113,7 +113,7 @@ const PROJECT_YAML_PATH = join(REPO_ROOT, '.agents', 'project.yaml');
  * is set (the upstream JSON has already been filtered by the reference repo).
  *
  * Hardcoded per-repo (QA vs DEV) so the update path is trivial:
- * `bun up` re-syncs this script from upstream and the URL travels with it.
+ * `bun sync` re-syncs this script from upstream and the URL travels with it.
  *
  * Pinned to `main` so `--upex` always means "current UPEX standard".
  */
@@ -144,6 +144,10 @@ interface CliFlags {
   verbose: boolean
   help: boolean
   upex: boolean
+  /** `--plan-json <file>`: never prompt; write the unresolved pickers to <file>. */
+  planJson: string | null
+  /** `--answers <file>`: never prompt; take each picker's answer from <file>. */
+  answers: string | null
 }
 
 /** A single required status declared in the manifest under a work_type. */
@@ -310,8 +314,11 @@ function parseArgs(argv: string[]): CliFlags {
     verbose: false,
     help: false,
     upex: false,
+    planJson: null,
+    answers: null,
   };
-  for (const arg of argv) {
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
     switch (arg) {
       case '--force':
         flags.force = true;
@@ -332,6 +339,12 @@ function parseArgs(argv: string[]): CliFlags {
         break;
       case '--upex':
         flags.upex = true;
+        break;
+      case '--plan-json':
+        flags.planJson = argv[++i] ?? null;
+        break;
+      case '--answers':
+        flags.answers = argv[++i] ?? null;
         break;
     }
   }
@@ -365,6 +378,15 @@ FLAGS:
                        jira-required.yaml and all REST calls; only network
                        requirement is GitHub raw access.
                        Source: ${UPEX_UPSTREAM_URL}
+  --plan-json <file>   Never prompt. Every status / transition picker that would
+                       ask is written to <file> as JSON ({ questions: [...] });
+                       when there is at least one, NOTHING is written to
+                       .agents/jira-workflows.json and the exit code is 10.
+                       With none, the catalog is written as usual. Used by
+                       \`bun setup\` to ask the pickers in its page.
+  --answers <file>     Never prompt. Take each picker's answer from <file>
+                       (a JSON object: question id -> Jira id, or "__skip__");
+                       a question missing from the file is skipped.
   --help, -h           Show this help.
 
 INSTANCE HOST (not an env var):
@@ -398,6 +420,7 @@ EXIT CODES:
   0  success — every required canonical slug is mapped (or skipped deliberately)
   1  auth / network / config / file-system error, OR at least one required
      canonical slug remained unmapped without an explicit user skip.
+  10 --plan-json only: pickers are pending (see the plan file); nothing written.
 
 NOTES:
   Slug rules mirror sync-jira-fields.ts: lowercase, NFD normalize, strip
@@ -830,6 +853,48 @@ interface StatusChoice {
   status: JiraStatus
 }
 
+// ============================================================================
+// PLAN / ANSWERS (installer-ui delivery 3, owner answer Q5)
+// ============================================================================
+
+/** One picker the plan mode collected instead of prompting. */
+export interface PlanQuestion {
+  /** `<work_type>.status.<slug>` or `<work_type>.transition.<slug>`. */
+  id: string
+  workType: string
+  kind: 'status' | 'transition'
+  slug: string
+  reason: 'missing' | 'collision' | 'mismatch'
+  description?: string
+  /** Transitions: the from/to the manifest expects. */
+  expects?: { from: string, to: string }
+  /** Jira ids, plus `__skip__` (leave it unmapped). */
+  options: { value: string, label: string }[]
+}
+
+export const SKIP_ANSWER = '__skip__';
+/** Exit code of `--plan-json` when pickers are pending. */
+export const PLAN_PENDING_EXIT = 10;
+
+/** Set by main(): the plan being collected, or the answers being applied. */
+export const PICKS: { plan: PlanQuestion[] | null, answers: Record<string, string> | null } = { plan: null, answers: null };
+
+/**
+ * Plan mode records the question and answers "unmapped" for now; answers mode
+ * returns the recorded answer (missing = skip). `undefined` = neither mode: prompt.
+ */
+export function decidePick(q: PlanQuestion): string | undefined {
+  if (PICKS.plan) {
+    PICKS.plan.push(q);
+    return SKIP_ANSWER;
+  }
+  if (PICKS.answers) {
+    const a = PICKS.answers[q.id];
+    return typeof a === 'string' && (a === SKIP_ANSWER || q.options.some(o => o.value === a)) ? a : SKIP_ANSWER;
+  }
+  return undefined;
+}
+
 /**
  * Interactive prompt for a required canonical status that did not auto-resolve
  * (either no slug match, or multiple slug matches and --allow-collisions was
@@ -855,7 +920,16 @@ async function promptStatusPick(
     name: `${c.status.name}  (id ${c.status.id}, slug ${c.slug})`,
   }));
   choices.push({ value: '__skip__', name: '[skip] — leave this canonical slug unmapped' });
-  const picked = await select({
+  const decided = decidePick({
+    id: `${workTypeSlug}.status.${required.slug}`,
+    workType: workTypeSlug,
+    kind: 'status',
+    slug: required.slug,
+    reason,
+    ...(required.description ? { description: required.description } : {}),
+    options: choices.map(c => ({ value: c.value, label: c.name })),
+  });
+  const picked = decided ?? await select({
     message: `Pick a Jira status for ${workTypeSlug}.${required.slug}`,
     choices,
     default: choices[0].value,
@@ -905,7 +979,17 @@ async function promptTransitionPick(
     name: `${c.transition.name}  (id ${c.transition.id}, ${c.fromCanonical ?? '(global)'} → ${c.toCanonical ?? '(?)'})`,
   }));
   choices.push({ value: '__skip__', name: '[skip] — leave this canonical slug unmapped' });
-  const picked = await select({
+  const decided = decidePick({
+    id: `${workTypeSlug}.transition.${required.slug}`,
+    workType: workTypeSlug,
+    kind: 'transition',
+    slug: required.slug,
+    reason,
+    ...(required.description ? { description: required.description } : {}),
+    expects: { from: required.from ?? 'any', to: required.to ?? 'any' },
+    options: choices.map(c => ({ value: c.value, label: c.name })),
+  });
+  const picked = decided ?? await select({
     message: `Pick a Jira transition for ${workTypeSlug}.${required.slug}`,
     choices,
     default: choices[0].value,
@@ -1009,6 +1093,7 @@ interface SyncStats {
   statusesMapped: number
   transitionsMapped: number
   missingRequired: number
+  idsRefreshed: number
 }
 
 /**
@@ -1041,7 +1126,7 @@ async function syncWorkType(
   workType: ManifestWorkType,
   previousEntry: OutputWorkType | undefined,
 ): Promise<{ entry: OutputWorkType, stats: SyncStats } | null> {
-  const stats: SyncStats = { statusesMapped: 0, transitionsMapped: 0, missingRequired: 0 };
+  const stats: SyncStats = { statusesMapped: 0, transitionsMapped: 0, missingRequired: 0, idsRefreshed: 0 };
 
   // 1. Find the issue type entry in the per-project /statuses payload.
   //
@@ -1115,8 +1200,10 @@ async function syncWorkType(
   // type). Workflow status `statusReference` is the cross-key.
   const discoveredStatuses = new Map<string, JiraStatus[]>(); // base slug → matches
   const idToStatus = new Map<string, JiraStatus>();
+  const nameToStatus = new Map<string, JiraStatus>(); // lowercased live name → live status
   for (const s of issueType.statuses) {
     idToStatus.set(s.id, s);
+    nameToStatus.set(s.name.trim().toLowerCase(), s);
     const slug = slugify(s.name);
     if (!slug) { continue; }
     const arr = discoveredStatuses.get(slug) ?? [];
@@ -1154,13 +1241,34 @@ async function syncWorkType(
     // not set, keep it.
     const existing = previousEntry?.statuses?.[reqStatus.slug];
     if (existing && existing.id && !flags.force) {
-      // Re-emit it (in case the discovered map didn't already cover this slug
-      // — e.g. if Jira renamed the status, the slug under canonical key wins).
-      entry.statuses[reqStatus.slug] = existing;
-      stats.statusesMapped++;
-      if (flags.verbose) {
-        log.dim(`  ${workType.slug}.${reqStatus.slug}: kept existing mapping → "${existing.name}" (id ${existing.id})`);
+      // What idempotency preserves is the SLUG DECISION — which live status this
+      // canonical slug points at — never the id that carries it. So re-resolve the
+      // cached NAME against this run's live payload: a site migration reissues every
+      // status id, and re-emitting the cached one silently ships ids that no longer
+      // exist on the instance.
+      const live = nameToStatus.get(existing.name.trim().toLowerCase()) ?? null;
+      if (live) {
+        entry.statuses[reqStatus.slug] = {
+          id: live.id,
+          name: live.name,
+          category: live.statusCategory?.key ?? null,
+        };
+        if (live.id !== existing.id) {
+          stats.idsRefreshed++;
+          log.info(`  ${workType.slug}.${reqStatus.slug}: "${live.name}" id ${existing.id} → ${live.id} (refreshed from live Jira; the cached id had expired)`);
+        }
+        else if (flags.verbose) {
+          log.dim(`  ${workType.slug}.${reqStatus.slug}: kept existing mapping → "${existing.name}" (id ${existing.id})`);
+        }
       }
+      else {
+        // Renamed or deleted in Jira: there is nothing live to re-resolve against, so
+        // the cached row stands as the last known answer and the operator is told how
+        // to re-pick it deliberately.
+        entry.statuses[reqStatus.slug] = existing;
+        log.warn(`  ${workType.slug}.${reqStatus.slug}: "${existing.name}" no longer exists on this issue type — keeping the cached id ${existing.id}. Re-run with --force to re-pick it.`);
+      }
+      stats.statusesMapped++;
       continue;
     }
 
@@ -1284,6 +1392,7 @@ async function syncWorkType(
   // the same finalSlug (rare but possible with weird naming), suffix _2, _3.
   const transitionFinalSlugCounts = new Map<string, number>();
   const transitionsBySlug = new Map<string, DiscoveredTransition>();
+  const transitionsByNameFrom = new Map<string, DiscoveredTransition[]>(); // `<lowercased name>::<fromCanonical>` → matches
   for (const dt of discoveredTransitions) {
     const occ = (transitionFinalSlugCounts.get(dt.finalSlug) ?? 0) + 1;
     transitionFinalSlugCounts.set(dt.finalSlug, occ);
@@ -1297,17 +1406,67 @@ async function syncWorkType(
       to_canonical: dt.toCanonical,
     };
     transitionsBySlug.set(slug, dt);
+    const nameFromKey = `${dt.transition.name.trim().toLowerCase()}::${dt.fromCanonical ?? ''}`;
+    const sameNameFrom = transitionsByNameFrom.get(nameFromKey) ?? [];
+    sameNameFrom.push(dt);
+    transitionsByNameFrom.set(nameFromKey, sameNameFrom);
   }
 
   // 6c. For each required canonical transition, try to find a match.
   for (const reqTrans of workType.requiredTransitions) {
     const existing = previousEntry?.transitions?.[reqTrans.slug];
     if (existing && existing.id && !flags.force) {
-      entry.transitions[reqTrans.slug] = existing;
-      stats.transitionsMapped++;
-      if (flags.verbose) {
-        log.dim(`  ${workType.slug}.${reqTrans.slug}: kept existing mapping → "${existing.name}" (id ${existing.id})`);
+      // Same rule as 5b: keep the slug decision, re-resolve the ids from live. Name
+      // alone is not a key — `back` is three different transitions inside one
+      // workflow — so the match is name + from_canonical, both of which derive from
+      // status NAMES and therefore survive an id migration untouched. Two live rows
+      // under one key means we cannot tell which was chosen, so that is not a match.
+      const nameFromKey = `${existing.name.trim().toLowerCase()}::${existing.from_canonical ?? ''}`;
+      const liveMatches = transitionsByNameFrom.get(nameFromKey) ?? [];
+      const live = liveMatches.length === 1 ? liveMatches[0] : null;
+      if (live) {
+        entry.transitions[reqTrans.slug] = {
+          id: live.transition.id,
+          name: live.transition.name,
+          from_status_id: live.fromStatusId,
+          to_status_id: live.toStatusId,
+          from_canonical: live.fromCanonical,
+          to_canonical: live.toCanonical,
+        };
+        const moved = live.transition.id !== existing.id
+          || live.fromStatusId !== existing.from_status_id
+          || live.toStatusId !== existing.to_status_id;
+        if (moved) {
+          stats.idsRefreshed++;
+          const field = (label: string, before: string | null, after: string | null): string =>
+            (before === after ? `${label} ${after}` : `${label} ${before} → ${after}`);
+          log.info(
+            `  ${workType.slug}.${reqTrans.slug}: "${live.transition.name}" re-resolved from live Jira — `
+            + `${field('id', existing.id, live.transition.id)}, `
+            + `${field('from_status_id', existing.from_status_id, live.fromStatusId)}, `
+            + `${field('to_status_id', existing.to_status_id, live.toStatusId)}`,
+          );
+        }
+        else if (flags.verbose) {
+          log.dim(`  ${workType.slug}.${reqTrans.slug}: kept existing mapping → "${existing.name}" (id ${existing.id})`);
+        }
       }
+      else {
+        // 0 or >1 live candidates. The cached transition id is the last known answer
+        // and stays, but the endpoint ids are re-derived from the canonicals exactly
+        // as a fresh mapping does (step 6a) — so a null canonical yields null, and a
+        // missing endpoint is NEVER backfilled from the cached id.
+        entry.transitions[reqTrans.slug] = {
+          id: existing.id,
+          name: existing.name,
+          from_status_id: existing.from_canonical ? entry.statuses[existing.from_canonical]?.id ?? null : null,
+          to_status_id: existing.to_canonical ? entry.statuses[existing.to_canonical]?.id ?? null : null,
+          from_canonical: existing.from_canonical,
+          to_canonical: existing.to_canonical,
+        };
+        log.warn(`  ${workType.slug}.${reqTrans.slug}: "${existing.name}" (from ${existing.from_canonical ?? 'any'}) matched ${liveMatches.length} live transitions — keeping the cached id ${existing.id} with re-derived endpoints. Re-run with --force to re-pick it.`);
+      }
+      stats.transitionsMapped++;
       continue;
     }
 
@@ -1592,6 +1751,15 @@ async function main(): Promise<void> {
     process.exit(1);
   });
 
+  if (flags.planJson) { PICKS.plan = []; }
+  else if (flags.answers) {
+    try { PICKS.answers = JSON.parse(readFileSync(flags.answers, 'utf8')) as Record<string, string>; }
+    catch (e) {
+      log.error(`--answers ${flags.answers}: ${(e as Error).message}`);
+      process.exit(1);
+    }
+  }
+
   // --upex: short-circuit the entire Jira-fetch pipeline and download the
   // upstream reference JSON. Does not require ATLASSIAN_* env vars, project_key
   // or admin. Bypasses jira-required.yaml because the upstream JSON has
@@ -1651,6 +1819,10 @@ async function main(): Promise<void> {
 
   let projectKey = loadProjectKey();
   let projectKeyWasPrompted = false;
+  if (!projectKey && (PICKS.plan || PICKS.answers)) {
+    log.error('No project_key in .agents/project.yaml: set it (bun run agents:setup) before a --plan-json / --answers run.');
+    process.exit(1);
+  }
   if (!projectKey) {
     try {
       projectKey = await promptProjectKey();
@@ -1775,6 +1947,15 @@ async function main(): Promise<void> {
     }
   }
 
+  // 8a. Plan mode: pending pickers are written for the caller; the catalog is not.
+  if (flags.planJson) {
+    writeFileSync(flags.planJson, `${JSON.stringify({ questions: PICKS.plan ?? [] }, null, 2)}\n`, 'utf8');
+    if ((PICKS.plan ?? []).length > 0) {
+      log.info(`${PICKS.plan!.length} picker(s) need an answer: written to ${flags.planJson}; ${OUTPUT_PATH} unchanged.`);
+      process.exit(PLAN_PENDING_EXIT);
+    }
+  }
+
   // 8. Persist (or print on dry-run).
   if (flags.dryRun) {
     out(JSON.stringify(newCatalog, null, 2));
@@ -1795,7 +1976,8 @@ async function main(): Promise<void> {
     }
     log.dim(
       `   - ${wt.slug}: ${s.statusesMapped} statuses mapped, `
-      + `${s.transitionsMapped} transitions mapped, ${s.missingRequired} missing required`,
+      + `${s.transitionsMapped} transitions mapped, ${s.missingRequired} missing required, `
+      + `${s.idsRefreshed} ids refreshed`,
     );
   }
 
@@ -1809,7 +1991,9 @@ function isAbortError(e: unknown): boolean {
   return name === 'ExitPromptError' || /User force closed|prompt was canceled/i.test(msg);
 }
 
-main().catch((e) => {
-  log.error((e as Error).message);
-  process.exit(1);
-});
+if (import.meta.main) {
+  main().catch((e) => {
+    log.error((e as Error).message);
+    process.exit(1);
+  });
+}

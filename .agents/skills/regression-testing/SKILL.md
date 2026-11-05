@@ -4,6 +4,10 @@ description: "Execute regression test suites via CI/CD, analyze results, classif
 license: MIT
 compatibility: [claude-code, copilot, cursor, codex, opencode]
 complementary_categories: [testing-e2e, ci-cd]
+metadata:
+  kind: workflow
+  stage_owner: true
+
 ---
 
 ## Forbidden invocations
@@ -28,15 +32,43 @@ Three phases, always in this order: **Execute → Analyze → Report**. Do not s
 
 ---
 
+## Compact Rules
+
+- DO: run Execute → Analyze → Report in that order. Never skip analysis and jump to a report, and never classify a failure without reading its logs.
+- DO: clear the readiness preflight before triggering anything — `gh` authenticated, the suite's workflow file present, GitHub Actions secrets set, Allure resolvable, active env confirmed. A long run that 401s mid-way is the expensive failure.
+- DO: persist `RUN_ID` the moment the trigger returns, before anything else. Resume re-attaches to a live run instead of re-triggering CI; a trigger that landed without the id saved costs the whole run again.
+- DO NOT: mark a failure REGRESSION without checking its history first — the single most common misclassification. A first-ever failure with no history is NEW TEST, unverified, not a regression.
+- DO: classify every failure into exactly one of KNOWN-BLOCKED / KNOWN ISSUE / ENVIRONMENT / NEW TEST / FLAKY / REGRESSION, and assess severity on a separate axis — a FLAKY test on checkout is still CRITICAL. Classification is fail-closed: every class but REGRESSION cites its evidence (the `@blocked:{BUG-KEY}` marker; a ticket created BEFORE the run; the matching log line plus the other failures on that host; the empty history query; the ids and results of at least 5 runs on an unchanged build). No citation, or a ticket this session filed, = REGRESSION.
+- DO: exclude `@blocked:{BUG-KEY}` tests from the gating pass-rate and report their count with each blocking key. They are parked behind an already-filed bug: never REGRESSION, and never a new bug.
+- DO NOT: use ENVIRONMENT as a scapegoat. Many unrelated tests failing on one host is environment; one test failing on an endpoint other tests reach fine is more likely a REGRESSION.
+- DO NOT: call a test FLAKY on fewer than 5 runs of history. Label the failure INSUFFICIENT HISTORY and count it as REGRESSION for the verdict (fail-closed), then re-evaluate on the next run. When several classes match, the order is KNOWN-BLOCKED > KNOWN ISSUE > ENVIRONMENT > NEW TEST > FLAKY > REGRESSION: FLAKY wins only with its citation, REGRESSION is what is left.
+- DO: take the run's counts (total, passed, failed, skipped, pass-rate) from `reports/test-outcomes.json`. Allure is the source for each failure's detail and for the history behind FLAKY, and the fallback for counts only when the file is missing from the downloaded artifacts (always so for smoke and sanity runs; say so in the report).
+- DO NOT: emit GO while any REGRESSION-class failure stands. Hard vetoes regardless of score: any `@critical` test failing, any HIGH/CRITICAL-severity regression, or a pass rate below 90%.
+- DO: file only CONFIRMED product failures — the REGRESSION class, plus a NEW TEST failure once manually confirmed to be a real defect. FLAKY, ENVIRONMENT and KNOWN ISSUE get no issue at all. Triage decides WHETHER to file; the defect-management doctrine decides the type and the fields.
+- DO NOT: open a GitHub issue for a quality failure. It is filed in the issue tracker, parented to the QA Defect Management process epic and linked to the source Story — never to a product or dev epic.
+- DO: create the RTR (Regression Test Results, a Test Execution: `RTR: {scope-id}: Regression Testing`, parent QA Test Artifacts, Test Environment set, assignee self, `testPlan` → RTP) BEFORE triggering CI, persist its key beside `RUN_ID`, and pass it as the `execution_key` dispatch input. One RTR per verdict. The STR is created or completed ONLY when the run is the sprint close (then it links to both the STP and the RTP).
+- DO NOT: import a regular regression run into the sprint STR, and never let smoke or sanity write into a regression execution: they import only when an execution key is passed explicitly.
+- DO: close the RTR (or the sprint-close STR) via `complete` only AFTER the verdict comment is posted on it, and leave the RTP at its ready status: a suite run never completes the plan it ran from.
+- DO NOT: invent a sprint number. The RTR needs none (its scope-id is `{env}-{YYYY-MM-DD}` or a release tag). `N` matters only for the sprint-close STR: take it from the user or from the STP's own scope-id, and ask before creating anything at sprint altitude.
+- DO NOT: skip the artifact download on a red build (evidence vanishes after the retention window), and never merge smoke and regression results into one pass-rate — their SLOs differ.
+- DO: inspect traces and screenshots with `/playwright-cli` (`[AUTOMATION_TOOL]`); it is the only browser path, no MCP backs it.
+
+**Read full SKILL.md when**: driving the CI commands, applying the GO/CAUTION/NO-GO scoring table, resolving a borderline classification, wiring the TMS artifacts, or writing the report.
+
+---
+
 ## Inputs
 
-- `.github/workflows/*.yml` — workflow files for regression / smoke / sanity suites; defines triggers, inputs, and artifact uploads.
-- `.context/master-test-plan.md` — regression Epic key + expected pass-rate SLOs per suite.
+- `.github/workflows/*.yml` — workflow files for regression / smoke / sanity suites; defines triggers, inputs, and artifact uploads. **LOAD `/github-actions-docs` before editing or diagnosing one**: Actions syntax (matrix, `needs`, reusable workflows, artifact retention, permissions) is the part of this skill's surface that changes upstream without telling anyone, and a guessed key fails at runner start with a message that points nowhere. Reading one does not need it; changing one does.
+- `.context/PBI/qa-artifacts/master-test-plan.md` — regression Epic key + expected pass-rate SLOs per suite.
 - `playwright.config.ts` — reporter config, retry policy, project matrix; needed to interpret retry counts and shard splits.
 - Previous run's Allure report (artifact URL or local download under `./analysis/previous/`) — baseline for trend computation.
 - `kata-manifest.json` — registry of tests and ATCs available; used to cross-reference failed test IDs.
 - `.agents/jira-required.yaml` — Jira refs (project key, work types, transitions) for filing regression issues.
 - `agentic-qa-core/references/defect-management-doctrine.md` — **canonical authority** for classifying (Bug/Defect/Improvement), the mandatory field matrix, QA-Assignee ownership, and the QA process epic when a confirmed regression is filed in Jira (Phase 3). Read BEFORE filing any defect.
+- **RTP key** (`RTP: {{PROJECT_KEY}}: Regression Test Plan`, a Test Plan item parented to QA Master Test Plan): found by title via `[TMS_TOOL]` in Phase 1, it is the RTR's `testPlan` target. Producer: `/test-documentation` (promotion of `regression-candidate` TCs); this skill never creates it and never writes into it. Modality jira-native: there is no Test Plan item, the promotion is the `regression-candidate` label on the Test issues, so there is no key to resolve.
+- **RTR** (`RTR: <<SCOPE_ID>>: Regression Testing`, a Test Execution parented to QA Test Artifacts): the run record this skill CREATES in Phase 1 before the trigger, CI imports into, and Phase 3 closes after the verdict. One per verdict. Its key is persisted beside `RUN_ID` in `plan.md` and passed to CI as the `execution_key` dispatch input.
+- `agentic-qa-core/references/artifact-lifecycle.md` — **canonical authority** for artifact statuses: the RTR (or the sprint-close STR) closes at `{{jira.status.test_execution.close}}` after the verdict, the RTP stays at `{{jira.status.test_plan.ready}}`, every created artifact carries `assignee` = self, and an unmapped transition slug goes through the §4 fallback instead of a silent skip. Read BEFORE firing any transition.
 
 ---
 
@@ -44,21 +76,33 @@ Three phases, always in this order: **Execute → Analyze → Report**. Do not s
 
 > **Orchestration & Session contracts**: this skill follows `agentic-qa-core/references/orchestration-doctrine.md` (mandatory subagent dispatch — main thread is command center) AND `agentic-qa-core/references/session-management.md` (Phase 0 resume check, plan-first persistence at `.session/<skill-slug>/<scope>/`, archive on completion). Phase 0 (resume check) and Phase 1 (plan write) are NOT optional. The orchestrator also applies the per-stage **Definition-of-Done gates** in `agentic-qa-core/references/stage-gates.md`: verify a stage's DoD BEFORE recording its progress checkpoint and advancing.
 
-This skill is **per-run scope**: `<scope>` = `<env>-<YYYY-MM-DD>` (e.g. `staging-2026-05-20`). Session state lives at `.session/regression-testing/<scope>/{plan.md, progress.md}` per `agentic-qa-core/references/session-management.md` §3 + §9. The single highest-value resume case: if the Monitor subagent dies while watching a long CI run but `RUN_ID` was captured in `plan.md`, Phase 0 re-attaches via `gh run view <RUN_ID>` instead of re-triggering CI (saves 20–60 min of wall-clock).
+This skill is **per-run scope**: `<scope>` = `<env>-<YYYY-MM-DD>` (e.g. `staging-2026-05-20`). Session state lives at `.session/regression-testing/<scope>/{plan.md, progress.md}` per `agentic-qa-core/references/session-management.md` §3 + §9. The single highest-value resume case: if the Monitor subagent dies while watching a long CI run but `RUN_ID` was captured in `plan.md`, Phase 0 re-attaches via `gh run view <RUN_ID>` instead of re-triggering CI (saves the whole run's wall-clock; read the last `gh run view` duration).
 
-This skill is compliant with the doctrine in `AGENTS.md` §"Orchestration Mode (Subagent Strategy)" and the session contract in `.agents/skills/agentic-qa-core/references/session-management.md`. Every dispatch follows the 7-component briefing format defined in `.agents/skills/agentic-qa-core/references/briefing-template.md`, and the pattern selected per stage matches the decision guide in `.agents/skills/agentic-qa-core/references/dispatch-patterns.md`. The two CI-bound stages (long-running watch, multi-artifact download) and the high-volume failure classification step are the hotspots — everything else stays inline because the dispatch overhead is not justified.
+This skill is compliant with the doctrine in `AGENTS.md` §3 "Orchestration Mode" and the session contract in `.agents/skills/agentic-qa-core/references/session-management.md`. Every dispatch follows the 7-component briefing format defined in `.agents/skills/agentic-qa-core/references/briefing-template.md`, and the pattern selected per stage matches the decision guide in `.agents/skills/agentic-qa-core/references/dispatch-patterns.md`. The two CI-bound stages (long-running watch, multi-artifact download) and the high-volume failure classification step are the hotspots — everything else stays inline because the dispatch overhead is not justified.
 
 | Stage                                                      | Pattern    | Subagent role                                                                                                  |
 |------------------------------------------------------------|------------|----------------------------------------------------------------------------------------------------------------|
 | Trigger workflow (`gh workflow run`)                       | Single     | inline — no dispatch needed (one shell call)                                                                   |
 | Wait/monitor `gh run watch`                                | Background | one Monitor subagent runs the watch; main thread continues with prep work; subagent notifies on exit           |
-| Download 3 artifacts (allure / evidence / playwright)      | Parallel   | 3 simultaneous subagents, one per artifact; cap = 3 (no rate-limit risk)                                       |
-| Classify failures (chunks of ~10 tests each)               | Parallel   | N subagents based on failure volume; cap = 10 to avoid context dilution                                        |
+| Download the run's artifacts                               | Parallel   | one subagent per artifact `gh run view --json artifacts` lists (no rate-limit risk)                          |
+| Classify failures (chunks of ~10 tests each)               | Parallel   | N subagents based on failure volume; cap per `dispatch-patterns.md` to avoid context dilution                                        |
 | Compute metrics (pass-rate, trends)                        | Single     | inline — needs aggregated state, low cost                                                                      |
 | Generate executive report                                  | Single     | inline — final synthesis, decisions live here                                                                  |
 | GO / CAUTION / NO-GO verdict                               | Single     | inline — main thread owns release decisions                                                                    |
 
-- **Error protocol**: On any subagent failure: STOP, report full context to user, present retry / skip / abort options. Do NOT auto-fix. See `.agents/skills/agentic-qa-core/references/orchestration-doctrine.md`.
+- **Error protocol**: On any subagent failure: STOP, report full context to user, present retry / skip / abort options. Do NOT auto-fix. See `.agents/skills/agentic-qa-core/references/orchestration-doctrine.md`. A skill that itself broke (a wrong step, a missing verifier, a stale rule) is reported upstream per `../agentic-qa-core/references/upstream-feedback.md`: drafted and redacted locally, filed only on explicit OK, verified with `gh issue view`.
+
+---
+
+## Fleet seam (optional)
+
+Triage itself is never parallelized across sessions: one conductor reads the run, classifies, and owns the verdict. The seam is for what comes AFTER Phase 2, when the classification leaves several **independent failure clusters** that each need code — and only when the user asks for them to be worked at once.
+
+- **Topology: one worktree per failure cluster.** A cluster's fix is code (a spec, a locator, a fixture), so each worker gets its own checkout and its own branch; two sessions in one checkout contend on the git index even on disjoint files. One cluster = one worker = one branch. Never two workers on one cluster.
+- The conductor writes `launch.txt` in `.session/regression-testing/<scope>/` — one self-contained line per cluster — **always**, whether or not any orchestration transport exists on the machine. Launching, supervising and closing those sessions is `orca-orchestration/SKILL.md` (`[ORCHESTRATION_TOOL]`): supervised launch is the native path, and `launch.txt` is the payload for the human-paste fallback when nothing can launch it.
+- **The verdict never moves.** GO / CAUTION / NO-GO, the metrics, the RTR (or the sprint-close STR) and every Jira write stay with the conductor (Phase 3). A worker fixes its cluster and reports; it does not re-score the run, does not file the defect, and does not transition the RTR.
+- Each worker's fix is authored under `/test-automation` (Plan → Code → Review) on its own branch, and lands per `git_strategy` — a regression fix is not exempt from the automation gate.
+- **Silence rule**: the absence of an orchestration transport is never named to the user, never appears in the preflight gate, and never appears in the Environment block or the report.
 
 ---
 
@@ -70,13 +114,13 @@ This skill is compliant with the doctrine in `AGENTS.md` §"Orchestration Mode (
 |---|---|---|
 | GitHub CLI authenticated | REQUIRED | Every stage drives CI via `gh` (`gh auth status`, `gh workflow run`, `gh run watch`, `gh run download`). Not authed → user runs `gh auth login` (suggest the `!` prefix); do not proceed. |
 | Workflow files present | REQUIRED | `.github/workflows/` must hold the regression/smoke/sanity workflow for the chosen suite, with the inputs this skill passes. |
-| GitHub Actions Secrets/Variables | REQUIRED | The runner authenticates with env-prefixed creds (`secrets.<ENV>_USER_EMAIL` / `_PASSWORD`) + `XRAY_*` / `ATLASSIAN_*` as Repository/Environment Secrets — the suite 401s mid-run without them. `gh secret list` (add `--env <env>` for environment scope) shows them; missing → `gh secret set <NAME>` from `.env`. `/adapt-framework` only emits a manual list today, so this is the most common silent gap. |
-| Allure 3 local | REQUIRED | `bunx allure` resolves (devDep, no global install); `allurerc.mjs` present for `bun allure:agent` markdown triage. |
-| Active env | REQUIRED | The suite runs against `<<ACTIVE_ENV>>` (default `{{DEFAULT_ENV}}`). Confirm it is the intended target before a 20–60 min run. |
-| `[TMS_TOOL]` (result sync) | OPTIONAL | Only when `.agents/project.yaml` `testing.tms_cli` is set — Stage 3 pushes run status. jira-xray → `/xray-cli` + `XRAY_*`. |
+| GitHub Actions Secrets/Variables | REQUIRED | The runner authenticates with env-prefixed creds (`secrets.<ENV>_USER_EMAIL` / `_PASSWORD`) + `XRAY_*` / `ATLASSIAN_*` as Repository/Environment Secrets — the suite 401s mid-run without them. `gh secret list` (add `--env <env>` for environment scope) shows them; missing → `gh secret set <NAME>` from `.env`. if `/test-framework-adaptation` did not push the secrets, this is the most common silent gap. |
+| Allure local | REQUIRED | `bunx allure` resolves (devDep, no global install); `allurerc.mjs` present for `bun allure:agent` markdown triage. |
+| Active env | REQUIRED | The suite runs against `<<ACTIVE_ENV>>` (default `{{DEFAULT_ENV}}`). Confirm it is the intended target before a long run. |
+| `[TMS_TOOL]` (result sync) | OPTIONAL | Only when `.agents/project.yaml` `testing.tms_cli` is set: Phase 1 creates the RTR before the trigger, Phase 3 posts the verdict on it and closes it. jira-xray → `/xray-cli` + `XRAY_*`. |
 | `[ISSUE_TRACKER_TOOL]` (file regression issues) | OPTIONAL | Only on NO-GO / CAUTION-with-regressions, to file issues. Load `/acli` then. |
 
-Test-user creds, OpenAPI/`API_TOKEN`, DBHub and Playwright browsers live **inside the CI runner**, not the orchestrator — this skill does not exercise them locally, so they are out of scope for this gate. After the gate clears (all REQUIRED GREEN), continue to Phase 0 below.
+Test-user creds, OpenAPI / API token, DBHub and Playwright browsers live **inside the CI runner**, not the orchestrator — this skill does not exercise them locally, so they are out of scope for this gate. After the gate clears (all REQUIRED GREEN), continue to Phase 0 below.
 
 ---
 
@@ -88,7 +132,7 @@ Before suite selection or any `gh workflow run`, run the resume contract from `a
 2. Check `.session/regression-testing/<scope>/progress.md`.
 3. If it does NOT exist → proceed to suite selection + Phase 1 preflight + plan.md write.
 4. If it DOES exist:
-   - Read `plan.md` (captured `suite`, `env`, `workflow_file`, `RUN_ID` if Phase 1 already triggered).
+   - Read `plan.md` (captured `suite`, `env`, `workflow_file`, `RTR_KEY` if Phase 1 already created the run record, `RUN_ID` if Phase 1 already triggered).
    - Read tail of `progress.md`.
    - If `RUN_ID` is present AND `progress.md` last entry is `Phase 1 — Trigger — status: completed` but Monitor entry is missing/failed: surface the option to **re-attach** to the existing `RUN_ID` via `gh run view <RUN_ID> --json status,conclusion` instead of re-triggering. This is the high-value resume case.
    - Otherwise surface the standard offer **resume / restart / abort**. On `restart`, archive to `.session/.archive/<YYYY-MM-DD>-regression-testing-<scope>-aborted/` first.
@@ -99,38 +143,38 @@ Before suite selection or any `gh workflow run`, run the resume contract from `a
 
 | Suite | Workflow file | Duration | Use when |
 |-------|---------------|----------|----------|
-| `regression` | `regression.yml` | 20-60 min | Pre-release validation, nightly full run |
-| `smoke` | `smoke.yml` | 2-5 min | Post-deploy health check, `@critical` only |
-| `sanity` | `sanity.yml` | 1-10 min | Validate one feature / one file / one grep pattern |
+| `regression` | `regression.yml` | a long run (read the last `gh run view` duration) | Pre-release validation, nightly full run |
+| `smoke` | `smoke.yml` | a short run (read the last `gh run view` duration) | Post-deploy health check, `@critical` only |
+| `sanity` | `sanity.yml` | varies (read the last `gh run view` duration) | Validate one feature / one file / one grep pattern |
 
 If the user says "run regression" with no qualifier, default to `regression` on `{{DEFAULT_ENV}}`. If they say "smoke" or "critical only", use `smoke`. If they specify a file, grep, or single feature, use `sanity`.
 
 ---
 
-## Local reporting (Allure 3, no global install)
+## Local reporting (Allure, no global install)
 
-Allure 3 is a devDep — `bunx allure` resolves to the local `node_modules/.bin/allure`, no `brew install allure` / `scoop install allure` required. Configuration lives at `allurerc.mjs`, single-plugin BY DESIGN: with only the **Awesome** plugin the generated `index.html` IS the report (no card-chooser landing), and its top-left mode dropdown covers everything — **Report** (drill-down, tag filters), **Graphs** (complete executive chart set: status, dynamics, severities, stability, testing pyramid, durations…), **Timeline**. Never add `plugin-dashboard` instances — they duplicate Graphs with fewer charts and bring back the landing screen (rationale in `allurerc.mjs` comments). Trend charts are fed by `historyPath: ./.allure/history.jsonl` and populate from the 2nd run onward.
+Allure (major pinned in `package.json`) is a devDep — `bunx allure` resolves to the local `node_modules/.bin/allure`, no `brew install allure` / `scoop install allure` required. Configuration lives at `allurerc.mjs`, single-plugin BY DESIGN: with only the **Awesome** plugin the generated `index.html` IS the report (no card-chooser landing), and its top-left mode dropdown covers everything — **Report** (drill-down, tag filters), **Graphs** (complete executive chart set: status, dynamics, severities, stability, testing pyramid, durations…), **Timeline**. Never add `plugin-dashboard` instances — they duplicate Graphs with fewer charts and bring back the landing screen (rationale in `allurerc.mjs` comments). Trend charts are fed by `historyPath: ./.allure/history.jsonl` and populate from the 2nd run onward.
 
 | Use case | Script | Underlying command |
 |---|---|---|
-| Run tests + auto-generate report (human review) | `bun allure:run` | `bunx allure run -- bun test` |
-| Run tests + emit markdown for AI review | `bun allure:agent` | `bunx allure agent -- bun test` |
+| Run tests + auto-generate report (human review) | `bun allure:run` | `bunx allure run -- bunx playwright test`, through the env launcher like the `test*` scripts |
+| Run tests + emit markdown for AI review | `bun allure:agent` | `bunx allure agent -- bunx playwright test`, through the env launcher like the `test*` scripts |
 | Generate report from existing `./allure-results` | `bun allure:generate` | `bunx allure generate ./allure-results` |
 | Serve last generated report locally | `bun allure:open` | `bunx allure open` |
 | Live-refresh report during iterative dev | `bun allure:watch` | `bunx allure watch ./allure-results` |
 
 `bun allure:agent` is the AI-friendly entry point: it produces a markdown summary the orchestrator (or a Verifier subagent) can read directly without parsing HTML. Use it whenever you need a structured pass/fail breakdown after a local re-run while triaging a CI failure (Phase 2 step 1, before downloading the merged-allure-results artifact from CI).
 
-CI artifacts (`merged-allure-results-{env}`) are still produced by the workflow and downloaded via `gh run download` as documented in Phase 2. The published GitHub Pages reports are generated by `scripts/ci/publish-allure-pages.ts` with the SAME `allurerc.mjs` and `allure` devDep as local runs — the `/{env}/{suite}/` URL redirects straight into the latest run's Awesome report (Report | Graphs | Timeline), with per-suite trend history and last-10-runs retention.
+CI artifacts (`merged-allure-results-{env}`) are still produced by the workflow and downloaded via `gh run download` as documented in Phase 2. The published GitHub Pages reports are generated by `scripts/ci/publish-allure-pages.ts` with the SAME `allurerc.mjs` and `allure` devDep as local runs — the `/{env}/{suite}/` URL redirects straight into the latest run's Awesome report (Report | Graphs | Timeline), with per-suite trend history and the `--keep` retention `scripts/ci/publish-allure-pages.ts` applies.
 
 ### Allure version-currency check (MANDATORY during any Allure/Pages setup)
 
-The boilerplate pins `allure` / `allure-playwright` / `allure-js-commons` at scaffold time, so by the time someone installs the repo and runs this setup they are usually behind upstream. Whenever this skill performs **Allure setup** (first local report, preflight RED on the "Allure 3 local" row) or **GitHub Pages setup** (`references/github-pages-setup.md`), run this check FIRST:
+The boilerplate pins `allure` / `allure-playwright` / `allure-js-commons` at scaffold time, so by the time someone installs the repo and runs this setup they are usually behind upstream. Whenever this skill performs **Allure setup** (first local report, preflight RED on the "Allure local" row) or **GitHub Pages setup** (`references/github-pages-setup.md`), run this check FIRST:
 
 1. `npm view allure version && npm view allure-playwright version` → compare against `package.json`.
 2. **Same major behind** → summarize the news for the user (release notes: `gh api repos/allure-framework/allure3/releases`), then offer `bun update allure allure-playwright allure-js-commons` (or bump the `^` ranges + `bun install`). Keep `allure-js-commons` in lockstep with `allure-playwright` (it is imported directly by `tests/components/TestFixture.ts` for the `layer` auto-label).
 3. **New major available** → NEVER upgrade silently. Present breaking changes and wait for explicit user approval.
-4. **Config-currency (older scaffolds)** — `bun run update` syncs skills and appends new devDeps, but it NEVER overwrites `allurerc.mjs` or `tests/components/TestFixture.ts` (project-adapted files). If the local `allurerc.mjs` predates the current template (no `historyPath`, no `categories`, or stale `plugin-dashboard` instances), OFFER to migrate it: fetch the boilerplate's current `allurerc.mjs` as reference (`https://raw.githubusercontent.com/upex-galaxy/agentic-qa-boilerplate/main/allurerc.mjs`), preserve the project's `name`, and port the config. Same for the `_allureLayer` auto-fixture in `TestFixture.ts` (feeds the testingPyramid + durations-by-layer charts in Awesome's Graphs tab) — without it those charts render empty. Never overwrite silently; show the diff and wait for approval.
+4. **Config-currency (older scaffolds)** — the updater (`bun sync`, read `package.json`) syncs skills and appends new devDeps, but it NEVER overwrites `allurerc.mjs` or `tests/components/TestFixture.ts` (project-adapted files). If the local `allurerc.mjs` predates the current template (no `historyPath`, no `categories`, or stale `plugin-dashboard` instances), OFFER to migrate it: fetch the boilerplate's current `allurerc.mjs` as reference (`https://raw.githubusercontent.com/upex-galaxy/agentic-qa-boilerplate/main/allurerc.mjs`), preserve the project's `name`, and port the config. Same for the `_allureLayer` auto-fixture in `TestFixture.ts` (feeds the testingPyramid + durations-by-layer charts in Awesome's Graphs tab) — without it those charts render empty. Never overwrite silently; show the diff and wait for approval.
 5. After any bump: `bun allure:generate` from existing results (or a sandbox run) and confirm the report renders — the root `index.html` must open the Awesome report directly, with the Report | Graphs | Timeline mode dropdown working.
 
 Known gotchas to preserve on upgrade (context in `allurerc.mjs` comments):
@@ -152,24 +196,58 @@ gh workflow list
 
 If `gh` is not authenticated, stop and ask the user to run `gh auth login`. Do not proceed.
 
-**Write `.session/regression-testing/<scope>/plan.md`** per `agentic-qa-core/references/session-management.md` §6 BEFORE the Trigger step below. Capture: Goal (suite + env + reason for run), Inputs (workflow file path, env vars, optional grep/test_file for sanity), Approach (subagent pattern per stage from the dispatch table above), Phase breakdown (Trigger → Monitor → Download → Classify → Compute → Report → Verdict), Risks, Verification checklist (all 3 artifacts download + verdict emitted), Cross-references (`.context/reports/regression-<env>-<date>.md` will hold the final verdict). `RUN_ID` lands in `plan.md` §Inputs AFTER the Trigger step captures it — append, do not rewrite the body.
+**Write `.session/regression-testing/<scope>/plan.md`** per `agentic-qa-core/references/session-management.md` §6 BEFORE the Trigger step below. Capture: Goal (suite + env + reason for run), Inputs (workflow file path, env vars, optional grep/test_file for sanity), Approach (subagent pattern per stage from the dispatch table above), Phase breakdown (Trigger → Monitor → Download → Classify → Compute → Report → Verdict), Risks, Verification checklist (all 3 artifacts download + verdict emitted), Cross-references (`.context/reports/regression-<env>-<date>.md` will hold the final verdict). `RTR_KEY` lands in `plan.md` §Inputs after the Create-the-RTR step below, and `RUN_ID` joins it AFTER the Trigger step captures it — append, do not rewrite the body.
+
+### Create the RTR (before the trigger)
+
+The run record is born BEFORE CI starts, so the workflow receives its key and imports into it instead of into a shared secret. `<<SCOPE_ID>>` = `<<ACTIVE_ENV>>-<YYYY-MM-DD>` (the same value as the session `<scope>`), or the release tag (e.g. `v2.3.0-rc1`) when the user says the run is a release candidate. Regression suite only: smoke and sanity get no RTR (see the Trigger block).
+
+1. **Resolve the RTP**: find the Test Plan titled `RTP: {{PROJECT_KEY}}: Regression Test Plan`. Missing → do NOT create it here (the RTP is `/test-documentation`'s promotion artifact): create the RTR without the `testPlan` edge, record the gap as a stated N/A in the verifier and the report, and recommend running the promotion first.
+2. **Find-or-create the RTR**. A same-scope RTR still `{{jira.status.test_execution.active}}` (no verdict yet: an ENVIRONMENT re-run, a resumed session) is REUSED. A same-scope RTR already `{{jira.status.test_execution.close}}` (verdict written) means this is a NEW run: append `#2` (then `#3`) to the scope-id. Never reopen a closed RTR (`reactive` stays unused).
+3. **Persist** `<<RTR_KEY>>` in `.session/regression-testing/<scope>/plan.md` §Inputs, on the line `RUN_ID` will join after the trigger. Resume reads both.
+4. **Pass it to CI** as `-f execution_key=<<RTR_KEY>>` on `gh workflow run` (Trigger block below). The workflow's `execution_key` input overrides the `STP_EXECUTION_KEY` secret (`references/ci-cd-integration.md` §4).
+
+```
+[TMS_TOOL] Find Test Plan:
+  summary: RTP: {{PROJECT_KEY}}: Regression Test Plan
+  -> <<RTP_KEY>>   (missing: RTR without testPlan + stated gap; never create the RTP here)
+
+[TMS_TOOL] Find-or-create Test Execution:
+  summary: RTR: <<SCOPE_ID>>: Regression Testing        # e.g. RTR: staging-2026-09-23: Regression Testing
+  parent: {QA Test Artifacts epic: qa.qa_epics.test_artifacts_epic.key, resolved by .name when the key is null}
+  testEnvironments: [<<ACTIVE_ENV>>]
+  assignee: self
+  testPlan: <<RTP_KEY>>
+  -> <<RTR_KEY>>   (persist beside RUN_ID, pass as execution_key)
+
+# Modality jira-native
+RTR: n/a (jira-native has no Test Executions); results = per-Test status writes + [LOCAL] report
+  -> no key: trigger WITHOUT execution_key; the CI jira-native leg writes per-Test status,
+     the verdict lives in the [LOCAL] report (and a comment on the Release issue when one exists)
+```
+
+**Sprint-close variant.** When the user says this run IS the sprint close, the target is the STR instead of an RTR: find-or-create `STR: Sprint#{N}: Regression Testing` per the existing contract (§TMS sync: parent QA Test Artifacts, Test Environment, assignee self, `testPlan` → STP AND `testPlan` → RTP, dual membership), persist its key in the same `plan.md` slot, and pass it as `execution_key` the same way. `N` comes from the user or from the STP's scope-id, never invented.
 
 ### Trigger
 
 ```bash
-# Full regression
+# Full regression: execution_key = the RTR (or sprint-close STR) created in the step above
 gh workflow run regression.yml \
   -f environment=staging \
+  -f execution_key=$RTR_KEY \
   -f video_record=false \
   -f generate_allure=true
 
-# Smoke
+# Smoke (no execution_key: smoke never writes into a regression execution;
+# pass one only when its results deliberately belong in a specific Execution)
 gh workflow run smoke.yml -f environment=staging -f generate_allure=true
 
-# Sanity (grep OR test_file, never both)
+# Sanity (grep OR test_file, never both; same execution_key rule as smoke)
 gh workflow run sanity.yml -f environment=staging -f test_type=e2e -f grep="@auth"
 gh workflow run sanity.yml -f environment=staging -f test_file="tests/e2e/auth/login.test.ts"
 ```
+
+Modality jira-native: omit `execution_key` on every suite; there is no Execution to import into.
 
 ### Capture run ID
 
@@ -180,7 +258,7 @@ gh run list --workflow=regression.yml --limit=1 --json databaseId,status,created
 
 Store as `RUN_ID`. Every subsequent step uses it.
 
-**Progress checkpoint after Trigger**: append `RUN_ID` to `.session/regression-testing/<scope>/plan.md` §Inputs (so resume can re-attach) AND append a phase entry `## Phase 1.Trigger — <ts>` with `status: completed`, `next: Phase 1.Monitor`, `notes: RUN_ID=<value>` to `progress.md`. This is the critical persistence point — Trigger landing without `RUN_ID` persisted means resume cannot re-attach.
+**Progress checkpoint after Trigger**: append `RUN_ID` to `.session/regression-testing/<scope>/plan.md` §Inputs (so resume can re-attach) AND append a phase entry `## Phase 1.Trigger — <ts>` with `status: completed`, `next: Phase 1.Monitor`, `notes: RUN_ID=<value> RTR_KEY=<value>` to `progress.md`. This is the critical persistence point — Trigger landing without `RUN_ID` persisted means resume cannot re-attach, and without `RTR_KEY` a resumed session cannot tell which Execution CI imported into.
 
 ### Monitor to completion
 
@@ -224,8 +302,10 @@ gh run view <RUN_ID> --log-failed
 # Inline (main thread): list artifacts so the parallel dispatchers know what to fetch
 gh run view <RUN_ID> --json artifacts --jq '.artifacts[].name'
 
-# Parallel subagent A — allure results
+# Parallel subagent A — allure results + the run's outcome records (counts)
 gh run download <RUN_ID> -n merged-allure-results-staging -D ./analysis/
+gh run download <RUN_ID> -n e2e-atc-results -D ./analysis/outcomes/e2e/                   # reports/test-outcomes.json
+gh run download <RUN_ID> -n integration-atc-results -D ./analysis/outcomes/integration/   # one per job that ran
 
 # Parallel subagent B — failure evidence (screenshots, traces, videos)
 gh run download <RUN_ID> -n e2e-failure-evidence       -D ./analysis/evidence/
@@ -234,11 +314,11 @@ gh run download <RUN_ID> -n e2e-failure-evidence       -D ./analysis/evidence/
 gh run download <RUN_ID> -n e2e-playwright-report      -D ./analysis/playwright/
 ```
 
-Each subagent uses the briefing shape in `agentic-qa-core/references/briefing-template.md` §"Parallel — Download 3 CI artifacts in regression-testing". Cap the fan-out at 3 — there are only ever three artifact streams and GitHub's per-run rate limits are not a concern at that size.
+Each subagent uses the briefing shape in `agentic-qa-core/references/briefing-template.md` §"Parallel — Download 3 CI artifacts in regression-testing". Fan out one subagent per artifact `gh run view --json artifacts` lists; GitHub's per-run rate limits are not a concern at that size.
 
 ### Step 2: Parse results
 
-Source of truth priority: **Allure results JSON > Playwright `report.json` > raw logs**. Each Allure result has `status`, `statusDetails.message`, `statusDetails.trace`, and `labels[]` (look for `testId` = ATC ID, `suite`, and `severity`).
+**Counts come from `reports/test-outcomes.json`; failure detail comes from Allure.** `regression.yml` uploads `reports/test-outcomes.json` inside the `e2e-atc-results` and `integration-atc-results` artifacts, one file per job (written by `KataReporter`, ADR-0020: one record per test with its outcome class `passed` / `failed` / `known-defect` / `unexpected-pass` / `skipped`); the run's counts are the sum of the files. `smoke.yml` and `sanity.yml` do not upload it, so for those suites the Allure counts below are the normal path, not the exception. Allure files an expected failure as passed and Playwright reports a test skipped by a failed `beforeAll` as ok, so a count taken from Allure's `status` can read green over tests that were never observed passing. Use the other source in exactly two cases: Allure for what the records do not hold (the message, trace, `suite`/`severity` labels of each failure, and the cross-run history FLAKY needs), and Allure `status` for the counts when `reports/test-outcomes.json` is absent from the downloaded artifacts (a smoke or sanity run, a downstream project not yet on ADR-0020, or a job that died before `onEnd`); the report then states that the counts are Allure-derived and may overstate passes. Failure-detail priority: **Allure results JSON > Playwright `report.json` > raw logs**. Each Allure result has `status`, `statusDetails.message`, `statusDetails.trace`, and `labels[]` (look for `testId` = ATC ID, `suite`, and `severity`).
 
 > **The `suite` label is tag-derived — single source of truth.** Allure suite/grouping labels are NOT a separate taxonomy: they derive from the Playwright tag (`@smoke` / `@regression` / `@e2e` / `@integration` / `@critical`) that also drives CI scope selection. A test tagged `@integration` reports `suite: integration` automatically. So the `suite` you read here is exactly the scope CI ran — never reconcile it against a parallel Allure label set. Convention owner: `test-automation/references/ci-integration.md` §3.2.1.
 
@@ -246,8 +326,8 @@ Source of truth priority: **Allure results JSON > Playwright `report.json` > raw
 
 | Metric | Formula |
 |--------|---------|
-| Total | count of results |
-| Passed / Failed / Skipped / Broken | count by `status` |
+| Total | count of records in `reports/test-outcomes.json` (Allure results only as the stated fallback) |
+| Passed / Failed / Skipped | count by outcome class (`known-defect` is its own line and feeds KNOWN-BLOCKED; an `unexpected-pass` is an action item, never a silent pass); on the Allure fallback, count by `status` (incl. Broken) |
 | Pass Rate | `Passed / Total * 100` |
 | Duration | `max(stop) - min(start)` |
 | Trend | current pass rate − previous run pass rate |
@@ -287,19 +367,29 @@ Failed test
   │
   ├── No history (first-ever run)? ──────────► NEW TEST FAILURE
   │
-  ├── Failure rate > 20% over last 10 runs? ─► FLAKY
+  ├── ≥ 5 runs of history, failure rate > 20%
+  │   over the last min(10, available) runs,
+  │   same build across them? ───────────────► FLAKY
   │
-  └── Passed in last ≤ 5 runs, now fails? ───► REGRESSION   (release blocker)
+  ├── 1-4 runs of history? ──────────────────► REGRESSION, labeled INSUFFICIENT HISTORY
+  │   (FLAKY cannot be proven: fail-closed,
+  │    re-evaluate on the next run)
+  │
+  └── Anything else (passed before, fails now)► REGRESSION   (release blocker)
 ```
 
-| Category | Impact | Action |
-|----------|--------|--------|
-| KNOWN-BLOCKED | LOW | Already tracked by `{BUG-KEY}` — exclude from gating pass-rate, list in report with the blocking bug key. **No new Jira bug** (the marker already names the open bug) |
-| REGRESSION | HIGH | Block release, file Jira Bug/Defect (Phase 3 §File defects in Jira, doctrine Part 1), assign |
-| FLAKY | MEDIUM | Schedule stabilization, do not block — **no Jira bug** |
-| KNOWN ISSUE | LOW | Document against existing ticket, do not block — **no new Jira bug** |
-| ENVIRONMENT | MEDIUM | Re-run after infra check — **no Jira bug** |
-| NEW TEST | LOW | Manual verification → if a genuine product defect, file Jira Bug/Defect; else accept or fix |
+When more than one branch matches, the first one down the tree wins: KNOWN-BLOCKED > KNOWN ISSUE > ENVIRONMENT > NEW TEST > FLAKY > REGRESSION. FLAKY beats REGRESSION only when its citation is complete; REGRESSION is the residual class, never a rank to win.
+
+| Category | Impact | Action | Evidence the classification must cite |
+|----------|--------|--------|------|
+| KNOWN-BLOCKED | LOW | Already tracked by `{BUG-KEY}` — exclude from gating pass-rate, list in report with the blocking bug key. **No new Jira bug** (the marker already names the open bug) | the `@blocked:{BUG-KEY}` tag in the spec and its bug key |
+| REGRESSION | HIGH | Block release, file Jira Bug/Defect (Phase 3 §File defects in Jira, doctrine Part 1), assign | none: it is the closed value |
+| FLAKY | MEDIUM | Schedule stabilization, do not block — **no Jira bug** | the run ids and results of at least 5 runs, and the build each ran on (unchanged across them) |
+| KNOWN ISSUE | LOW | Document against existing ticket, do not block — **no new Jira bug** | the ticket key, created before this run started, that names the ATC ID or test title |
+| ENVIRONMENT | MEDIUM | Re-run after infra check — **no Jira bug** | the log line matching an environment pattern, plus the other tests that failed on the same host in the same run |
+| NEW TEST | LOW | Manual verification → if a genuine product defect, file Jira Bug/Defect; else accept or fix | the history query (Allure history, TMS runs) that returned no earlier execution |
+
+**Classification is a fail-closed gate** (`agentic-qa-core/references/orchestration-doctrine.md`, FAIL-CLOSED GATES). Every class except REGRESSION lets a failure past the release gate, and the classifier is the one who picks it, so a non-blocking class stands only with its citation from the last column. No citation, an empty one, or a ticket this session filed to make the failure "known" → the failure counts as REGRESSION. The same holds for a parallel chunk: a classification returned without its `evidence` is merged as REGRESSION (`references/failure-classification.md` §Parallel classification).
 
 > **KNOWN-BLOCKED — consuming the blocked-test marker.** The `@blocked:{BUG-KEY}`
 > tag + `test.fail('Blocked by {BUG-KEY}')` marker is **defined in
@@ -337,7 +427,7 @@ An analysis block with: metrics table, trend delta, one section per failure cate
 
 ### GO / CAUTION / NO-GO scoring
 
-Compute a weighted score from the analysis. Maximum is 9.
+Compute a weighted score from the analysis. Maximum is 10.
 
 | Factor | +3 | +1 | 0 | -1 | -2 | -3 |
 |--------|----|----|---|----|----|----|
@@ -403,27 +493,56 @@ the returned Jira key to reference in the report.
 
 > **Prerequisite**: Load `/xray-cli` skill (Modality jira-xray) before executing the `[TMS_TOOL]` commands below. In Modality jira-native, load `/acli` instead and map test-execution operations to native Jira issues (see `test-documentation/references/jira-setup.md`).
 
-The sprint regression maps to two Jira **items** (items-first by excellence — the Story custom field is never used at this altitude).
+A regression run maps to Jira **items** (items-first by excellence: no Story custom field exists at this altitude). The default pair is RTP + RTR. The STP + STR pair applies only to the sprint-close run.
 
-> **This skill has no sprint concept of its own.** `N` is NOT derivable from a suite run: take it from the user, or from the `Sprint#{N}` scope-id of the STP this skill finds. **Never invent it** — a guessed `N` forks a duplicate STP/STR pair for the sprint. No STP found and no `N` given → ASK before creating anything at sprint altitude.
+- **RTP** (Regression Test Plan): a **Test Plan** item titled `RTP: {{PROJECT_KEY}}: Regression Test Plan`, parent **QA Master Test Plan** (`qa.qa_epics.master_test_plan_epic.name`). **Producer: `/test-documentation`** (promotion of `regression-candidate` TCs). This skill only CONSUMES it as the RTR's `testPlan` target: it is **never written into** and never created here. An Xray Test Plan aggregates the LATEST status of each of its Tests across all Executions, so the RTP answers "is the regression suite green" on its own as RTRs accumulate (`test-documentation/references/xray-platform.md` §4).
+- **RTR** (Regression Test Results): a **Test Execution** item titled `RTR: <<SCOPE_ID>>: Regression Testing` (e.g. `RTR: staging-2026-09-23: Regression Testing`, or `RTR: v2.3.0-rc1: Regression Testing` for a release candidate), parent **QA Test Artifacts** (`qa.qa_epics.test_artifacts_epic.name`), `testPlan` → RTP, Test Environment + `assignee` = self at create. **Producer: THIS skill**, Phase 1, before the trigger (§Create the RTR). It is the CI import target: the `execution_key` dispatch input carries its key, and the `STP_EXECUTION_KEY` secret (name kept for downstream repos) is only the fallback for a scheduled run that no dispatcher minted a key for. **One RTR per verdict**: an ENVIRONMENT re-run before the verdict imports into the same RTR; a re-run after a verdict (a NO-GO fixed and retried) is a NEW RTR with a `#2` scope-id; never `reactive`.
+- **STP + STR** (sprint close ONLY): `STP: Sprint#{N}: {sprint objective}` (Test Plan, parent QA Master Test Plan, `relates to` the Sprint; producer `/sprint-testing`, whose Session Start find-or-creates it on the sprint's first ticket; this skill consumes it and find-or-creates it only as a fallback, never writes results into it) and `STR: Sprint#{N}: Regression Testing` (Test Execution, parent QA Test Artifacts, `relates to` the Sprint, `testPlan` → STP AND `testPlan` → RTP, dual membership). The STR is the sprint-close recap of all sprint results: **whoever arrives first creates it, the other completes it** (`/sprint-testing`'s batch close, or this skill when it runs the closing regression). A regular regression run during the sprint is an RTR, never the STR. The run's term is **Regression Testing**: "Sprint" already comes from the `Sprint#{N}` scope-id.
 
-- **STP** (Sprint Test Plan) — a **Test Plan** item titled `STP: Sprint#{N}: {sprint objective}` (e.g. `STP: Sprint#30: Checkout hardening`). Parents to the **QA Master Test Plan** epic (`qa.qa_epics.master_test_plan_epic.name`); `relates to` the Sprint. **Producer: `/sprint-testing`** — its Session Start find-or-creates the STP on the FIRST ticket of the sprint, and every tested ticket updates it (a live planner: scope, progress). This skill **CONSUMES** the STP as context; it find-or-creates it **only as a fallback** when a suite runs and the STP is missing. **Never write results into it**: an Xray Test Plan aggregates the LATEST status of each of its Tests across all Executions, so the STP rolls up on its own as the ATRs and the STR accumulate — it carries the plan (description) and the human observations (comments), nothing else (`test-documentation/references/xray-platform.md` §4).
-- **STR** (Sprint Test Results) — a **Test Execution** item titled `STR: Sprint#{N}: Regression Testing` (e.g. `STR: Sprint#30: Regression Testing`). Parents to the **QA Test Artifacts** epic (`qa.qa_epics.test_artifacts_epic.name`); `relates to` the Sprint; `testPlan` → STP. Created at sprint **CLOSE** as the recap of all sprint results — by THIS skill when it runs the closing regression, or completed by `/sprint-testing`'s batch close if that already created it: **whoever arrives first creates it, the other completes it**. The run's term is **Regression Testing** — "Sprint" already comes from the `Sprint#{N}` scope-id, so the title carries no redundant "Sprint Regression".
+> **`N` is a sprint-close concern only.** The RTR needs no sprint number. When the run IS the sprint close, `N` comes from the user or from the `Sprint#{N}` scope-id of the STP this skill finds. **Never invent it**: a guessed `N` forks a duplicate STP/STR pair. No STP found and no `N` given → ASK before creating anything at sprint altitude.
 
-**Environment gate**: every Test Execution this skill creates — the STR included — carries the **Test Environment** taken from `active_env` in `.agents/project.yaml`, set at create time. An Execution without its environment fails the checklist: do not write results into it until the environment is set.
+**Environment gate**: every Test Execution this skill creates (the RTR, and the STR at sprint close) carries the **Test Environment** taken from `active_env` in `.agents/project.yaml`, set at create time. An Execution without its environment fails the checklist: do not write results into it until the environment is set.
 
-**Find-or-create the STR before updating it** — never assume another producer already created it; if `/sprint-testing`'s batch close got there first, the find returns its item and this skill only completes it:
+**Ownership gate**: every artifact this skill CREATES (the RTR; at sprint close the STR, and the STP in the fallback case) carries `assignee` = the authenticated session user, set at create time — `agentic-qa-core/references/artifact-lifecycle.md` §2. Xray refuses membership edits on a Test Plan the caller does not own, so an unassigned Plan turns into a blocker the moment tests must be added to it. If the find returns an artifact someone ELSE owns, do not reassign it silently: ask first.
+
+**Lifecycle gate** (`agentic-qa-core/references/artifact-lifecycle.md` §1):
+
+- The **RTR** is born `{{jira.status.test_execution.active}}` in Phase 1 and MUST be transitioned to `{{jira.status.test_execution.close}}` via `{{jira.transition.test_execution.complete}}` **after the GO / CAUTION / NO-GO verdict comment is posted on it**: never before the verdict, never left open, never reopened (`reactive` stays unused; a later run is a new RTR).
+- The **STR** (sprint close only) follows the same rule after the sprint-close verdict.
+- The **RTP** (and any Test Plan this skill only consumed) stays at `{{jira.status.test_plan.ready}}` and is **never completed** by a regression run: the RTP is long-lived, and a suite execution does not finish the plan it ran from. Do NOT fire `{{jira.transition.test_plan.complete}}` here.
+- The **STP** is closed by whoever owns sprint close, not by this skill — unless this skill IS the sprint close (see the sprint-close DoD in `stage-gates.md`), in which case `{{jira.transition.test_plan.complete}}` moves it to `{{jira.status.test_plan.completed}}` after the STR is closed.
+- **Unmapped slug** → `artifact-lifecycle.md` §4 fallback: list the LIVE transitions, propose the closest synonym in ONE `AskUserQuestion`, fire the live id on yes, recommend `bun run jira:sync-workflows`. Never skip silently, never guess an id.
+
+**The run record already exists when Phase 3 starts**: the RTR was created in Phase 1 and CI imported into it through `execution_key`, so Phase 3 only writes what CI did not, posts the verdict and closes it. At sprint close, never assume another producer already created the STR; if `/sprint-testing`'s batch close got there first, the find returns its item and this skill only completes it:
 
 ```
+# Default: the RTR created in Phase 1 (§Create the RTR)
+[TMS_TOOL] Update Test Execution:
+  executionKey: <<RTR_KEY>>
+  results: {per-ATC status + failure comments from Phase 2, only what the CI import did not land}
+
+[ISSUE_TRACKER_TOOL] Add Comment:
+  issue: <<RTR_KEY>>
+  body: {GO / CAUTION / NO-GO verdict, score, blockers, workflow-run + Allure links}
+
+# After the verdict comment is posted: close the run, never leave it ACTIVE
+[ISSUE_TRACKER_TOOL] Transition: {{jira.transition.test_execution.complete}}   # active -> close
+  issue: <<RTR_KEY>>
+
+# Sprint close ONLY: the STR is the target instead, with dual plan membership
 [TMS_TOOL] Find-or-create Test Execution:
   summary: STR: Sprint#{N}: Regression Testing
-  parent: {QA Test Artifacts epic — qa.qa_epics.test_artifacts_epic.name}
-  links: {relates to → Sprint; testPlan → STP key}
+  parent: {QA Test Artifacts epic: qa.qa_epics.test_artifacts_epic.name}
+  links: {relates to → Sprint; testPlan → STP key; testPlan → RTP key}
   environment: {active_env from .agents/project.yaml}
+  assignee: self
+  -> then the same Update / Add Comment / Transition sequence on the STR key
 
-[TMS_TOOL] Update Test Execution:
-  executionKey: {STR execution-key}
-  results: {per-ATC status + failure comments from Phase 2}
+# Modality jira-native
+RTR: n/a (jira-native has no Test Executions); results = per-Test status writes + [LOCAL] report
+[ISSUE_TRACKER_TOOL] Update Test status: {per-Test status field write, one per executed Test;
+  the CI leg already did this when AUTO_SYNC is on, so write only what it did not land}
+verdict: `.context/reports/regression-{env}-{date}.md` ([LOCAL]) + a comment on the Release issue when one exists
 ```
 
 ### Write the report
@@ -439,7 +558,7 @@ Save to `.context/reports/regression-{env}-{date}.md`. Use `references/failure-c
 
 ## Executive Summary
 **Verdict: {GO / CAUTION / NO-GO}**
-Score: {score}/9. {one-line rationale}
+Score: {score}/10. {one-line rationale}
 
 | Metric | Value | Threshold | Status |
 |--------|-------|-----------|--------|
@@ -469,7 +588,7 @@ Score: {score}/9. {one-line rationale}
 - Workflow run: {url}
 - Allure: {url}
 - Created issues: {list}
-- TMS execution: {key / url}
+- TMS execution: RTR: {key} (testPlan → RTP {key}) | STR: {key} (sprint close, testPlan → STP + RTP) | n/a (jira-native, stated skip)
 
 ## Recommendations
 1. Immediate (pre-release): {...}
@@ -485,11 +604,25 @@ Score: {score}/9. {one-line rationale}
 | CAUTION | Review with team lead; document accepted risks; proceed deliberately |
 | NO-GO | Block release; assign regression issues; schedule fix verification; plan re-run |
 
+Whatever the verdict, close the run record: post the GO / CAUTION / NO-GO comment ON the RTR (on the STR only when the run is the sprint close), transition it to `{{jira.status.test_execution.close}}` via `{{jira.transition.test_execution.complete}}`, leave the RTP at `{{jira.status.test_plan.ready}}`, then run the **light stage verifier** (`agentic-qa-core/references/artifact-lifecycle.md` §5). Stage-specific lines:
+
+```
+[ ] RTR exists by KEY and existed BEFORE the CI trigger (its key went out as execution_key)
+[ ] RTR carries its Test Environment (active_env), assignee = self, parent QA Test Artifacts
+[ ] RTR -> RTP linked via the `testPlan` edge (a missing RTP is a STATED N/A naming the promotion gap)
+[ ] Verdict comment posted ON the RTR (the durable record, not the local report file)
+[ ] RTR at {{jira.status.test_execution.close}} via complete, AFTER the verdict; never reactive
+[ ] Sprint close only: STR exists by KEY, testPlan -> STP AND -> RTP, closed after the sprint-close verdict
+[ ] RTP untouched at {{jira.status.test_plan.ready}} (a regression run never completes it)
+[ ] Modality jira-native: the RTR line is the stated skip note; per-Test status writes landed; [LOCAL] report written
+[ ] Any unmapped slug went through the §4 fallback (asked), never a silent skip
+```
+
 ### Per-phase progress + Archive
 
 After Phase 1 Monitor returns, after each Phase 2 step (Collect / Parse / Compute / Classify / Severity), and after Phase 3 Verdict, the orchestrator appends a phase entry to `.session/regression-testing/<scope>/progress.md` per `agentic-qa-core/references/session-management.md` §7. `artifacts_touched` records the downloaded CI artifacts (allure / evidence / playwright dirs) + the final `.context/reports/regression-<env>-<date>.md`.
 
-After the Verdict emits, the orchestrator runs Archive per `agentic-qa-core/references/session-management.md` §8: moves `.session/regression-testing/<scope>/` to `.session/.archive/<YYYY-MM-DD>-regression-testing-<scope>/` (two-file dir preserved) and calls `mem_session_summary` with the archive path. The canonical `.context/reports/regression-<env>-<date>.md` stays in the reports dir as the committed deliverable.
+After the Verdict emits, the orchestrator runs Archive per `agentic-qa-core/references/session-management.md` §8: moves `.session/regression-testing/<scope>/` to `.session/.archive/<YYYY-MM-DD>-regression-testing-<scope>/` (two-file dir preserved) and calls `mem_session_summary` with the archive path. `.context/reports/regression-<env>-<date>.md` stays in the reports dir as a **local generated report** — that directory is gitignored `[LOCAL]` output (`.context/reports/README.md`), so the file exists only on the machine that ran the suite and nothing downstream may depend on it. **The durable record is the RTR in the TMS (the STR only at sprint close) plus the GO / CAUTION / NO-GO comment** posted on it. Modality jira-native: the per-Test status writes plus this `[LOCAL]` report, by stated skip.
 
 On Verdict = NO-GO with regressions still being filed as issues, archive WAITS until the issue-creation step completes (so the session state still references the open issue list at archive time).
 
@@ -503,11 +636,11 @@ On Verdict = NO-GO with regressions still being filed as issues, archive WAITS u
 - **This repo ships `retries: 0` everywhere** (`playwright.config.ts`) — tests must be deterministic, and a retry would only mask the flake. A flaky test therefore surfaces as a plain intermittent failure and is caught by the >20% history rule, never by a retry-pass signal. If a downstream project has consciously enabled retries, a test that passes on retry is still flaky — see the "Conscious divergence: enabling retries" box in `references/ci-cd-integration.md` for how to read retry counts in Allure.
 - **ENVIRONMENT is not a scapegoat.** `ECONNREFUSED` to your app's own API probably means the app crashed, not "infra glitch". Check if the same run has many unrelated tests failing on the same host — that is environment. One test failing with a network error on an endpoint that other tests hit successfully is more likely a REGRESSION.
 - **Never mark NEW TEST as REGRESSION.** A first-ever failure with no history is not a regression — it is unverified. Manually confirm once before classifying.
-- **Flakiness needs 10 runs of history minimum.** If you don't have 10 runs, mark it as "insufficient history" and re-evaluate next sprint. Do not guess.
+- **Flakiness needs 5 runs of history minimum before you can call it at all.** Below that the failure is labeled INSUFFICIENT HISTORY and counts as REGRESSION for the verdict (fail-closed); re-evaluate on the next run, when it can become FLAKY with its citation. The failure-rate itself is computed over a wider window: the last N = min(10, available) runs (see `references/failure-classification.md`). 5 is the floor to have any signal; 10 is the window the percentage is actually computed over.
 - **Sanity + `grep` and `test_file` are mutually exclusive.** Passing both makes the workflow ignore one silently. Pick one.
 - **Video recording inflates artifact size by 5-10x.** Only enable `video_record=true` when debugging flakiness or capturing bug evidence. Never enable it for nightly regression.
 - **CI credentials come from GitHub secrets, not `.env`.** Do not copy values from local `.env` into workflow YAML — reference `${{ secrets.NAME }}` only.
-- **Session-footer contract (mandatory at close).** The final phase is not done until the two chat-facing blocks from `../agentic-qa-core/references/session-footer-contract.md` are printed: (1) consolidated screenshot list — repo-relative paths, verified on disk, bug annotations first — plus in-flow surfacing of every capture's path the instant it lands; (2) Session Footer listing skills/MCPs/CLIs actually used + testing levels touched, with explicit "none" entries for expected-but-untouched levels. Framing for this skill: execution. Multi-subagent sessions: each stage report carries the five footer fields (`skills_loaded`, `mcps_used`, `clis_used`, `testing_levels_touched`, `screenshots_captured`); the orchestrator compiles the footer ONCE at close. Chat only — never in a Jira comment or ATR body.
+- **Session-footer contract (mandatory at close).** The final phase is not done until the two chat-facing blocks from `../agentic-qa-core/references/session-footer-contract.md` are printed: (1) consolidated screenshot list — repo-relative paths, verified on disk, bug annotations first — plus in-flow surfacing of every capture's path the instant it lands; (2) Session Footer listing skills/MCPs/CLIs actually used + testing levels touched, with explicit "none" entries for expected-but-untouched levels. Framing for this skill: execution. Multi-subagent sessions: each stage report carries the five footer fields (`skills_loaded`, `mcps_used`, `clis_used`, `testing_levels_touched`, `screenshots_captured`); the orchestrator compiles the footer ONCE at close. Chat only — never in a Jira comment or ATR body. Lessons noticed during the session are PROPOSED to `.session/<skill-slug>/<scope>/refinements.md` and never applied to a live skill, per `../agentic-qa-core/references/skill-refinement-protocol.md`; the footer's `Refinements proposed:` line counts them.
 
 ---
 
@@ -526,11 +659,11 @@ On Verdict = NO-GO with regressions still being filed as issues, archive WAITS u
 
 ## Anti-patterns — NEVER do these
 
-- **R1.** NEVER classify a failure as FLAKY without re-running the test in isolation — masks real regressions.
+- **R1.** NEVER classify a failure as FLAKY without the ≥5-run history citation (§Step 4 table) — masks real regressions.
 - **R2.** NEVER emit GO when known REGRESSION class > 0 — quality gate is binary: regressions block.
 - **R3.** NEVER auto-retry failing tests in CI without surfacing the retry count in the report.
 - **R4.** NEVER skip Allure artifact download on red builds — evidence vanishes after the retention window.
-- **R5.** NEVER trigger a regression workflow without `--ref <commit-sha>` pinned — different commit = different baseline.
+- **R5.** Record the tested commit (`gh run view <RUN_ID> --json headSha`) in the report; compare trends only between runs whose commits are known — different commit = different baseline.
 - **R6.** NEVER mix smoke + regression suite results into one pass-rate number — different SLOs.
 - **R7.** NEVER mark a test KNOWN-failure without a Jira ticket linking the suppression to a tracking issue.
 
@@ -539,8 +672,8 @@ On Verdict = NO-GO with regressions still being filed as issues, archive WAITS u
 ## Quick reference
 
 ```bash
-# Trigger + get run ID in one shot
-gh workflow run regression.yml -f environment=staging && sleep 5 && \
+# Trigger + get run ID in one shot (RTR_KEY = the Execution created in Phase 1 §Create the RTR)
+gh workflow run regression.yml -f environment=staging -f execution_key=$RTR_KEY && sleep 5 && \
   RUN_ID=$(gh run list --workflow=regression.yml --limit=1 --json databaseId -q '.[0].databaseId') && \
   echo "RUN_ID=$RUN_ID"
 

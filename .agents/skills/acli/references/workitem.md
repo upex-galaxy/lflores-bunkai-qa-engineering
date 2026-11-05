@@ -86,6 +86,8 @@ Useful flags:
 
 **Publishing rich text in `description` or custom-field values**: pass an ADF JSON document, not Markdown. `acli` does not interpret Markdown. Use `scripts/md-to-adf.ts` (bundled with this skill) to produce the ADF document, then inject it into the `--from-json` payload. See the "Publishing rich text" section in `SKILL.md` for the full recipe and a worked example.
 
+**Parenting in `--from-json`: the field is `parentIssueId`, and `parentIssueKey` does not exist.** A payload carrying `parentIssueKey` is rejected outright (`json: unknown field`), which reads as "this tool cannot parent to an Epic" and sends the caller off to REST for nothing. It can: `parentIssueId` accepts a KEY (`{{PROJECT_KEY}}-100`), exactly like the `--parent` flag and the `create-bulk` CSV column of the same name. Its `--generate-json` description mentions sub-tasks only — that description is narrower than the behaviour, and every quality artifact this repo parents to a QA-process Epic goes through this field. Measured against a live instance while parenting Defects to a QA Epic.
+
 ### create-bulk
 
 For many items at once, use JSON or CSV input:
@@ -203,10 +205,21 @@ acli jira workitem edit --key "{{PROJECT_KEY}}-123" --remove-labels "stale,depre
 acli jira workitem edit --key "{{PROJECT_KEY}}-123" --remove-assignee
 ```
 
-Editable flags via `acli jira workitem edit`: `--summary`, `--description`, `--description-file`, `--assignee`, `--labels`, `--type`.
+Editable flags via `acli jira workitem edit` (`acli jira workitem edit --help` is the authority): `--summary`, `--description`, `--description-file`, `--assignee`, `--labels`, `--type`.
 Removal flags: `--remove-assignee`, `--remove-labels`.
 
-**Critical limitation — `workitem edit` hard-rejects custom fields.** `acli jira workitem edit --from-json` validates the payload against a strict whitelist of built-in keys (`summary`, `description`, `assignee`, `labels`, `type`, `issues`, `labelsToAdd`, `labelsToRemove`). Every custom-field shape — `additionalAttributes.customfield_X`, `fields.customfield_X`, or `customfield_X` at the root — raises `✗ Error: json: unknown field …` and exits 1. Confirmed empirically against a live workitem; no silent drop, no escape hatch.
+**That is the whole surface `--help` documents — and `components` is not on it.** There is no
+`--components` / `--component` flag and no `--from-json` key for it, so the field
+this repo's defect doctrine makes MANDATORY on every quality issue cannot be set
+or changed by `workitem edit` at all. Set components at CREATE time where
+possible; to change them later, use the same REST path as custom fields:
+`PUT /rest/api/3/issue/{KEY}` with `{"fields": {"components": [{"name": "<Module>"}]}}`.
+Worth stating plainly because the omission is silent: an edit that does not
+mention components simply leaves them as they were, and a caller who assumed the
+flag existed never sees an error. Measured while writing sprint-altitude fields
+on a live instance.
+
+**Critical limitation — `workitem edit` hard-rejects custom fields.** `acli jira workitem edit --from-json` validates the payload against a strict whitelist of built-in keys (the ones `acli jira workitem edit --help` documents; no custom-field key is among them). Every custom-field shape — `additionalAttributes.customfield_X`, `fields.customfield_X`, or `customfield_X` at the root — raises `✗ Error: json: unknown field …` and exits 1. Confirmed empirically against a live workitem; no silent drop, no escape hatch.
 
 **The only working path** is REST `PUT /rest/api/3/issue/{KEY}` with `{"fields": {customfield_NNNNN: <value-or-ADF>}}` — see the dedicated `SKILL.md` "WORKAROUND" subsection for the turnkey curl recipe and `references/gotchas.md` §4 for the wire-level detail. Both use the session env vars `$ATLASSIAN_EMAIL` and `$ATLASSIAN_API_TOKEN` exported from the shell, plus the host from `bun run --silent jira:url` (read from `.agents/project.yaml`, not from the environment).
 
@@ -318,7 +331,21 @@ acli jira workitem comment create --key "{{PROJECT_KEY}}-123" --body "Updated me
 acli jira workitem comment create --key "{{PROJECT_KEY}}-123" --editor
 ```
 
-`comment create` accepts ADF via `-F, --body-file`. The flag's `--help` text reads "Plain text file with text or Atlassian Document Format (ADF)"; when the file begins with `{`, `acli` forwards the content as ADF. The legacy two-step workaround (create placeholder body → `comment update --body-adf`) is no longer required as of `acli` v1.3.18+. To author rich comments:
+**`acli`'s own `--help` examples for this command are stale — do not copy them.**
+`acli jira workitem comment create --help` prints its examples WITHOUT the
+`create` subcommand:
+
+```bash
+# WRONG — this is what the vendor's --help shows, and it fails
+acli jira workitem comment --key "{{PROJECT_KEY}}-1" --body "..."
+# ✗ unknown flag: --key
+```
+
+`--key` / `--body` / `--body-file` live on `create`, not on the `comment` group,
+so the vendor's own example exits non-zero. Always spell the subcommand. The
+forms in this file are the tested ones; `--help` is the authority when they disagree.
+
+`comment create` accepts ADF via `-F, --body-file`. The flag's `--help` text reads "Plain text file with text or Atlassian Document Format (ADF)"; when the file begins with `{`, `acli` forwards the content as ADF. To author rich comments:
 
 ```bash
 bun .agents/skills/acli/scripts/md-to-adf.ts notes.md notes.adf.json
@@ -386,6 +413,8 @@ produces "**Y** depends on **X**" — i.e. **Y becomes the outward party**, **X 
 - `--in` takes the **dependent** (the issue that depends on / blocks / is caused by / duplicates)
 
 #### Per-link-type quick reference
+
+Illustrative rows for the built-in link types; the live set of a site is `.agents/jira-link-types.json` (resolve by slug).
 
 | Type            | Outward desc.        | Inward desc.            | `--out` takes                | `--in` takes                |
 | --------------- | -------------------- | ----------------------- | ---------------------------- | --------------------------- |
@@ -470,6 +499,20 @@ acli jira workitem link delete --from-csv link-ids.csv --yes
 
 Flags: `--id`, `--from-csv`, `--from-json`, `--ignore-errors`, `--yes`. No work-item selector — operates on link IDs directly.
 
+**Deletion is the only way to fix a link's direction.** Jira dedupes a link
+between the same pair and the same type regardless of direction, so adding the
+corrected link on top of a wrong one is a **silent no-op**: no error, no new
+link, nothing changed. Anyone "repairing" direction by creating a second link
+achieves exactly nothing and has no way to notice. The sequence is: read the id
+(`link list --key <KEY> --json`), delete it, then create the link the right way
+round, then verify. Measured on a live instance while repairing coverage links.
+
+> Under Modality jira-xray the Story↔test-artifact coverage link is owned by
+> `/xray-cli`, which has its own delete + recreate pair and a traceability gate
+> that prints the offending link id. Use this command for the Jira-layer link
+> types `/acli` owns; do not repair a coverage link from here without reading
+> that skill's direction statement first.
+
 ### Linking an external URL via remote link
 
 `acli` does not expose remote-link (web link) creation. To attach a URL (e.g. a GitHub PR) to a story, fall back to REST:
@@ -497,7 +540,7 @@ acli jira workitem attachment list --key "{{PROJECT_KEY}}-123" --json
 acli jira workitem attachment delete --key "{{PROJECT_KEY}}-123" --id 12345
 ```
 
-Upload is not yet covered by the CLI — use REST (`POST /rest/api/3/issue/{key}/attachments`).
+Upload is not covered by the CLI — use REST (`POST /rest/api/3/issue/{key}/attachments`).
 
 ## <a id="watcher"></a>watcher
 
@@ -566,7 +609,7 @@ Three things to internalize:
 | User picker      | `{"accountId": "5b10ac8d82e05b22cc7d4ef5"}`                                                                                             |
 | Cascading select | `{"value": "Parent", "child": {"value": "Child"}}`                                                                                      |
 | Rich text (ADF)  | full ADF doc tree (same shape as `description`). Produce the tree from Markdown via `scripts/md-to-adf.ts`, then nest the result inside `additionalAttributes` for `create`, or inside `{"fields": {...}}` for a REST `PUT` on an existing item. See "Publishing rich text" in `SKILL.md`. |
-| Sprint           | array of sprint IDs `[5]` — but **`JRACLOUD-97107` makes this fail in practice**, see [Sprint field cannot be set](./gotchas.md#sprint) |
+| Sprint           | array of sprint IDs `[5]` — but **this fails in practice (`JRACLOUD-97107` when this was written)**, see [Sprint field cannot be set](./gotchas.md#sprint) |
 
 If a shape isn't listed here, the safest source of truth is `acli jira workitem view <KEY-WITH-FIELD-SET> --fields "*all" --json` — the read shape is usually identical to the write shape for that field type.
 
