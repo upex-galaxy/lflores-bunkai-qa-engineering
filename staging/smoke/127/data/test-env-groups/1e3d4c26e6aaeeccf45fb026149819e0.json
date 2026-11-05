@@ -1,0 +1,1 @@
+{"id":"1e3d4c26e6aaeeccf45fb026149819e0","fullName":"integration/capability/enforceCapabilityGate.test.ts:196:3","name":"BK-499: should pass given PAT holds required scope given viewer role","status":"passed","testResultsByEnv":{"default":"e6c1a2f62cf8d5236afe0f7b12554d33"}}
