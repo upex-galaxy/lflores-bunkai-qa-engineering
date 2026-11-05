@@ -5,23 +5,30 @@
   "perComponentCommit": {
     "skills": "06947fa1e0e334db64660502d83620ec11b6210a",
     "commands": "06947fa1e0e334db64660502d83620ec11b6210a",
-    "scripts": "06947fa1e0e334db64660502d83620ec11b6210a",
+    "scripts": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
     "docs": "06947fa1e0e334db64660502d83620ec11b6210a",
-    "cli": "57a2dfdfc1ecaf50b569114e328908e14e211aea",
-    "vscode": "c7605d0eec5ba9cd53d8960f130a879524e58ea1",
-    "husky": "06947fa1e0e334db64660502d83620ec11b6210a",
-    "agents-docs": "06947fa1e0e334db64660502d83620ec11b6210a",
+    "cli": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
+    "vscode": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
+    "husky": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
+    "agents-docs": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
     "claude-config": "06947fa1e0e334db64660502d83620ec11b6210a",
-    "tooling": "57a2dfdfc1ecaf50b569114e328908e14e211aea",
-    "env-template": "06947fa1e0e334db64660502d83620ec11b6210a",
-    "agent-compatibility": "06947fa1e0e334db64660502d83620ec11b6210a",
-    "codex-config": "06947fa1e0e334db64660502d83620ec11b6210a",
-    "agent-root-config": "06947fa1e0e334db64660502d83620ec11b6210a"
+    "tooling": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
+    "env-template": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
+    "agent-compatibility": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
+    "codex-config": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
+    "agent-root-config": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
+    "instructions": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
+    "config-core": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
+    "tests-utils": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
+    "env-schema": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
+    "worktree-include": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
+    "orca-config": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
+    "playwright-cli-config": "3c17f9a972b3e1888154278a1f78938cdf7ed398"
   },
   "syncedComponents": [],
   "ignoreFileSync": {
     ".gitignore": {
-      "lastSyncedSha": "a293ad9759098669d09ad4106f2e96acb2c11187",
+      "lastSyncedSha": "3c8c958c485266512b91153a279a7691af0469f5",
       "appendedLines": [
         "**/evidence/",
         ".template/claude-md.upstream.sha",
@@ -47,7 +54,26 @@
         ".agents/skills/playwright-best-practices/",
         ".agents/skills/resend-cli/",
         "!skills-lock.json",
-        "!**/skills-lock.json"
+        "!**/skills-lock.json",
+        ".playwright/profiles/",
+        ".playwright-cli/",
+        "storage-state-*.json",
+        "!.env.schema",
+        "!.env.core.schema",
+        "!.env.provider.schema",
+        "env.d.ts",
+        ".template/doctrine-ledger.json",
+        ".template/last-apply.json",
+        ".context/*",
+        "!.context/README.md",
+        "!.context/project-config.md",
+        "!.context/ADR/",
+        "!.context/regression-history/",
+        "!.context/sprint/",
+        "!.context/reports/",
+        "!.context/PBI/",
+        ".agents/skills/skill-creator/",
+        ".agents/skills/diagram-design/"
       ]
     },
     ".prettierignore": {
@@ -72,7 +98,7 @@
   "packageJsonSync": {
     "package.json": {
       "scripts": {
-        "lastSyncedSha": "f043848877ffcc7e5865cedd022766333074efcc",
+        "lastSyncedSha": "a2437fcbd9d7234155384a0d12bf201a288d2450",
         "appliedKeys": [
           "vars:env:check",
           "env",
@@ -83,26 +109,54 @@
           "tests:map",
           "agents:compat",
           "agents:compat:check",
-          "codex"
+          "codex",
+          "agents:schema",
+          "agents:schema:check",
+          "board",
+          "board:check",
+          "board:up",
+          "browser:profiles",
+          "context:coverage",
+          "context:map",
+          "docs",
+          "docs:build",
+          "docs:check",
+          "env:set",
+          "evidence",
+          "harness:env",
+          "harness:env:check",
+          "instructions:audit",
+          "instructions:check",
+          "jira:baseline",
+          "shared:check",
+          "skills:evals",
+          "sync",
+          "tests:explain:render",
+          "vars:schema",
+          "vars:schema:check",
+          "worktree:audit",
+          "worktree:provision",
+          "xray:payload"
         ]
       },
       "devDependencies": {
-        "lastSyncedSha": "f043848877ffcc7e5865cedd022766333074efcc",
+        "lastSyncedSha": "a2437fcbd9d7234155384a0d12bf201a288d2450",
         "appliedKeys": [
-          "allure-js-commons"
+          "allure-js-commons",
+          "varlock"
         ]
       },
       "dependencies": {
-        "lastSyncedSha": "f043848877ffcc7e5865cedd022766333074efcc",
+        "lastSyncedSha": "a2437fcbd9d7234155384a0d12bf201a288d2450",
         "appliedKeys": []
       },
       "lint-staged": {
-        "lastSyncedSha": "f043848877ffcc7e5865cedd022766333074efcc",
+        "lastSyncedSha": "a2437fcbd9d7234155384a0d12bf201a288d2450",
         "appliedKeys": []
       }
     }
   },
-  "cliVersion": "7.0",
-  "lastSyncedAt": "2026-09-02T21:23:04.980Z",
+  "cliVersion": "8.5",
+  "lastSyncedAt": "2026-11-04T23:33:57.223Z",
   "variableSystemVersion": 1
 }

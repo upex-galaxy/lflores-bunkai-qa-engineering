@@ -4,7 +4,7 @@ Load during Phase 1 (Plan) of the Plan → Code → Review pipeline. Covers the 
 
 Scope-selection rules (which scope to pick, the one-line summary of each) live in SKILL.md §"Pick the planning scope first". This file assumes the scope has been chosen and documents what to produce.
 
-> **Two plans, do not confuse them.** This playbook authors the **automation plan** (`automation-plan.md`) — a NON-Jira, hand-authored file living in the Epic's `test-specs/<scope>/` tree (committed to git). It is NOT the Story's dev `implementation-plan.md`, which is a Jira-synced, read-only per-field cache in the Story folder (`.context/PBI/epics/EPIC-<KEY>-<slug>/stories/STORY-<KEY>-<slug>/implementation-plan.md`) — read that as input via `bun run jira:sync-issues get <STORY-KEY>`, never hand-write it. The automation plan was historically named `implementation-plan.md`; it is renamed to `automation-plan.md` to avoid colliding with the Jira-synced dev plan.
+> **Two plans, do not confuse them.** This playbook authors the **automation plan** (`automation-plan.md`) — a NON-Jira, hand-authored file living in the Epic's `test-specs/<scope>/` tree (committed to git). It is NOT the Story's dev `implementation-plan.md`, which is a Jira-synced, read-only per-field cache in the Story folder (`.context/PBI/epics/EPIC-<KEY>-<slug>/stories/STORY-<KEY>-<slug>/implementation-plan.md`) — read that as input via `bun run jira:sync-issues get <STORY-KEY>`, never hand-write it. The automation plan is named `automation-plan.md` precisely so it cannot be confused with the Jira-synced dev plan.
 
 > **Path model.** All `test-specs/` artifacts live at the **Epic** level: `.context/PBI/epics/EPIC-<KEY>-<slug>/test-specs/` (sibling of `stories/`). Module = Epic (1:1). `<scope>` = the ticket/regression slug or module slug.
 
@@ -21,9 +21,8 @@ Goal: Produce spec.md + automation-plan.md for scope <SCOPE> (module|ticket|ATC)
 Context docs:
   - kata-manifest.json (root) — REQUIRED FIRST READ. Authoritative registry of every existing Component + ATC. Use it for reuse detection and ID-collision avoidance before drafting anything.
   - .context/PBI/epics/EPIC-<KEY>-<slug>/stories/STORY-<KEY>-<slug>/ (Jira-synced caches: story.md, acceptance-criteria.md, implementation-plan.md (dev plan), acceptance-test-plan.md — READ-ONLY input; materialize via `bun run jira:sync-issues get <STORY-KEY> --include-comments`)
-  - .context/master-test-plan.md
-  - .context/business/business-data-map.md
-  - .context/business/business-feature-map.md
+  - .context/PBI/qa-artifacts/master-test-plan.md
+  - `bun run context:map business-data-context` and `bun run context:map business-e2e-context` (per touched level; add `business-api-context` for API scope; `--section <id>` for one entity, journey or endpoint group)
   - .agents/skills/test-automation/references/kata-architecture.md
   - .agents/skills/test-automation/references/atc-tracing.md
   - tests/components/<api|ui>/ (existing components — open ONLY when the manifest entry is ambiguous)
@@ -43,6 +42,7 @@ Rules:
   - Apply ATC-identity rule (same output = one parameterized ATC).
   - Do NOT write actual test code — only spec + plan.
   - Surface open questions to the orchestrator instead of guessing.
+  - Plan ONLY the TCs that passed the TC source gate (SKILL.md §"TC source gate"): each exists in the TMS with a signed `Candidate` verdict. Never create, derive or score a TC; a missing one is an open question routed to /test-documentation.
 ```
 
 The orchestrator reads the JSON report, surfaces open_questions to the user if any, and only proceeds to Code dispatch after user approval.
@@ -53,7 +53,7 @@ The orchestrator reads the JSON report, surfaces open_questions to the user if a
 
 Three document types, each tied to a scope. Every scope produces at least `spec.md`; ticket and regression scopes add `automation-plan.md`; complex ATCs add per-ATC specs under `atc/`. All live at the Epic level under `.context/PBI/epics/EPIC-<KEY>-<slug>/test-specs/`.
 
-`test-specs/` is the one `[COMMIT]` island inside an otherwise gitignored Jira cache (`AGENTS.md` §9). These files describe the **test code**: they must land in the same commit as the code they produce, or a reviewer cannot contrast plan against implementation. That is also the line that decides what belongs here — a Jira `Test` issue holds the test case, an `atc/*.md` holds how to implement it in KATA. Same ID, two documents, two owners.
+`test-specs/` is the one `[COMMIT]` island inside an otherwise gitignored Jira cache (`.agents/instructions/agent-local-context-pbi.md`). These files describe the **test code**: they must land in the same commit as the code they produce, or a reviewer cannot contrast plan against implementation. That is also the line that decides what belongs here — a Jira `Test` issue holds the test case, an `atc/*.md` holds how to implement it in KATA. Same ID, two documents, two owners.
 
 | Document | Scope that produces it | Location |
 |----------|-----------------------|----------|
@@ -78,17 +78,17 @@ Canonical folder naming:
 
 Inputs:
 
-- Module name or feature area (`"Orders Dashboard"`, `"Billing"`).
+- Module name or feature area (`"Orders Dashboard"`, `"Billing"`), and the module's signed `Candidate` TCs from `/test-documentation` (the TC source gate's list). This scope designs the automation of those TCs, never the TCs themselves.
 - Any stakeholder input: meeting transcript, priority list, known regressions.
 - Access to frontend and backend source for the module.
-- Access to `.context/` docs (business-data-map, api-architecture, existing PBI).
+- Access to the business context maps (`bun run context:map <slug>`) and the existing PBI under `.context/PBI/`.
 
 Outputs:
 
 ```
 .context/PBI/epics/EPIC-<KEY>-<slug>/
-  {module}-test-plan.md          # Master document (Section 4)
   test-specs/
+    {module}-test-plan.md         # Master document (Section 5)
     ROADMAP.md                    # Ticket index, phases, dependency graph
     PROGRESS.md                   # Session-persistent tracker
     {PREFIX}-T01-{name}/spec.md   # 3–7 TCs per ticket
@@ -117,11 +117,11 @@ Outputs:
 
 Expected TC count: 1–7 per ticket (story-driven).
 
-### 2.3 Regression-driven (micro)
+### 2.3 Micro (bug-driven or discovery-driven)
 
 Inputs:
 
-- A single TC (often added after a bug fix) or a focused coverage gap.
+- A single signed `Candidate` TC (often added after a bug fix), or the one signed TC of a coverage gap (origin `discovery-driven`, `../../agentic-qa-core/references/discovery-driven-doctrine.md` §2).
 - Target component (existing or new).
 - Module name for folder placement.
 
@@ -129,25 +129,27 @@ Outputs:
 
 ```
 .context/PBI/epics/EPIC-<KEY>-<slug>/test-specs/{PREFIX}-T{NN}-{name}/
-  spec.md                # 1–3 TCs (bug-driven) or 1–2 (gap-driven)
+  spec.md                # 1–3 TCs (bug-driven) or 1–2 (discovery-driven gap)
   automation-plan.md     # Optional — skip when the spec is trivially one method
   atc/{TICKET-ID}-{brief-title}.md  # Usually present — regression = one ATC in detail
 ```
 
-A regression-driven plan is the smallest unit of work. Often it is just `spec.md` + `atc/*.md`, no automation plan, because one ATC is the whole body of work.
+A Micro plan is the smallest unit of work. Often it is just `spec.md` + `atc/*.md`, no automation plan, because one ATC is the whole body of work.
 
 ---
 
-## 3. TMS-first principle (applies to every scope)
+## 3. TMS-first principle: consume, never create (applies to every scope)
 
-TCs in `spec.md` must reference TMS-generated IDs, never local-only IDs. Before writing TCs:
+TCs in `spec.md` must reference TMS-generated IDs, never local-only IDs, and every one of them must have passed the TC source gate (SKILL.md §"TC source gate"). Before writing TCs:
 
 > **Prerequisite**: Load `/xray-cli` skill (Modality jira-xray) or `/acli` (Modality jira-native) before executing the TMS commands below.
 
 1. Query the TMS for tests already linked to the ticket (via `[TMS_TOOL] List Tests` — resolve per AGENTS.md Tool Resolution).
-2. **If TCs exist** — consume them as the base for `spec.md`; do not duplicate.
-3. **If TCs are missing** — create them in the TMS first (`[TMS_TOOL] Create Test`), capture the returned IDs, then write `spec.md`.
-4. **If partial** — consume what exists, create the gaps in TMS, write `spec.md` with the combined set.
+2. **If every TC exists with a signed `Candidate` verdict** — consume them as the base for `spec.md`; do not duplicate.
+3. **If TCs are missing, unsigned, or not `Candidate`** — STOP. Route the scope (Story key, coverage Tech Story key, or gap ids) to `/test-documentation`, which runs Analyze → Prioritize (ROI) → Document and collects the person's signature. This skill never creates a Test (`[TMS_TOOL] Create Test` is not one of its calls) and never scores one.
+4. **If partial** — the person decides: route the rest and wait, or narrow the work package to the signed TCs now. Never fill the gap here.
+
+> A Test that enters the regression repository without a signed ROI verdict is the back door this rule closes: it skips the >50% Candidate/Manual alarm and the person's signature (`../../agentic-qa-core/references/stage-gates.md` §Automation).
 
 Local `{PREFIX}-T{NN}` naming is filesystem scaffolding. All TC headings inside `spec.md` use the TMS IDs (`### PROJ-101: should ...`). The same IDs become `@atc('PROJ-101')` decorators during the Code phase.
 
@@ -157,7 +159,7 @@ Local `{PREFIX}-T{NN}` naming is filesystem scaffolding. All TC headings inside 
 
 The spec is the **automation batch plan**: which TCs this scope automates, in what order, and what they share. It does NOT restate the test cases.
 
-> **Why it stopped carrying the Gherkin.** The TC body — preconditions, action, expected output, Gherkin — lives in the Jira `Test` issue, and `bun run jira:sync-issues` now materializes every Test linked to a Story into `test-cases/TEST-<KEY>-<slug>.md` under that Story. Copying it here too put the same text on disk twice, and the copy nobody re-synced was the one people read. Reference the TMS ID; the body is one sync away.
+> **Why it does not carry the Gherkin.** The TC body — preconditions, action, expected output, Gherkin — lives in the Jira `Test` issue, and `bun run jira:sync-issues` materializes every Test linked to a Story into `test-cases/TEST-<KEY>-<slug>.md` under that Story. Copying it here too put the same text on disk twice, and the copy nobody re-synced was the one people read. Reference the TMS ID; the body is one sync away.
 
 > **Reference TCs by Jira key, never by path.** Folder slugs are derived from issue summaries, so a Story retitled in Jira renames its folder and breaks every hardcoded link — relative or aliased. The key is the only stable identifier.
 
@@ -211,7 +213,7 @@ any of these run — distinct from a single TC's own preconditions, which live i
 
 Rules for `spec.md`:
 
-- Every row in the Test Cases table carries a **TMS-generated ID**. A local-only ID means the TC was never created in the TMS — go create it first (§3).
+- Every row in the Test Cases table carries a **TMS-generated ID** with a signed `Candidate` verdict. A local-only ID means the TC was never documented: route it to `/test-documentation` (§3), never create it here.
 - Do NOT paste the Gherkin, the steps, or the expected output. If you find yourself explaining what a TC verifies, that belongs in the Jira issue.
 - Multi-step flows (2+ actions with intermediate verifications) are flagged as multi-ATC tests, not a single TC.
 - Priority levels: P0 (release-blocker), P1 (high value), P2 (edge cases).
@@ -221,7 +223,7 @@ Rules for `spec.md`:
 
 ## 5. Module-scope master document (`{module}-test-plan.md`)
 
-Module scope alone produces this master doc in addition to the per-ticket specs. It is the single source of truth for module-level context that every ticket spec will reference.
+Module scope alone produces this master doc in addition to the per-ticket specs, at `.context/PBI/epics/EPIC-<KEY>-<slug>/test-specs/{module}-test-plan.md` (inside the committed `test-specs/` island; anywhere else under the Epic folder is gitignored). It is the single source of truth for module-level context that every ticket spec will reference.
 
 Sections, in order:
 
@@ -229,7 +231,7 @@ Sections, in order:
 2. **Module Overview** — what it is, who uses it, how it connects to other modules.
 3. **Page/API Architecture** — visual states, panel layout, conditional rendering, status flows.
 4. **Data Flow & API Endpoints** — all endpoints the page calls, calculation formulas, refresh triggers.
-5. **Test Scenarios (Gherkin)** — organised by functional area, each scenario with Preconditions → Action → Expected.
+5. **TCs in scope** — the module's signed `Candidate` TC keys, organised by functional area. The Gherkin (Preconditions → Action → Expected) lives in each Test's body, written by `/test-documentation`; this document never authors a scenario.
 6. **Implementation Roadmap** — phases ordered P0 → P2 with dependencies between tickets.
 7. **Test Data Strategy** — per-ticket feasibility table (Discover / Modify / Generate — see §7).
 8. **Key Selectors Reference** — CSS selectors or `data-testid` values the automation will target.
@@ -322,7 +324,7 @@ Teardown: ...
 - [ ] No hardcoded waits
 - [ ] Aliases used
 - [ ] Tests pass locally
-- [ ] TMS TC moved to Pull Request on PR open (never "Automated" after local validation — Automated is exclusively the post-merge `merged` transition, once CI is green on main)
+- [ ] TMS TC moved to Pull Request on PR open (never "Automated" after local validation — Automated is exclusively the `merged` transition, once the code is on the production branch with CI green there)
 ```
 
 Implementation-order rule of thumb: each box in Section 6 should map to a single commit. If a commit would mix "new types" and "new ATC", split it.
@@ -366,7 +368,7 @@ Record a feasibility row per ticket inside the plan (module master doc §7 and a
 
 ## 8. `atc/{TICKET-ID}-{brief-title}.md` structure
 
-Produce a per-ATC spec when the ATC is complex enough that the implementation plan cannot carry the detail, or when a regression-driven plan is just one ATC.
+Produce a per-ATC spec when the ATC is complex enough that the implementation plan cannot carry the detail, or when a Micro plan is just one ATC.
 
 Template (abbreviated — full sections below):
 
@@ -511,24 +513,23 @@ On approval, Phase 2 begins. If approval is not forthcoming, revise the plan —
 - [ ] Tickets grouped by functional area (not by page section).
 - [ ] Each ticket has 3–7 TCs; none exceed 10.
 - [ ] Equivalence Partitioning applied across TCs; merges documented.
-- [ ] Every TC has a TMS-generated ID (§3).
+- [ ] Every TC has a TMS-generated ID and a signed `Candidate` verdict (§3); none created here.
 - [ ] ROADMAP.md, PROGRESS.md created.
 - [ ] Data strategy table filled for every ticket (§7).
 
 ### Ticket-driven
 
 - [ ] Story materialized via `bun run jira:sync-issues get <STORY-KEY> --include-comments`; ACs + dev implementation-plan + ATP read from the synced `.md` (NEVER `acli workitem view` for custom fields).
-- [ ] TMS queried for existing tests; missing ones created there first.
+- [ ] TMS queried; every TC in scope passed the TC source gate (missing or unsigned ones routed to `/test-documentation`, never created here).
 - [ ] `spec.md` written with 1–7 TCs.
 - [ ] `automation-plan.md` §3 ATC Registry populated against `kata:manifest` output.
 - [ ] Fixture decision made and justified.
 - [ ] Every precondition classified (§7).
 - [ ] Implementation order written with one commit per step.
 
-### Regression-driven
+### Micro (bug-driven or discovery-driven)
 
-- [ ] Bug or gap is well-understood; the TC that would have caught it is written.
-- [ ] TMS TC exists (1–3 bug, 1–2 gap).
+- [ ] Bug or gap is well-understood; the TC that would have caught it exists in the TMS with a signed `Candidate` verdict (1–3 bug, 1–2 gap). None → `/test-documentation` first.
 - [ ] ATC spec written (`atc/*.md`) because the regression is one method's worth of work.
 - [ ] Data strategy documented on the ATC spec (§8 in the ATC template) since there is often no parent automation-plan.
 - [ ] Component placement decided — existing component vs new + fixture update.
@@ -543,11 +544,13 @@ When `/test-automation` is invoked mid-flow (or resumed after context loss), the
 
 | Has plan? (`automation-plan.md`) | Has test code? (`tests/e2e/**` or `tests/integration/**`) | Resume from |
 |---|---|---|
-| No  | No  | **STEP 2 (Planning)** |
-| Yes | No  | **STEP 3 (Coding)** |
-| Yes | Yes | **STEP 4 (Review)** |
+| No  | No  | **Phase 1 — Plan** |
+| Yes | No  | **Phase 2 — Code** |
+| Yes | Yes | **Phase 3 — Review** |
 
 Before classifying state, read the current ticket in `PROGRESS.md` §Current status to confirm which ticket the resume applies to.
+
+Whatever row the resume lands on, the TC source gate (`../SKILL.md` §"TC source gate") runs FIRST, before Code or Review continue: a plan written before the gate existed, or before a verdict changed, may list TCs that are no longer signed Candidates.
 
 ### 12.1 Revision-loop ceiling (Phase 3 · Review)
 
@@ -559,10 +562,10 @@ Named phase-transition checkpoints. Each gate blocks progression until its crite
 
 | Gate | Between | Criteria |
 |---|---|---|
-| **G1 · Plan exists** | STEP 2 → STEP 3 | `automation-plan.md` created with ATCs defined (see §10 Approval gate) |
-| **G2 · Tests pass** | STEP 3 → STEP 4 | All ATCs green locally — soft override allowed only after §12.3 bug-detection sub-protocol |
-| **G3 · Review OK** | STEP 4 → STEP 5 | Reviewer verdict = APPROVED, or §12.1 ceiling (2 rounds) reached and the user decided next steps |
-| **G4 · Progress updated** | STEP 5 → STEP 6 | `PROGRESS.md` reflects the completed ticket (status, test file path, done count, Session Log entry) |
+| **G1 · Plan exists** | Phase 1 → Phase 2 | `automation-plan.md` created with ATCs defined (see §10 Approval gate) |
+| **G2 · Tests pass** | Phase 2 → Phase 3 | All ATCs green locally — soft override allowed only after §12.3 bug-detection sub-protocol |
+| **G3 · Review OK** | Phase 3 → Archive | Reviewer verdict = APPROVED, or §12.1 ceiling (2 rounds) reached and the user decided next steps |
+| **G4 · Progress updated** | Archive → next ticket | `PROGRESS.md` reflects the completed ticket (status, test file path, done count, Session Log entry) |
 
 ### 12.3 G2 failure protocol — legitimate bugs during automation
 
@@ -582,7 +585,7 @@ If G2 fails because a test uncovers a real product bug (not flaky, not a coding 
    - Once the issue key is issued, apply step 2 above.
 4. **Document in `PROGRESS.md`** — record each blocked test + bug key in the Session Log (and the Blocked tests table, see §13.2) so the next session does not re-investigate the same failure.
 
-Only after steps 1–4 can G2 be overridden and STEP 4 (Review) start. A failing test without a bug key behind it is never an acceptable override.
+Only after steps 1–4 can G2 be overridden and Phase 3 (Review) start. A failing test without a bug key behind it is never an acceptable override.
 
 ---
 

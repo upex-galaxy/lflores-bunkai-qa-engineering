@@ -19,7 +19,7 @@ Everything the official docs do not make obvious. Every item here is something t
 13. [Issue-type resolution is global](#issue-types)
 14. [Comment create accepts ADF via -F](#comment-adf)
 15. [Trace IDs and no verbose mode](#trace)
-16. [The 2026 point-based rate limits](#rate-limits)
+16. [Point-based rate limits](#rate-limits)
 17. [CI install `latest/` risk](#ci-install)
 18. [Naming convention: kebab-case is universal](#naming)
 19. [REST fallback checklist](#rest-fallback)
@@ -79,18 +79,19 @@ Two things to remember about the shape:
 
 This is asymmetric with `acli workitem create`, which **does** accept custom fields via `additionalAttributes`. Many users assume `edit` works the same way; it does not — and the failure is loud, not silent.
 
-**Fix — WORKAROUND via REST PUT** (the only working path as of v1.3.18).
+**Fix — WORKAROUND via REST PUT** (the only working path: `acli` has no native channel for it).
 
-Prerequisites: `ATLASSIAN_EMAIL` and `ATLASSIAN_API_TOKEN` are exported in the current shell. The host is NOT an env var — `bun run --silent jira:url` reads it from `.agents/project.yaml`.
+Prerequisites: `ATLASSIAN_EMAIL` and `ATLASSIAN_API_TOKEN` set in `.env`. They are never exported into the shell: the `curl` runs inside the `.env` loader, which hands them to that one process. The host is NOT an env var — `bun run --silent jira:url` reads it from `.agents/project.yaml`.
 
 ```bash
 # Simple value (number, string, single-select)
-curl -sS -w "\nHTTP %{http_code}\n" \
-  -u "$ATLASSIAN_EMAIL:$ATLASSIAN_API_TOKEN" \
-  -X PUT "$(bun run --silent jira:url)/rest/api/3/issue/{{PROJECT_KEY}}-123" \
-  -H "Accept: application/json" \
-  -H "Content-Type: application/json" \
-  -d '{"fields": {"customfield_NNNN": 8}}'
+bunx varlock run --filter ATLASSIAN_EMAIL,ATLASSIAN_API_TOKEN -- sh -c '
+  curl -sS -w "\nHTTP %{http_code}\n" \
+    -u "$ATLASSIAN_EMAIL:$ATLASSIAN_API_TOKEN" \
+    -X PUT "$(bun run --silent jira:url)/rest/api/3/issue/{{PROJECT_KEY}}-123" \
+    -H "Accept: application/json" \
+    -H "Content-Type: application/json" \
+    -d "{\"fields\": {\"customfield_NNNN\": 8}}"'
 # Expected: HTTP 204 (no body on success)
 ```
 
@@ -123,7 +124,7 @@ curl -s -u "$ATLASSIAN_EMAIL:$ATLASSIAN_API_TOKEN" \
 
 ## <a id="no-admin"></a>6. No admin for workflows, issue types, priorities, resolutions, versions, components
 
-**The problem.** As of v1.3.18, `acli` has zero coverage for these admin/schema surfaces:
+**The problem.** `acli` has no coverage for these admin/schema surfaces (confirm with `acli jira --help`; the CLI ships ahead of its docs):
 
 | Surface                | `acli` coverage                                                        |
 | ---------------------- | ---------------------------------------------------------------------- |
@@ -170,7 +171,7 @@ POST /rest/api/3/field/{fieldId}/option
 
 ## <a id="sprint"></a>8. Sprint field cannot be set
 
-**The problem.** There is no working way to add a work item to a sprint via `acli`. Community attempts using `--from-json` with either a sprint ID or a sprint name fail ("Number value expected as the Sprint id", "failed to generate JSON"). Atlassian tracks this as `JRACLOUD-97107`.
+**The problem.** There is no working way to add a work item to a sprint via `acli`. Community attempts using `--from-json` with either a sprint ID or a sprint name fail ("Number value expected as the Sprint id", "failed to generate JSON"). Atlassian tracked this as `JRACLOUD-97107` when this was written.
 
 `acli jira sprint create / update / view / delete` do exist — you can manage the sprint container itself — but moving tickets in/out of one is REST-only.
 
@@ -247,11 +248,9 @@ The global `acli auth login` (interactive OAuth) is the exception — it covers 
 
 **Fix.** In sites with heavy team-managed project use, fall back to REST with an explicit issue-type ID for the project. Or consolidate issue-type names across projects.
 
-## <a id="comment-adf"></a>14. `comment create` accepts ADF via `-F` (previous claim was outdated)
+## <a id="comment-adf"></a>14. `comment create` accepts ADF via `-F`
 
-**Previous claim (incorrect for v1.3.18+).** Older skill documentation stated `comment create` had no ADF input and required a two-step workaround: create placeholder body → `comment update --body-adf`. This was based on `comment update` having a dedicated `--body-adf` flag while `comment create` had only `--body` and `--body-file`.
-
-**Current behavior.** `comment create -F <file>` (alias `--body-file <file>`) accepts both plain text and ADF JSON. The flag's `--help` text states: "Plain text file with text or Atlassian Document Format (ADF)". When the file content begins with a JSON object (`{`), `acli` forwards it as ADF to the underlying REST call. Validated against Jira Cloud on `acli` v1.3.18.
+`comment create -F <file>` (alias `--body-file <file>`) accepts both plain text and ADF JSON. The flag's `--help` text states: "Plain text file with text or Atlassian Document Format (ADF)". When the file content begins with a JSON object (`{`), `acli` forwards it as ADF to the underlying REST call. Validated against Jira Cloud on `acli` v1.3.18.
 
 The plain `-b, --body` flag remains plain text only — Markdown syntax is stored literally as a single ADF paragraph.
 
@@ -262,14 +261,12 @@ bun .agents/skills/acli/scripts/md-to-adf.ts notes.md notes.adf.json
 acli jira workitem comment create --key {{PROJECT_KEY}}-123 -F notes.adf.json
 ```
 
-The legacy two-step pattern still works and may be useful if you want a placeholder visible before composing the final body:
+A two-step pattern also works, when you want a placeholder visible before composing the final body:
 
 ```bash
 CID=$(acli jira workitem comment create --key {{PROJECT_KEY}}-123 --body "init" --json | jq -r '.id')
 acli jira workitem comment update --key {{PROJECT_KEY}}-123 --id "$CID" --body-adf formatted.json
 ```
-
-It is no longer required for rich-text creation.
 
 ## <a id="trace"></a>15. Trace IDs are the only debug signal
 
@@ -277,9 +274,9 @@ It is no longer required for rich-text creation.
 
 **Fix.** Always capture stderr in logs. For single-command errors, one trace ID; for bulk, multiple IDs — one per failed item. When opening a support case, include every trace ID you saw.
 
-## <a id="rate-limits"></a>16. 2026 point-based rate limits
+## <a id="rate-limits"></a>16. Point-based rate limits
 
-**Coming change.** Atlassian is rolling out per-org point buckets (65k–500k points per hour depending on plan tier) across the REST API that `acli` calls under the hood. A batch `--jql`-scoped edit over thousands of items can burn the whole hourly budget in one shot and produce 429s for the rest of the hour.
+Atlassian's point-based rate limits (per-org point buckets; see the vendor docs for the current buckets) apply to the REST API that `acli` calls under the hood. A batch `--jql`-scoped edit over thousands of items can burn the whole hourly budget in one shot and produce 429s for the rest of the hour.
 
 **Fix.** For sweeping operations:
 
@@ -313,7 +310,7 @@ The flag _value_ may still use camelCase (e.g. CSV column header `projectKey` or
 
 ## <a id="rest-fallback"></a>19. When to fall back to REST
 
-`acli` does not (yet) cover:
+`acli` does not cover (confirm with `acli <path> --help` before falling back):
 
 - Adding work items to a sprint (`POST /rest/agile/1.0/sprint/{sprintId}/issue`)
 - Editing custom-field values on existing work items (`PUT /rest/api/3/issue/{key}` with `{"fields":{...}}`)
@@ -340,4 +337,4 @@ curl -s -H "Authorization: Basic $AUTH" -H "Content-Type: application/json" \
 
 ## Meta-gotcha: documentation dates
 
-Every command-reference page on `developer.atlassian.com/cloud/acli/` shows "Last updated" dates from 2024–2025. The CLI ships updates more often than the docs — when `acli --help` shows a flag that isn't in the online docs, the CLI is the source of truth. As of this writing the binary (v1.3.18) is meaningfully ahead of the public Reference docs in several groups: `board`, `sprint`, `filter`, `field` all have subcommands the docs omit.
+Every command-reference page on `developer.atlassian.com/cloud/acli/` shows "Last updated" dates from 2024–2025. The CLI ships updates more often than the docs — when `acli --help` shows a flag that isn't in the online docs, the CLI is the source of truth. The binary runs ahead of the public Reference docs in several groups (subcommands `--help` shows and the docs omit); trust `--help`.

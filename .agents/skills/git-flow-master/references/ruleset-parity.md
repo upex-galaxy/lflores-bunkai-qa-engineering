@@ -2,7 +2,7 @@
 
 `git_strategy` in `.agents/project.yaml` says what the team decided. The host says what is actually enforced. This file owns the mapping between them and the tool that reconciles it: `bun run git:policy`.
 
-> **Why a tool and not a procedure.** SKILL.md Step 1b has always specified this reconciliation in prose, for an agent to carry out by hand. It kept not happening. The boilerplate itself shipped `require_pr_reviews: 0` against a host demanding one approval plus a code-owner review, and nobody noticed until a merge was refused with `the base branch policy prohibits the merge`. A script performs every query on every run, which is the one property prose cannot guarantee.
+> **Why a tool and not a procedure.** A script performs every query on every run, which is the one property prose cannot guarantee.
 
 ---
 
@@ -11,7 +11,7 @@
 | Command | Reads host | Writes host | Writes yaml | Exit |
 | --- | --- | --- | --- | --- |
 | `bun run git:policy plan` | no | no | no | 0 |
-| `bun run git:policy verify` | yes | no | no | **1 on unaccepted drift**; 0 in parity, when every drift is ACCEPTED (§2b), or when the host is unreachable (warned, not verified) |
+| `bun run git:policy verify` | yes | no | no | **1 on unaccepted drift**; 0 in parity, when every drift is ACCEPTED (§2b), when the host is unreachable or there is no GitHub origin (warned, not verified), or while `meta.strategy_source` is `inherited` (drift printed as warnings) |
 | `bun run git:policy verify --stamp` | yes | no | `meta.policy_verified` + `policy_source` (`verified`, or `accepted` when accepted divergences exist) when clean | same |
 | `bun run git:policy apply` | yes | no (dry run) | no | 0 / 1 (unreachable host is fatal — an empty reading would derive a payload that drops every host rule) |
 | `bun run git:policy apply --yes` | yes | **yes** | no | 0 / 1 |
@@ -72,7 +72,7 @@ Effects:
 - **`verify` flags stale entries** — an accepted divergence that no longer matches any drift is reported as a NOTE so the list cannot accumulate dead exceptions.
 - **`apply`** preserves the host's side of the accepted field instead of deriving its own (for `direct_push_to_protected`: the host's `pull_request` rule is carried forward verbatim), so applying never bulldozes an accepted divergence.
 
-Acceptance is per-field and needs a reason. It is the yaml-native replacement for burying the sign-off in prose only this repo's `AGENTS.md` could hold.
+Acceptance is per-field and needs a reason. It is the yaml-native replacement for burying the sign-off in prose only this repo's own instructions could hold.
 
 ---
 
@@ -82,7 +82,7 @@ Acceptance is per-field and needs a reason. It is the yaml-native replacement fo
 
 **`CODEOWNERS`.** The tool derives `require_code_owner_review` from whether the file exists rather than reading it from yaml. Turning that flag on without the file produces a requirement **nobody outside the bypass list can ever satisfy** — the merge is refused, and the only way through is a bypass, which is strictly worse than no rule. `verify` reports that combination as drift with a named remedy.
 
-**Organisation-level rulesets.** `GET /orgs/{org}/rulesets` returns `403 Upgrade to GitHub Team` on a Free plan, so the unit of configuration here is the repository. A team that later gets org rulesets should treat this tool as the per-repo layer beneath them.
+**Organisation-level rulesets.** Org-level rulesets may be unavailable on the repo's plan (`GET /orgs/{org}/rulesets` answers `403` there), so the unit of configuration here is the repository. A team that later gets org rulesets should treat this tool as the per-repo layer beneath them.
 
 **Classic branch protection.** `verify` READS it, because a `404` on `branches/{b}/protection` means "not configured through that mechanism", never "unprotected". `apply` never writes it: mixing both mechanisms on one branch produces a union nobody can reason about.
 
@@ -96,7 +96,7 @@ Acceptance is per-field and needs a reason. It is the yaml-native replacement fo
 - removes the `pull_request` rule entirely (direct pushes become possible);
 - lowers `required_approving_review_count`;
 - turns off `require_code_owner_review`;
-- permits a merge method the host currently forbids.
+- permits a merge method the host forbids.
 
 A tool that can silently open `main` is a worse problem than the drift it fixes. The flag exists because some of these are legitimate and intended — turning off an unsatisfiable code-owner requirement, for instance — but each one has to be asked for.
 
@@ -110,7 +110,7 @@ A tool that can silently open `main` is a worse problem than the drift it fixes.
 
 **`verify` also runs automatically**: the pre-push hook and `bun run repo:check` both invoke it, so unaccepted drift blocks a push instead of escaping out the back door. Unreachable host = warn + exit 0 there (see §1).
 
-**Never `apply` to fix a `verify` failure you have not read.** Drift has three legitimate resolutions and only one of them is "change the host": the yaml may be the wrong side, or the divergence may be intended — in which case record it in `git_strategy.policy.accepted_divergences` (§2b) with a reason, and summarize the WHY in the project's `AGENTS.md` → `## Git Strategy` if it needs prose context.
+**Never `apply` to fix a `verify` failure you have not read.** Drift has three legitimate resolutions and only one of them is "change the host": the yaml may be the wrong side, or the divergence may be intended — in which case record it in `git_strategy.policy.accepted_divergences` (§2b) with a reason, and summarize the WHY in the project's own `.agents/instructions/agent-project.md` → `## Git Strategy (this repository)` if it needs prose context.
 
 ---
 

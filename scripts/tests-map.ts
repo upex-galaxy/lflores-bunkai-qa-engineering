@@ -27,6 +27,8 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 
+import { checkoutRoots } from '../cli/lib/worktree.ts';
+
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -597,6 +599,19 @@ Options:
   help           Show this message
 `;
 
+/**
+ * The shell command that opens a file in the default application, per platform.
+ *
+ * Printed, never executed — `open` is macOS-only, so hardcoding it handed a
+ * Linux or Windows reader a command their shell does not have.
+ * `scripts/onboarding.ts` runs the same three-way split for the spawn it does.
+ */
+function openCommand(): string {
+  if (process.platform === 'darwin') { return 'open'; }
+  if (process.platform === 'win32') { return 'start'; }
+  return 'xdg-open';
+}
+
 function main(): void {
   const args = process.argv.slice(2);
   if (args.includes('help') || args.includes('--help')) {
@@ -610,6 +625,14 @@ function main(): void {
   const asJson = args.includes('--json');
 
   const pbiRoot = join(process.cwd(), '.context', 'PBI');
+  // The cache is gitignored, so each checkout has its own. In a worktree a
+  // green map can describe a partial or empty cache while the primary's is
+  // full, and nothing else says which one was read.
+  const roots = checkoutRoots(process.cwd());
+  if (roots?.linked === true) {
+    log.warn(`Linked worktree: this map reads THIS checkout's .context/PBI/, not the primary's (${roots.primaryRoot}).`);
+    log.info('Run `bun run context:hydrate` here first, or run this command in the primary checkout.');
+  }
   const model = loadPbiTree(pbiRoot);
   if (!model) {
     // Cold clone or never-hydrated cache: not an error, just nothing to map.
@@ -647,7 +670,7 @@ function main(): void {
       },
     }, null, 2));
   }
-  log.info(`Open it: open ${outPath}`);
+  log.info(`Open it: ${openCommand()} ${outPath}`);
 }
 
 export {

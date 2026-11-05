@@ -1,22 +1,40 @@
 ---
 name: bug-screenshot-annotation
-description: "Turns a raw bug screenshot into a QA-style annotated evidence image — circles/ovals around the broken region, arrows, callout text boxes, a 'BUG — <KEY>' corner badge, and axis tick-marks for date/offset bugs. Use whenever a bug is visual or positional (overlapping elements, misalignment, wrong date/offset on a chart axis, a UI element in the wrong place) and a plain screenshot would need a paragraph to explain what's wrong — the annotated image should make the defect obvious at a glance, the way a QA engineer would mark it up with Snagit or Markup. Triggers on: annotate bug screenshot, mark up evidence, add circles/arrows to screenshot, clarify this bug visually, anota este bug, marca la captura, resalta el bug en la imagen. Runs 100% locally (HTML+CSS overlays rendered via a loopback-only HTTP server and captured with playwright-cli) — do NOT use for photos of physical objects or documents where the fix is inherent to an external image-editing/generative service; this skill only knows how to overlay shapes on a screenshot you already have on disk. Do NOT use for filing the bug itself (that's sprint-testing Stage 2/3) or for routine before/after screenshots that already read clearly without markup — this skill is for the specific case where a raw screenshot alone doesn't communicate the defect."
+description: "Turns a raw bug screenshot into a QA-style annotated evidence image — circles/ovals around the broken region, arrows, callout text boxes, a 'BUG — <KEY>' corner badge, and axis tick-marks for date/offset bugs. Use whenever a bug is visual or positional (overlapping elements, misalignment, wrong date/offset on a chart axis, a UI element in the wrong place) and a plain screenshot would need a paragraph to explain what's wrong — the annotated image should make the defect obvious at a glance, the way a QA engineer would mark it up with Snagit or Markup. Triggers on: annotate bug screenshot, mark up evidence, add circles/arrows to screenshot, clarify this bug visually, anota este bug, marca la captura, resalta el bug en la imagen. Runs 100% locally (HTML+CSS overlays rendered via a loopback-only HTTP server and captured with playwright-cli) — do NOT use for photos of physical objects or documents where the fix is inherent to an external image-editing/generative service; this skill only knows how to overlay shapes on a screenshot you already have on disk. Do NOT use for filing the bug itself (that's sprint-testing Execution and Reporting) or for routine before/after screenshots that already read clearly without markup — this skill is for the specific case where a raw screenshot alone doesn't communicate the defect."
 license: MIT
 compatibility: [claude-code, copilot, cursor, codex, opencode]
+metadata:
+  kind: workflow
 ---
 
 # Bug Screenshot Annotation
 
-Reference/utility skill (same tier as `/playwright-cli`): loaded INSIDE the subagent that is already executing a testing stage — it does not spawn agents of its own and has no dispatch strategy. Typical caller: `/sprint-testing` Stage 2, when a bug found during exploration is visual/positional (see `../sprint-testing/references/exploration-patterns.md` §"Bugs found during exploration").
+A workflow skill (`metadata.kind: workflow`) with no dispatch of its own: it is loaded INSIDE the subagent that is already executing a testing stage, spawns no agents, and is not a stage owner. Typical caller: `/sprint-testing` Execution, when a bug found during exploration is visual/positional (see `../sprint-testing/references/exploration-patterns.md` §"Bugs found during exploration").
+
+## Compact Rules
+
+- DO NOT route a QA screenshot through ANY external image service, generative or otherwise — real product/customer data is in the frame. Explicit user authorization in chat does NOT lift this; everything renders locally over a loopback HTTP server and a local browser capture.
+- WHEN a bug is visual or positional (overlap, misalignment, wrong date/offset on an axis, an element in the wrong place) and a raw screenshot would need a paragraph to explain: annotate it. DO NOT use this skill to file the bug itself, or on before/after shots that already read clearly raw.
+- DO: work from a screenshot that already exists on disk. This skill overlays shapes on an existing image; it never generates or edits an image from a text description.
+- DO: produce exactly ONE evidence file — the final annotated PNG in the ticket's `evidence/` folder, named `{KEY}-BUG-{BUG-KEY}-annotated.png`. The crop and the annotation HTML are scratchpad working files, never written to `evidence/` and never cited from a ticket.
+- DO: copy the commented overlay blocks from `references/shapes.html` instead of designing from scratch, and keep both its z-index scale (base image → shapes → callout boxes → corner badge topmost) and its utf-8 meta tag; a copied block that drops either produces a hidden badge or mojibake.
+- DO NOT: load the annotation HTML over `file://` — the browser-automation CLI refuses it before rendering. Serve over loopback HTTP, and kill that server before the session ends.
+- DO: size the capture viewport equal to or larger than the HTML canvas. A smaller viewport clips callouts.
+- DO: read the rendered PNG back and expect at least one adjustment pass (move a circle, rewrap callout text, nudge the badge out of a collision). It is not one-shot.
+- DO: state the final PNG's repo-relative path in chat the moment it lands, unprompted, and repeat it leading the "Bug annotations" group in the session-close screenshot list.
+- WHEN embedding the annotated PNG into the bug issue: offer it and let the human confirm first; once published it leads the bug's Evidence section, ahead of the raw capture.
+
+- DIRECTION: the evidence page (the `evidence-artifact` skill) keeps marks as data on one page per ticket and per bug; when a ticket has one, link it and keep this PNG only where a tracker needs an inline image.
+
+**Read full SKILL.md when**: building the annotation HTML, choosing shape types, or handling a case the local render cannot cover (e.g. a photo of physical signage that would need anonymization).
+
+---
 
 ## Why 100% local — the security rationale (binding)
 
-An earlier design routed screenshots through external generative image-editing services. Both attempts failed, one dangerously:
+QA screenshots carry real product, customer and competitor data. A screenshot sent to an external image service has already landed in that service's public bucket, and the agent runtime's data-exfiltration classifier blocks such uploads even when the user authorizes them in chat.
 
-- A quota-walled image MCP was simply unavailable (429 across every tier). Not a design problem — just dead.
-- A second generative service got hard-blocked by the agent runtime's own data-exfiltration classifier, because QA screenshots carry real product/customer/competitor data and the destination was not a trusted host. Critically, **explicit user authorization in chat did not lift the block** — and one screenshot had already leaked to the service's public S3/CloudFront bucket before the second attempt was caught.
-
-The standing lesson: **QA evidence containing real product or customer data never routes through an external image service, generative or otherwise.** This skill sidesteps the risk entirely — everything happens with HTML+CSS rendered by an HTTP server bound to `127.0.0.1`, captured by a local browser-automation CLI; nothing leaves the machine. If a genuinely unhandleable case appears (e.g. annotating a photo of physical signage), go back to the user and talk through anonymization first — NEVER quietly pipe a real screenshot to an external service.
+So: **QA evidence containing real product or customer data never routes through an external image service, generative or otherwise.** This skill sidesteps the risk entirely — everything happens with HTML+CSS rendered by an HTTP server bound to `127.0.0.1`, captured by a local browser-automation CLI; nothing leaves the machine. If a genuinely unhandleable case appears (e.g. annotating a photo of physical signage), go back to the user and talk through anonymization first — NEVER quietly pipe a real screenshot to an external service.
 
 ## Scope
 
@@ -46,7 +64,7 @@ The standing lesson: **QA evidence containing real product or customer data neve
    python3 -m http.server <port> --bind 127.0.0.1 --directory <scratchpad>
    ```
 
-5. **Capture with the browser-automation CLI.** Load `/playwright-cli` first (CLI → skill auto-load rule) for exact verbs/flags. Flow: open `http://127.0.0.1:<port>/annotation.html`, resize the viewport to the HTML's real dimensions (equal or larger — a smaller viewport clips callouts), then screenshot with an explicit destination path into the ticket's `evidence/` folder, named:
+5. **Capture with the browser-automation CLI.** Load `/playwright-cli` first (CLI → skill auto-load rule) for exact verbs/flags. Flow: open `http://127.0.0.1:<port>/annotation.html` in a named session of its own (`-s=<KEY>-annotate`; anonymous, case (a) of `../agentic-qa-core/references/browser-sessions.md`), close it when the PNG is on disk, resize the viewport to the HTML's real dimensions (equal or larger — a smaller viewport clips callouts), then screenshot with an explicit destination path into the ticket's `evidence/` folder, named:
 
    ```
    {KEY}-BUG-{BUG-KEY}-annotated.png
@@ -68,7 +86,7 @@ The standing lesson: **QA evidence containing real product or customer data neve
      --caption "Annotated evidence — <one-line defect summary>" --publish
    ```
 
-   The annotated image is the "money shot": it leads the bug's Evidence section and ranks first (ahead of the raw capture) in the Stage 3 Evidence Handoff (`../sprint-testing/references/reporting-templates.md` §3.5).
+   The annotated image is the "money shot": it leads the bug's Evidence section, ahead of the raw capture. When the bug has an evidence page (the `evidence-artifact` skill), the image goes into the bug's pack as the reproduction's first defect image, so it leads the page and becomes the bug's one tracker thumbnail; the Stage 3 Evidence Handoff (`../sprint-testing/references/reporting-templates.md` §3.5) links that page, not image files.
 
 ## Known gotchas
 

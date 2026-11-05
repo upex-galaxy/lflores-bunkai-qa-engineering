@@ -2,26 +2,42 @@
 name: git-flow-master
 description: "End-to-end Git operator for any branching strategy. Auto-detects the project's strategy (solo-main, main+integration, enterprise multi-branch, trunk-based, GitFlow, GitHub Flow, GitLab Flow, SDET integration-trunk for chained test-automation suites) from .git config, branches, and the `git_strategy:` block in `.agents/project.yaml`, then adapts every commit, branch, push, PR, conflict-fix, and chained-PR action to that strategy. Use this skill whenever the user wants to: create a branch (`crear branch`, `new feature branch`, `start work on UPEX-123`), commit changes (`commit this`, `commitear esto`, `make a commit`, `commit and push`), push code (`push`, `push to main`, `push to staging`, `subir cambios`), open a pull request (`create PR`, `open PR`, `abrir PR`, `crear pull request`, `gh pr create`), fix merge conflicts (`fix conflict`, `resolver conflicto`, `merge conflict`, `rebase conflict`, `push rejected`), plan stacked or chained PRs (`stack of PRs`, `chained PRs`, `split this PR`, `PR demasiado grande`), set up an isolated git worktree (`worktree`, `work in a worktree`, `isolate this work`, `parallel session`, `aislar el trabajo`, `trabajar aislado`), set up or bootstrap a branching strategy on a fresh repo (`set up our git strategy`, `bootstrap branching`, `configura el flujo de git`, `git strategy setup`, `materialize the git flow`, `create the staging branch and write the runbook`), or pick / change / set up a branching strategy (`git flow`, `git strategy`, `branching strategy`, `which git flow do we use`, `set up our git strategy`, `bootstrap branching`, `configura el flujo de git`). Trigger even when the user does not say `git-flow-master` literally — if the work is git-or-PR-shaped, this is the right tool. Do NOT use for: testing tickets (use /sprint-testing), authoring test cases in TMS (use /test-documentation), writing automated tests (use /test-automation), running regression suites (use /regression-testing), or general code editing — git-flow-master operates strictly on the version-control layer."
 license: MIT
-compatibility: [claude-code, opencode]
+compatibility: [claude-code, codex, opencode]
 phase: implementation
 complementary_categories: []
+metadata:
+  kind: workflow
 ---
-
-<!-- Model preferences (advisory; dispatchers may use to route) -->
-<!--
-model_preferences:
-  foundation: opus       # high-leverage architectural work
-  planning: sonnet       # structured writing
-  implementation: sonnet # default for code work
-  review: opus           # critical analysis
-  archive: haiku         # mechanical close-out
--->
 
 # Git Flow Master — One Skill for Branches, Commits, Pushes, PRs, and Conflicts
 
 This skill is the project's single entry point for everything that happens on the version-control layer: creating branches, writing commits, pushing safely, opening pull requests, resolving conflicts, and planning chained / stacked PRs when a change outgrows the review budget.
 
 It does not assume one branching model. The project may run on `main` only, on `main + staging`, on a multi-branch enterprise layout, or on any of the well-known flows (trunk-based, GitFlow, GitHub Flow, GitLab Flow). The skill **detects** which one is active and adapts every command accordingly. The detection is sticky: once resolved, the strategy is recorded in the `git_strategy:` block of `.agents/project.yaml` so future invocations skip the prompt.
+
+---
+
+## Compact Rules
+
+- DO: read the repo state (status, branches, diff, log, fetch, upstream, remotes) at the start of EVERY invocation and report it before acting. Never assume repo state.
+- DO: resolve the branching strategy from the `git_strategy:` block in `.agents/project.yaml` first, then layout heuristics, then by asking — never pick one silently. Persist the resolution back into that block, never into a separate file and never as policy prose in `AGENTS.md`. The yaml snippets in `references/` (per-strategy field rules, policy examples) are illustrations: a claim about THIS repo's strategy, branches or policy cites `.agents/project.yaml` (or `git:policy verify` output) read in the same turn.
+- WHEN `git_strategy.meta.strategy_source` is `chosen`: the strategy is CONFIRMED, whatever `project.project_name` holds; no offer. Otherwise, WHEN `git_strategy.strategy` is set but `project.project_name` is null, or `meta.strategy_source` is `inherited` (or absent) on a named project: the strategy was INHERITED from the template, not chosen. Treat it as unconfirmed and OFFER Strategy Setup once per session — never auto-run it, and proceed under the inherited strategy on a "no".
+- DO: consult `git_strategy.policy.direct_push_to_protected` before any direct push to a protected branch — `allowed` is standing authorization (asking anyway collapses it into `confirm`), `confirm` asks every time, `forbidden` refuses and routes through a PR. A missing or null block behaves as `confirm`.
+- DO NOT: force-push, `--force-with-lease`, `--no-verify`, amend or rebase a pushed commit, or otherwise rewrite pushed history, unless the user explicitly authorizes it AND the branch is unshared.
+- DO NOT: run a repo-wide discard (`git restore .`, `git checkout -- .`, `git reset --hard`, untargeted `git stash`, `git clean -f`) — concurrent sessions may share this working tree. Discard only explicit paths this session modified; unclear ownership means stop and ask.
+- DO NOT: `git add -A` or `git add .`. List explicit paths, so a secret or another session's work cannot ride along.
+- DO: keep one commit to one responsibility, in conventional format (`{type}({ISSUE-KEY}): {description}`). Commit messages, branch names and PR bodies are English and carry NO AI attribution.
+- DO: close EVERY commit message, in every strategy, with the two forensic trailers `Worktree: <name|primary>` then `Session: <label>`, copied from the `AGENT IDENTITY:` line in session context (`unknown` when a value cannot be resolved). They are forensics, not attribution — a harness-branded trailer (`Claude-Session:`, an AI `Co-Authored-By:`) stays forbidden.
+- WHEN the pre-push or CI documentation-contract gate names a region (ADR-0016): update every page it lists in the same push; only if they still hold, add `Docs-Checked: <label> <reason>` above the forensic trailers. NEVER add it by reflex or without the reason.
+- WHEN a pre-commit hook rejects a commit: stop, fix the underlying issue, and create a NEW commit. Never `--amend` the rejected one.
+- DO: propose every branch name, commit set, and PR body and wait for an explicit OK before executing.
+- DO: stop at PR creation — merging is the user's next step, never automatic. If the `gh` transport is missing or unauthenticated, surface the blocker instead of implying a PR was opened.
+- WHEN reconciling declared policy against the host: run the policy-verify tool once at the first push / PR / merge intent, never hand-query protection endpoints. A `404` on the classic protection endpoint does not mean unprotected, and a push that succeeded may have been a documented bypass, not permission. Report drift; never auto-correct it.
+- WHEN a planned change exceeds ~400 changed lines: run the chained-PR decision (single-pr / stacked-to-main / feature-branch-chain / size-exception) before coding, and re-run it if the real diff outgrows the estimate rather than silently up-budgeting. Return it with its trace, never as a bare label: `Chain strategy: <leaf>`, each tree question answered with the reason drawn from THIS change (`Q1=No (…) · Q2=… · Q3=…`, `n/a` past the leaf), `Decided by: /git-flow-master`. Answers that do not lead to the stated leaf, or a trace that only restates the conclusion, count as no decision; a re-run replaces the trace.
+- WHEN a promotion PR into the production branch merges: hand off the post-promotion `merged` pass as `/test-documentation post-promotion` ("Promotion landed on `<production>`: run `/test-documentation post-promotion`"). Never touch the TMS from this skill. Canon: `agentic-qa-core/references/discovery-driven-doctrine.md` §6.
+- WHEN a conflict fires: diagnose and classify it first, present options ranked by safety, and prefer a safe abort over a guess. Never pick a destructive option silently.
+
+**Read full SKILL.md when**: running Strategy Setup, resolving a specific conflict type, picking a base branch or branch prefix for an unfamiliar strategy, or setting up an isolated worktree.
 
 ---
 
@@ -94,13 +110,13 @@ Run this ONCE per session, at the first push / PR / merge intent (not on read-on
 **Run the tool; do not perform the queries by hand:**
 
 ```bash
-bun run git:policy verify          # read-only; exit 1 on drift
+bun run git:policy verify          # read-only; exit 1 on drift of a chosen strategy (inherited: warnings)
 bun run git:policy verify --stamp  # same, and records the reconciliation when clean
 ```
 
 It queries BOTH GitHub protection mechanisms for every branch in `git_strategy.branches` / `protected`, compares the union against the declared policy, and prints each divergence as `declared` vs `enforced`. The strategy-to-ruleset mapping and what the tool deliberately does not manage: `references/ruleset-parity.md`.
 
-**Why a tool rather than a checklist.** This reconciliation existed only as prose in the sibling boilerplate and kept not happening — that repo shipped `require_pr_reviews: 0` against a host demanding one approval plus a code-owner review, and it surfaced months later as a refused merge. This repo had the identical divergence. A script performs every query on every run; a procedure performs the ones the reader remembered.
+**Why a tool rather than a checklist.** A script performs every query on every run; a checklist performs only the ones the reader remembers.
 
 **Facts that still bind you when reading its output:**
 
@@ -108,7 +124,7 @@ It queries BOTH GitHub protection mechanisms for every branch in `git_strategy.b
 - **A push that succeeds is not evidence of an absent rule.** Org owners and anyone on the ruleset bypass list push through while the rule still binds everyone else. When a push prints `Changes must be made through a pull request`, that was a BYPASS: report it as one, never as permission. With `git_strategy.policy.admin_bypass: true` (or the divergence listed in `git_strategy.policy.accepted_divergences`), the `Bypassed rule violations` remote line is the DOCUMENTED norm — mention it in the report as expected, do NOT treat it as an anomaly, do NOT stall asking for confirmation, and NEVER open a PR to "satisfy" the rule.
 - **`require_code_owner_review: true` with no `CODEOWNERS` file is unsatisfiable, not strict.** Nobody outside the bypass list can clear it, so every merge becomes a bypass.
 
-**On drift, report — never auto-correct.** Three legitimate resolutions: update `.agents/project.yaml` to match the host, change the host (`bun run git:policy apply`, dry run until `--yes`), or accept the divergence and record WHY in this project's own `AGENTS.md`. Editing either side needs the user's choice.
+**On drift, report — never auto-correct.** Three legitimate resolutions: update `.agents/project.yaml` to match the host, change the host (`bun run git:policy apply`, dry run until `--yes`), or accept the divergence in `git_strategy.policy.accepted_divergences` and record WHY in this project's own `.agents/instructions/agent-project.md` (`## Git Strategy (this repository)`). Editing either side needs the user's choice.
 
 ---
 
@@ -131,7 +147,7 @@ The skill supports eight strategies (see `references/branching-strategies.md` fo
 
 Apply in order; stop at the first definitive answer:
 
-1. **`git_strategy:` block in `.agents/project.yaml`** — read it. If `git_strategy.strategy` is non-null (one of the eight slugs), it + `git_strategy.branches` (production / integration / ephemeral_pattern) + `git_strategy.decisions` (promote_method / feature_merge / hotfix_policy) ARE the persisted decision — use them. Each `git_strategy.decisions.*` field whose value is NOT `n/a`/empty means Strategy Setup SKIPS that question on re-run (idempotent — idempotency is keyed off the `git_strategy.decisions.*` fields, not markers). **Inherited-template guard:** the boilerplate ships the block FILLED (`strategy: solo-main`) and a scaffolded project INHERITS it verbatim (the scaffolder only patches `project.project_name` / `project.project_key`). So a non-null `git_strategy.strategy` is only authoritative when the project is actually onboarded. Read `project.project_name` in the SAME file: if `git_strategy.strategy` is non-null BUT `project.project_name` is `null`, the block was INHERITED from the template (not chosen for THIS project) — treat the strategy as UNCONFIRMED and route to the Bootstrap trigger's inherited case (it still operates under the inherited strategy if the offer is declined). If `project.project_name` is set, the block is confirmed → use it normally, no nudge.
+1. **`git_strategy:` block in `.agents/project.yaml`** — read it. If `git_strategy.strategy` is non-null (one of the eight slugs), it + `git_strategy.branches` (production / integration / ephemeral_pattern) + `git_strategy.decisions` (promote_method / feature_merge / hotfix_policy) ARE the persisted decision — use them. Each `git_strategy.decisions.*` field whose value is NOT `n/a`/empty means Strategy Setup SKIPS that question on re-run (idempotent — idempotency is keyed off the `git_strategy.decisions.*` fields, not markers). **Inherited-template guard:** the boilerplate ships the block FILLED (`strategy: solo-main`) and a scaffolded project INHERITS it verbatim (the scaffolder only patches `project.project_name` / `project.project_key`). So a non-null `git_strategy.strategy` is only authoritative when the project is actually onboarded. Read `git_strategy.meta.strategy_source` FIRST: `chosen` means Strategy Setup ran for THIS repo, so the block is confirmed and the `project_name` test below never runs. When `strategy_source` is `inherited` or absent, the block was INHERITED from the template (not chosen for THIS project), whatever `project.project_name` holds — treat the strategy as UNCONFIRMED and route to the Bootstrap trigger's inherited case (it still operates under the inherited strategy if the offer is declined).
 2. **Single-branch heuristic** — `git branch -a` shows only `main` (or `master`) and no integration branch in the remote → `solo-main`.
 3. **Two-branch heuristic** — exactly `main` (or `master`) + one of `{staging, dev, develop, integration}` exists upstream → `main-integration` (record the integration branch name).
 4. **Multi-branch heuristic** — `main` + integration + active `feature/*` or `release/*` branches in `git branch -a` → `enterprise`.
@@ -140,7 +156,7 @@ Apply in order; stop at the first definitive answer:
 
 ### Persist the decision
 
-Once resolved (whether by detection or by asking), write/update the `git_strategy:` block **in place** inside `.agents/project.yaml` (preserve the rest of the file — it holds project identity, env config, etc.; create the block if it is missing). NEVER write a separate file. It is the single source of truth. At minimum the first five operations need `git_strategy.strategy` + `git_strategy.branches`; the full schema (with `git_strategy.decisions`, `git_strategy.protected`, `git_strategy.policy`, `git_strategy.branch_prefixes`, `git_strategy.meta`) is populated by Strategy Setup (3.6).
+Once resolved (whether by detection or by asking), write/update the `git_strategy:` block **in place** inside `.agents/project.yaml` (preserve the rest of the file — it holds project identity, env config, etc.; create the block if it is missing), values only: each key is documented in `.agents/project.schema.yaml`, never in the yaml (ADR-0025). NEVER write a separate file. It is the single source of truth. At minimum the first five operations need `git_strategy.strategy` + `git_strategy.branches`; the full schema (with `git_strategy.decisions`, `git_strategy.protected`, `git_strategy.policy`, `git_strategy.branch_prefixes`, `git_strategy.meta`) is populated by Strategy Setup (3.6).
 
 ```yaml
 # .agents/project.yaml — git_strategy block (only the fields that apply shown)
@@ -154,7 +170,7 @@ git_strategy:
 
 The block is the source of truth; its `git_strategy.description` field is the one-paragraph human summary. The user can edit it; the next invocation re-reads it.
 
-AGENTS.md's `## Git Strategy` section is **just a pointer** to `.agents/project.yaml` (`git_strategy:` block) — NEVER write strategy policy or branch decisions into AGENTS.md.
+The `## Git Strategy` section of `.agents/instructions/agent-git.md` is **just a pointer** to `.agents/project.yaml` (`git_strategy:` block) — NEVER write strategy policy or branch decisions into `AGENTS.md` or an instruction section. A repository's own reading of its strategy goes in its project-owned `.agents/instructions/agent-project.md` (`## Git Strategy (this repository)`). Any other change to an instruction file is `/framework-development` mode `instructions`.
 
 If the strategy uses an integration branch with a non-default name (anything other than `staging`), record it under `git_strategy.branches.integration` so commits don't have to re-detect.
 
@@ -166,20 +182,20 @@ At the top of any git intent, after Step 1 (repo state) and Step 2 detection hav
 
 > **(a) Unset** — `git_strategy.strategy` in `.agents/project.yaml` is null (or the `git_strategy:` block is absent) AND the repo **looks fresh** — any of: only `main`/`master` exists locally and on the remote; fewer than ~3 commits; or a boilerplate sentinel file is present (e.g. `.agents/project.yaml`).
 >
-> **(b) Inherited** — `git_strategy.strategy` is non-null BUT `project.project_name` (same file) is `null`. The block was INHERITED from the boilerplate template (this project has not been onboarded yet) — it was NOT chosen for THIS project. Treat it as UNCONFIRMED.
+> **(b) Inherited** — `git_strategy.strategy` is non-null and `git_strategy.meta.strategy_source` is NOT `chosen` (it is `inherited` or absent), whatever `project.project_name` (same file) holds. The block was INHERITED from the boilerplate template — it was NOT chosen for THIS project. Treat it as UNCONFIRMED.
 
 If EITHER condition is true, **OFFER** (do not auto-execute, do not silently pick a strategy), using the matching prompt:
 
 > _(unset case (a))_ "No git strategy is set up yet. Want me to run Strategy Setup — pick the flow, create the branches it needs, and write the `git_strategy:` block in `.agents/project.yaml`? (Y/N)"
 
-> _(inherited case (b))_ "This project's `git_strategy` looks inherited from the boilerplate (project not onboarded yet — `project.project_name` is null). Want to run Strategy Setup to define this project's own flow? (Y/N)"
+> _(inherited case (b))_ "This project's `git_strategy` looks inherited from the boilerplate (`meta.strategy_source` is not `chosen`). Want to run Strategy Setup to define this project's own flow? (Y/N)"
 
 Rules:
 
 - **Offer once per session**, then cache the answer. Do not re-prompt every git intent in the same session.
 - **Never auto-run.** A `No` proceeds with the requested operation under the detected (case a) or inherited (case b) strategy without writing the block.
 - A `Yes` enters Strategy Setup (3.6) before continuing with the original git intent.
-- The boilerplate ships `.agents/project.yaml` with the `git_strategy:` block FILLED (`strategy: solo-main`); a scaffolded project INHERITS it verbatim (the scaffolder patches only `project.project_name` / `project.project_key`, and the updater freezes the file via `bootstrapOnlyPaths`). So the unset case (a) and the inherited case (b) are the two ways a project reaches a real git intent without having confirmed its own flow → the offer fires on first real use — by design (template-trap guard). If `project.project_name` is set, the strategy is confirmed and NEITHER case fires.
+- The boilerplate ships `.agents/project.yaml` with the `git_strategy:` block FILLED (`strategy: solo-main`); a scaffolded project INHERITS it verbatim (the scaffolder patches only `project.project_name` / `project.project_key`, and the updater freezes the file via `bootstrapOnlyPaths`). So the unset case (a) and the inherited case (b) are the two ways a project reaches a real git intent without having confirmed its own flow → the offer fires on first real use — by design (template-trap guard). `git_strategy.meta.strategy_source: chosen` confirms the strategy before `project.project_name` is even read, so NEITHER case fires on it.
 
 ---
 
@@ -250,8 +266,22 @@ Group changes by responsibility, not by file type:
 
 - One commit = one responsibility. Never bundle unrelated changes.
 - Never `git add -A` or `git add .` — list explicit paths to avoid leaking secrets (`.env`, credentials) or unrelated work.
+- **PBI ladder guard (repos running the `.context/PBI/` cache, `.agents/instructions/agent-local-context-pbi.md`).** After staging, run `git diff --cached --name-only | grep '^\.context/'`. Anything staged there must be one of the three `[COMMIT]`-tier paths (`.context/PBI/README.md`, `.context/PBI/templates/**`, `.context/PBI/epics/*/test-specs/**`); every other match is `[SYNC]` cache that leaked past the ignore ladder — a directory like `stories/` reads as untracked in `git status` and an explicit-path `git add` descends straight past the exclusion. Unstage it (`git restore --staged <path>`) before the commit proceeds. A commit that touches no `.context/` path skips this check.
 - **No AI attribution.** No `Generated with Claude Code`, no `Co-Authored-By: Claude`, no equivalent line. Commits look human-authored. (Critical Reminder #3 in `AGENTS.md`.)
 - If a pre-commit hook fails, **stop, fix the underlying issue, create a NEW commit**. Never `--amend` a commit the hook rejected — `--amend` operates on the previous commit, which destroys context.
+
+**Forensic trailers (mandatory, every commit, every strategy).** The last two lines of every commit message are:
+
+```
+Worktree: <name|primary>
+Session: <label>
+```
+
+- Both values come from the `AGENT IDENTITY:` line the prompt hook injects into this session's context (`worktree=…`, `session=…`). Copy them; do not re-derive them per commit. The session label may contain spaces and parentheses (`my-session (c0ffee12)`): take everything after `session=` up to the literal ` harness=` token, never split the line on whitespace.
+- `primary` is the correct worktree value when the session is not running in a linked worktree. When a value could not be resolved at all, write `unknown` — never guess a name, never drop the key. A missing trailer is less recoverable than an honest `unknown`.
+- Nothing goes below them, and nothing is added beside them.
+- **`Docs-Checked: <label> <reason>`** is the one trailer that may sit ABOVE them (ADR-0016). Add it only when the change touched a `LINT.IfChange(<label>)` region, the pages its `LINT.ThenChange(...)` names were NOT updated, and they still describe the behaviour correctly; the reason says why. Never by reflex, never without a reason (a bare label does not count). The pre-push and CI documentation-contract gate block the push without it or the page edits. On an already-pushed range the ack is an empty commit carrying the line, never an amend.
+- **These are forensics, not attribution.** They record WHICH working tree and WHICH session produced the commit, so a bisect, an incident review, or a parallel-session post-mortem can find the right transcript. They are deliberately harness-agnostic: no tool, vendor, or model is named. The prohibition in Critical Rule #3 is untouched — never `Claude-Session:`, never a `Co-Authored-By:` for an AI, never a "Generated with …" line, never any other harness-branded key.
 
 Present all proposed commits as one block. Wait for OK / modify / reject before executing.
 
@@ -269,6 +299,7 @@ Push command depends on Step 1 output:
 - `main-integration` → both `main` and the integration branch are protected.
 - `gitflow` → `main` and `develop` are protected.
 - `github-flow` / `trunk-based` → `main` is protected.
+- `gitlab-flow` → `main` (the integration branch) and the environment branches `pre-production` and `production` are protected.
 - `enterprise` → `main`, integration, and any `release/*` are protected.
 - `sdet` → `main` is protected (only the final suite PR lands, reviewed + green CI). The integration trunk is protected-by-convention but its ticket/Plus PRs are self-merged by the maintainer with no ruleset friction.
 
@@ -322,7 +353,15 @@ gh pr create \
   [--draft]
 ```
 
-**Stop at PR creation.** Merging is the user's explicit next step. Never auto-merge. Surface: _"Review the PR. Once approved, merge via the GitHub UI or run `gh pr merge {number} --squash --delete-branch`."_
+**Stop at PR creation.** Merging is the user's explicit next step. Never auto-merge. Surface: _"Review the PR. Once approved, merge via the GitHub UI or run `gh pr merge {number} {merge-flag}`."_ with the flag chosen by the rule below. **One carve-out**: when a supervised worker's dispatch or brief NAMES the merge as a step, that instruction IS the explicit next step and the worker merges. The rule exists so a PR is never merged by an agent acting on its own judgement; a dispatch that says "open the PR and merge it" is not the agent's judgement, it is the owner's, delivered through the channel the fleet uses for every other instruction. Say in the report that the merge was pre-authorized and by which line of the brief.
+
+**Which merge flag (one rule, `sdet` first).** `sdet` (the integration trunk) is the Dojo standard for test-automation suites, so its rule comes first and is never relaxed:
+
+| PR | Flag | Squash |
+| --- | --- | --- |
+| Ticket or Plus Branch → the trunk `test/<module>-suite` | `--merge` (a merge commit, the `--no-ff` equivalent) | **Never.** It flattens the per-ticket history the suite exists to keep (`references/sdet-integration-trunk.md`). |
+| Final `trunk → main` | `--merge` | Only when the host allows no other method; the chain then survives on the pushed trunk and the PR body says so. Do not add `--delete-branch` here: the trunk is deleted after CI is green on `main`. |
+| Any other strategy | the flag that matches `git_strategy.decisions.feature_merge`: `merge-commit` → `--merge`, `squash` → `--squash`, `rebase-merge` → `--rebase` | Fine for a short-lived branch whose intermediate commits carry no meaning (the default when `feature_merge` is `n/a` or the block is missing). Use `--merge` when per-commit history matters. |
 
 **Optional pre-PR adversarial gate** — when the diff exceeds the 400-line cognitive review budget OR touches shared scaffolding (KATA base classes, fixtures, OpenAPI schemas), surface `/judgment-day` as an optional pre-PR review: _"Diff is large / touches shared scaffolding. Want to run `/judgment-day` before opening the PR?"_. Two blind judges review the diff in parallel; only approves when both agree. See `.agents/skills/judgment-day/SKILL.md`. Never invoked automatically — user opts in.
 
@@ -358,12 +397,12 @@ The first five operations *adapt to* a strategy that already exists. Strategy Se
 **When it runs**
 
 - **Explicit**: the user asks — "set up our git strategy", "bootstrap branching", "configura el flujo de git", "materialize the flow".
-- **Bootstrap offer** (see "Bootstrap trigger" below): a git intent arrives and EITHER `git_strategy.strategy` is null (or the block is absent) with a fresh-looking repo, OR `git_strategy.strategy` is non-null but `project.project_name` is null (inherited template — not onboarded). The skill OFFERS to run setup. It never auto-runs.
+- **Bootstrap offer** (see "Bootstrap trigger" below): a git intent arrives and EITHER `git_strategy.strategy` is null (or the block is absent) with a fresh-looking repo, OR `git_strategy.strategy` is non-null and `meta.strategy_source` is not `chosen` (inherited template). The skill OFFERS to run setup. It never auto-runs.
 
 **Six-step flow** (mechanics live in `references/strategy-setup.md` — do not inline them here):
 
 1. **Read repo state** — Step 1 (already always runs).
-2. **Resolve strategy** — reuse Step 2 detection. If still undetermined, ask the 7-option question (one slug out).
+2. **Resolve strategy** — reuse Step 2 detection. If still undetermined, ask the strategy question (the slugs in the Step 2 table; on a test-automation repo, `sdet` first as the recommended option).
 3. **Decision questionnaire** — run Q1/Q2/Q3/Q4 below, capturing merge methods + hotfix policy + protection policy. SKIP any question that does not apply to the resolved strategy, and SKIP any question whose decision field is already populated (idempotent re-run — see Step 2 extension). Q4 applies to ALL strategies.
 4. **Materialize** — conditional on the resolved strategy: create an integration branch ONLY if the strategy needs one and it is missing; ff-sync the integration/production pair if one is a pure ancestor of the other (NEVER `--force`); set up local tracking. Full materialization table + sync mechanics in `references/strategy-setup.md`.
 5. **Persist** — write the `git_strategy:` block in `.agents/project.yaml` (the structured source of truth) with the fields that apply to the resolved strategy, preserving the rest of the file. NEVER write a separate file. Do NOT render a prose runbook anywhere — the operational HOW lives in this skill's references (`branching-strategies.md` catalogue + `sdet-integration-trunk.md`), read on demand. Per-strategy field values in `references/branching-strategies.md` → "git_strategy field rules (per strategy)".
@@ -445,6 +484,7 @@ The branch plan that comes out of the decision is the **contract** for execution
 | Test case authoring + ROI in TMS                       | `/test-documentation`                                |
 | KATA-compliant automated test authoring                | `/test-automation`                                   |
 | Regression suite execution + GO/NO-GO                  | `/regression-testing`                                |
+| A promotion PR (integration → production) merged       | `/test-documentation post-promotion`: the `merged` pass for every TC at `pull_request` whose spec is on `origin/<production>` (`agentic-qa-core/references/discovery-driven-doctrine.md` §6) |
 | Atlassian (Jira) operations triggered by a commit / PR | `/acli`                                              |
 | First-time orientation                                 | `/agentic-qa-onboard`                                |
 
@@ -456,13 +496,13 @@ The branch plan that comes out of the decision is the **contract** for execution
 1b. **`policy:` records INTENT, not enforcement.** Reconcile it by RUNNING `bun run git:policy verify` (Step 1b) at the first push / PR / merge intent, then `--stamp` when clean. Never perform the protection queries by hand, and never state what the remote requires from a `declared` reading. `git:policy apply` is a dry run until `--yes`, and refuses to remove a guard, lower the approval bar, turn off code-owner review, or widen the merge methods unless `--allow-loosening` is passed for that specific give-up.
 1c. **`strategy: solo-main` is the shipped DEFAULT, not evidence of a decision.** `meta.strategy_source` tells them apart: `inherited` means nobody chose. On a repo whose `project.project_name` is set and whose `strategy_source` is still `inherited`, OFFER Strategy Setup and say what the default costs (no integration branch, no promotion path, no review gate). Strategy Setup stamps `chosen`; nothing else may.
 2. **One commit = one responsibility.** Never bundle unrelated changes.
-3. **No AI attribution** in commits or PR bodies. Commits look human-authored. (Critical Reminder #3 in `AGENTS.md`.)
+3. **No AI attribution** in commits or PR bodies. Commits look human-authored. (Critical Reminder #3 in `AGENTS.md`.) The two forensic trailers of 3.2 (`Worktree:` / `Session:`) are the one thing that always closes a commit message — they name a working tree and a session, never a tool, so they are not attribution and not optional.
 4. **Confirm before pushing to any protected branch.** Strategy-driven; see Step 3.3. (Critical Reminder #5 in `AGENTS.md`.)
 5. **Never force-push, never rewrite pushed history, never `--no-verify`** unless the user explicitly authorises it AND the branch is unshared. (Critical Reminder #6 in `AGENTS.md`.)
 6. **No `git add -A` / `git add .`** — always list explicit paths.
 7. **Show proposed commits / branches / PR body and wait for OK** before executing. The user can accept, modify, or reject any item.
 8. **`gh` CLI is the PR transport.** If `gh` is missing or unauthenticated (`gh auth status` fails), stop and surface the blocker. Do not pretend a PR was opened.
-9. **PRs stop at creation.** Merging is the user's explicit next step.
+9. **PRs stop at creation.** Merging is the user's explicit next step — with the one carve-out in 3.4: a supervised worker whose dispatch or brief NAMES the merge is executing the owner's instruction, not its own judgement, and merges.
 10. **Strategy is sticky.** Once resolved, persist in the `git_strategy:` block of `.agents/project.yaml`. The next invocation re-reads the block rather than asking again.
 11. **Language**: artifacts (commits, branches, PR bodies, AGENTS.md sections) in English. Mirror the user's language only in conversation.
 12. **No global discards.** Never `git restore .`, `git checkout -- .`, `git reset --hard`, untargeted `git stash`, or `git clean -f` — concurrent agent sessions may share this working tree without worktrees. Discard only explicit paths this session modified; if file ownership is unclear, stop and ask the user. (Critical Rule #15 in `AGENTS.md`; see also `references/worktrees.md` for true isolation.)
@@ -488,18 +528,22 @@ The branch plan that comes out of the decision is the **contract** for execution
 When work needs to be isolated from in-progress changes on the current branch — a second
 AI session running in parallel, a hotfix while a feature is open, or unrelated WIP you do
 not want to mix — use a **git worktree** (a second working directory on its own branch,
-sharing one `.git`). Two paths:
+sharing one `.git`). Three paths:
 
 - **Manual git** (portable, any tool): `git worktree add ../dir -b feat/x main` → work →
   `git worktree remove` / `prune`.
 - **Claude Code harness** (this agent only): `EnterWorktree` moves the session into a fresh
   worktree under `.claude/worktrees/`; `ExitWorktree` (`keep`/`remove`) leaves it. Other
   coding agents lack this — they use the manual path.
+- **Orchestrated** (a coordinated fleet of worker sessions): the orchestration layer creates,
+  provisions and removes one worktree per worker, outside the repo and visible to the owner.
+  Git mechanics are identical; the lifecycle is owned by `orca-orchestration/SKILL.md`.
 
-Key gotcha: a fresh worktree contains only the **tracked** files of its base — **untracked
-WIP does not teleport**, so `mv` it in (or commit first). Keep the primary tree's
-`git status` clean. Full lifecycle, multi-session safety rules, and the decision guide:
-`references/worktrees.md`.
+Key gotchas: a fresh worktree contains only the **tracked** files of its base — **untracked
+WIP does not teleport** (`mv` it in, or commit first) and every **gitignored** file is
+missing too (`bun run worktree:provision`). Keep the primary tree's `git status` clean, and
+run the **orphan audit** before removing a worktree — gitignored evidence dies with it. Full
+lifecycle, multi-session safety rules, and the decision guide: `references/worktrees.md`.
 
 ---
 
@@ -509,6 +553,7 @@ WIP does not teleport**, so `mv` it in (or commit first). Keep the primary tree'
 - [ ] Strategy resolved (detected from the `git_strategy:` block in `.agents/project.yaml`, inferred from layout, or asked) and persisted to that block if newly chosen.
 - [ ] Branch / commit / push / PR / conflict operation followed the runbook for that strategy.
 - [ ] Each commit is atomic, conventional, and free of AI attribution.
+- [ ] Each commit message ends with the two forensic trailers (`Worktree:` then `Session:`), values taken from the `AGENT IDENTITY:` context line or written as `unknown`.
 - [ ] No `git add -A` / `--force` / `--no-verify` used unless explicitly authorised.
 - [ ] No global discard ran (`git restore .` / `git checkout -- .` / `git reset --hard` / untargeted `git stash` / `git clean`); any discard targeted explicit session-owned paths only.
 - [ ] PR (if created) has Title <70 chars, body with Summary / Changes / Test Plan / Traceability / Risk, base branch matches strategy.
@@ -529,6 +574,7 @@ WIP does not teleport**, so `mv` it in (or commit first). Keep the primary tree'
 | `references/conventional-commits.md` | Full type vocabulary, scope rules, breaking-change syntax, mixed-changes precedence. Read when proposing commits.                                      |
 | `references/pr-templating.md`        | PR body template, placeholder rules, label / reviewer / draft conventions, multi-strategy base-branch table. Read when opening a PR.                   |
 | `references/conflict-resolution.md`  | Per-conflict-type playbooks (merge / rebase / push-rejected / detached-HEAD / stash / unrelated histories / hook rejection). Read when Step 3.5 fires. |
-| `references/worktrees.md`            | Git worktrees for isolated/parallel work — manual git + Claude Code `EnterWorktree`/`ExitWorktree`, the untracked-files gotcha, multi-session safety, cleanup, decision guide. Read when isolating work or running parallel sessions. |
+| `references/worktrees.md`            | Git worktrees for isolated/parallel work — manual git, Claude Code `EnterWorktree`/`ExitWorktree`, orchestrated worktrees, the untracked-files gotcha, gitignored-file provisioning, multi-session safety, the orphan audit before removal, cleanup, decision guide. Read when isolating work or running parallel sessions. |
+| `references/observer.md`             | Merge Line, the read-only PR view of the Sprint Board: the observer rule (never acts on GitHub), lanes, order, approval and tracker parity, the collector (`cli/sprint-board/merge-collect.ts`), its state and gotchas. Read when reading, operating or changing Merge Line. |
 
 Read references on demand — do not load them all upfront. Each file is self-contained.

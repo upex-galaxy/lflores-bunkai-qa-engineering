@@ -8,7 +8,7 @@ Every finding either points at a line of code, points at a line of doctrine, or 
 
 ## Citation format
 
-- **Code evidence**: `path/to/file.ts:42` — quote or closely paraphrase the actual line(s). If it's from a PR diff you don't have a local checkout of, cite it as it appears in the diff (`+`-prefixed line, or the surrounding context if the line itself is unchanged context).
+- **Code evidence**: `path/to/file.ts:42` — quote or closely paraphrase the actual line(s). <!-- volatile-ok: placeholder citation format, not a real location --> If it's from a PR diff you don't have a local checkout of, cite it as it appears in the diff (`+`-prefixed line, or the surrounding context if the line itself is unchanged context).
 - **Doctrine evidence**: `path/to/doctrine.md §Section` or `AGENTS.md §N` — quote the specific sentence that backs the claim, not just "per our conventions." A reader should be able to open that file and find the exact line you mean.
 - **Opinion, no doctrine backing**: say so in plain words — "esto es una opinión general de buenas prácticas de QA, no está en la documentación de este repo" / "this is general QA best-practice opinion, not something this repo's doctrine states." Never dress an opinion up as a repo rule; it erodes trust in every other citation once the user catches one.
 
@@ -16,7 +16,7 @@ Every finding either points at a line of code, points at a line of doctrine, or 
 
 ### This repo
 
-Load `AGENTS.md` in full (small enough to read directly), plus the specific doctrine files under `agentic-qa-core/references/` and `test-automation/references/` relevant to what the PR touches (see `SKILL.md` Dependencies for the default set on KATA/test-automation PRs — widen it if the PR touches something else, e.g. `defect-management-doctrine.md` if the PR includes a bug report, `adr-doctrine.md` if it touches a hard-to-reverse test-architecture choice).
+Load `AGENTS.md` and the sections its router names for what the PR touches (`.agents/instructions/*.md`: `AGENTS.md` alone is only the always-on layer, so a `§N` citation is checked against the section file the router lists for it), plus the specific doctrine files under `agentic-qa-core/references/` and `test-automation/references/` relevant to what the PR touches (see `SKILL.md` Dependencies for the default set on KATA/test-automation PRs — widen it if the PR touches something else, e.g. `defect-management-doctrine.md` if the PR includes a bug report, `adr-doctrine.md` if it touches a hard-to-reverse test-architecture choice).
 
 ### External repo
 
@@ -52,7 +52,7 @@ gh api "repos/<owner>/<repo>/pulls/<N>/files?per_page=100" --paginate -q '.[].fi
 gh api "repos/<owner>/<repo>/pulls/<N>/files?per_page=100" --paginate \
   -q '.[] | select(.filename=="path/to/file.ts") | .patch'
 
-# Whole-PR diff (works for smaller PRs; errors past ~20k lines — "PullRequest.diff too_large")
+# Whole-PR diff (works for smaller PRs; errors on very large PRs — "PullRequest.diff too_large")
 gh pr diff <N> --repo <owner>/<repo> --patch
 
 # Full file content at a specific commit (useful when the patch alone doesn't show enough context,

@@ -185,3 +185,24 @@ dbhub.local.toml
 .agents/skills/resend-cli/
 !skills-lock.json
 !**/skills-lock.json
+
+# ----- 2026-11-04 (sync) -----
+.playwright/profiles/
+.playwright-cli/
+storage-state-*.json
+!.env.schema
+!.env.core.schema
+!.env.provider.schema
+env.d.ts
+.template/doctrine-ledger.json
+.template/last-apply.json
+.context/*
+!.context/README.md
+!.context/project-config.md
+!.context/ADR/
+!.context/regression-history/
+!.context/sprint/
+!.context/reports/
+!.context/PBI/
+.agents/skills/skill-creator/
+.agents/skills/diagram-design/

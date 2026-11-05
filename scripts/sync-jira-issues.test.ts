@@ -2,12 +2,16 @@ import { describe, expect, test } from 'bun:test';
 
 import {
   classifyQaArtifactEpic,
+  DEFAULT_MTP_EPIC_NAME,
   DEFAULT_QA_ARTIFACT_LABEL,
   fileNamePrefix,
   HIGHER_ALTITUDE_PREFIX,
   higherAltitudeLabel,
+  isMasterTestPlanEpic,
   ladderTitleAcronym,
   MODULE_CONTEXT_HEADING,
+  MTP_HEADING,
+  renderMasterTestPlanCache,
   splitDescriptionSection,
   standaloneSkipReason,
   sweptFromQaEpic,
@@ -124,16 +128,72 @@ describe('classifyQaArtifactEpic', () => {
   });
 });
 
+describe('isMasterTestPlanEpic', () => {
+  const epic = (key: string, summary: string): never => ({ key, fields: { summary, labels: [] } }) as never;
+
+  test('matches the convention name, case-insensitively, when no key is cached', () => {
+    const cfg = { key: null, name: DEFAULT_MTP_EPIC_NAME };
+    expect(isMasterTestPlanEpic(epic('PROJ-7', 'QA Master Test Plan'), cfg)).toBe(true);
+    expect(isMasterTestPlanEpic(epic('PROJ-7', '  qa master test plan '), cfg)).toBe(true);
+    expect(isMasterTestPlanEpic(epic('PROJ-8', 'QA Test Repository'), cfg)).toBe(false);
+  });
+
+  test('a cached key wins over the name', () => {
+    const cfg = { key: 'PROJ-9', name: DEFAULT_MTP_EPIC_NAME };
+    expect(isMasterTestPlanEpic(epic('PROJ-9', 'Renamed by a human'), cfg)).toBe(true);
+    // A second Epic that merely carries the name is not the MTP once the key is known.
+    expect(isMasterTestPlanEpic(epic('PROJ-7', 'QA Master Test Plan'), cfg)).toBe(false);
+  });
+});
+
+describe('renderMasterTestPlanCache', () => {
+  const mtpEpic = (description: string): never =>
+    ({ key: 'PROJ-7', fields: { summary: 'QA Master Test Plan', labels: [], description } }) as never;
+
+  test('renders the MTP section only, never the text around it', () => {
+    const description = [
+      'Owned by the QA lead. Official QA repo: example/qa.',
+      '',
+      `## ${MTP_HEADING}`,
+      '',
+      '### Risk map',
+      '',
+      'Checkout is the silent killer.',
+      '',
+      '## Links',
+      '',
+      'relates to the three QA siblings',
+    ].join('\n');
+
+    const out = renderMasterTestPlanCache(mtpEpic(description), 'https://jira.example.com');
+    expect(out).not.toBeNull();
+    expect(out).toContain('### Risk map\n\nCheckout is the silent killer.');
+    expect(out).toContain('[View in Jira](https://jira.example.com/browse/PROJ-7)');
+    expect(out).not.toContain('Owned by the QA lead');
+    expect(out).not.toContain('relates to the three QA siblings');
+  });
+
+  test('returns null when the Epic carries no MTP section', () => {
+    expect(renderMasterTestPlanCache(mtpEpic('Only PO text, no plan yet.'), 'https://x')).toBeNull();
+  });
+
+  test('returns null for an empty description', () => {
+    expect(renderMasterTestPlanCache(mtpEpic(''), 'https://x')).toBeNull();
+  });
+});
+
 describe('ladderTitleAcronym / fileNamePrefix', () => {
   test('a conforming Test Plan title lends its acronym to the filename', () => {
     expect(fileNamePrefix('test_plan', 'FTP: PROJ-42: Checkout & Payments')).toBe('FTP');
     expect(fileNamePrefix('test_plan', 'STP: Sprint#30: Payments hardening')).toBe('STP');
     expect(fileNamePrefix('test_plan', 'ATP: PROJ-123: Apply discount at checkout')).toBe('ATP');
+    expect(fileNamePrefix('test_plan', 'RTP: PROJ: Regression Test Plan')).toBe('RTP');
   });
 
   test('a conforming Test Execution title does the same', () => {
     expect(fileNamePrefix('test_execution', 'STR: Sprint#30: Regression Testing')).toBe('STR');
     expect(fileNamePrefix('test_execution', 'ATR: PROJ-123: Story Testing')).toBe('ATR');
+    expect(fileNamePrefix('test_execution', 'RTR: staging-2026-09-23: Regression Testing')).toBe('RTR');
   });
 
   test('the Re-Test Execution keeps its `ReTest:` spelling', () => {
@@ -147,6 +207,10 @@ describe('ladderTitleAcronym / fileNamePrefix', () => {
     expect(ladderTitleAcronym('test_plan', 'ATR: PROJ-1: Story Testing')).toBeNull();
     expect(fileNamePrefix('test_plan', 'ATR: PROJ-1: Story Testing')).toBe('TESTPLAN');
     expect(ladderTitleAcronym('test_execution', 'ATP: PROJ-1: Something')).toBeNull();
+    // `RTP:` is a Plan acronym only: a Test Execution titled that way is not a run.
+    expect(ladderTitleAcronym('test_execution', 'RTP: PROJ: Regression Test Plan')).toBeNull();
+    // `RTR:` is a run acronym only: a Test Plan titled that way is not a plan.
+    expect(ladderTitleAcronym('test_plan', 'RTR: staging-2026-09-23: Regression Testing')).toBeNull();
   });
 
   test('a NON-conforming title keeps the legacy slug-based prefix', () => {
@@ -177,6 +241,16 @@ describe('HIGHER_ALTITUDE_PREFIX (Story-altitude guard)', () => {
     expect(HIGHER_ALTITUDE_PREFIX.test('FTP: PROJ-42: Checkout')).toBe(true);
     expect(HIGHER_ALTITUDE_PREFIX.test('STP: Sprint#30: Hardening')).toBe(true);
     expect(HIGHER_ALTITUDE_PREFIX.test('STR: Sprint#30: Regression Testing')).toBe(true);
+  });
+
+  test('skips the product-altitude RTP: a regression plan linked to a Story is not its ATP', () => {
+    expect(HIGHER_ALTITUDE_PREFIX.test('RTP: PROJ: Regression Test Plan')).toBe(true);
+    expect(higherAltitudeLabel('RTP: PROJ: Regression Test Plan')).toBe('product-altitude');
+  });
+
+  test('skips the product-altitude RTR: a regression run linked to a Story is not its ATR', () => {
+    expect(HIGHER_ALTITUDE_PREFIX.test('RTR: staging-2026-09-23: Regression Testing')).toBe(true);
+    expect(higherAltitudeLabel('RTR: staging-2026-09-23: Regression Testing')).toBe('product-altitude');
   });
 
   test('keeps the FTR legacy guard for pre-migration data', () => {

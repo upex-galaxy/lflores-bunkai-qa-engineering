@@ -39,6 +39,7 @@
  * Exit code: 0 if no ERRORs, 1 otherwise. WARNs do not affect exit code.
  */
 
+import type { Dirent } from 'node:fs';
 import { existsSync, lstatSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { parse as parseYaml } from 'yaml';
@@ -95,11 +96,10 @@ const DOC_META_ALLOWLIST: Array<[string, string]> = [
   ['VAR', 'AGENTS.md'],
   // §Tool Resolution pseudocode type list: "`{{PROJECT_VAR}}` (from `.agents/project.yaml`)"
   ['PROJECT_VAR', 'AGENTS.md'],
-  // §3.5 Validate / §Verify checklist: the adapt-framework workflow documents the
-  // {{VAR}} syntax inside `bun run vars:check` shell comments. The prose moved out of
-  // the retired `.claude/commands/adapt-framework.md` command body and now lives in the
+  // §3.5 Validate / §Verify checklist: the test-framework-adaptation workflow documents the
+  // {{VAR}} syntax inside `bun run vars:check` shell comments. The prose lives in the
   // skill reference — keep the entry pinned to that path, not to a bare filename.
-  ['VAR', 'adapt-framework/references/adaptation-workflow.md'],
+  ['VAR', 'test-framework-adaptation/references/adaptation-workflow.md'],
   // resend-cli (vendored community skill) reference docs use Resend's own
   // Handlebars-style triple-mustache {{{VAR_NAME}}} email-template placeholders —
   // third-party syntax unrelated to this repo's {{VAR}} project convention.
@@ -152,6 +152,12 @@ function loadDeclaredVariables(yamlPath: string): DeclaredVars {
     // `git_strategy` is read DIRECTLY by the git-flow-master skill — its leaves are NOT
     // {{VAR}} template variables, so they must not be harvested as declared vars.
     if (sectionName === 'git_strategy') { continue; }
+    // `harnesses` is a top-level LIST read by the compatibility gates (ADR-0012),
+    // not a {{VAR}} leaf.
+    if (sectionName === 'harnesses') { continue; }
+    // `board` is read directly by cli/lib/sprint-source/config.ts (ADR-0019),
+    // not as {{VAR}} leaves: `timezone` must not become `{{TIMEZONE}}`.
+    if (sectionName === 'board') { continue; }
     if (sectionName === 'environments') {
       // Nested: each child is an environment whose leaves are env-scoped vars.
       if (!sectionVal || typeof sectionVal !== 'object' || Array.isArray(sectionVal)) {
@@ -205,6 +211,15 @@ interface ManifestSlugs {
   workTypes: Map<string, WorkTypeManifestEntry>
   /** `link_types.required.*` + `link_types.optional.*` slugs. Empty if no `link_types:` section. */
   linkTypes: Set<string>
+  /**
+   * `required:` and `optional:` slugs by NAME, for the reverse check.
+   *
+   * `unmapped:` is deliberately absent: the manifest documents it as a slug the
+   * methodology recognises semantically while no concrete Jira field exists
+   * yet, so "nothing references it" is its normal state, not a finding.
+   */
+  requiredSlugs: Set<string>
+  optionalSlugs: Set<string>
 }
 
 /**
@@ -260,7 +275,79 @@ function loadManifestSlugs(yamlPath: string): ManifestSlugs {
     unmapped: Object.keys(unmapped).length,
     workTypes,
     linkTypes,
+    requiredSlugs: new Set(Object.keys(required)),
+    optionalSlugs: new Set(Object.keys(optional)),
   };
+}
+
+/** Roots the `{{jira.*}}` scan does NOT cover, but which consume slugs as strings. */
+const CODE_SCAN_ROOTS = ['scripts', 'cli', 'config', 'tests'];
+
+/**
+ * Manifest slugs that appear as a bare string anywhere in the code roots.
+ *
+ * Only ever used to SUPPRESS a declared-but-unused warning, so the match is
+ * intentionally loose: a slug quoted in a lookup, a property access, a comment
+ * that names it. Being generous here means a genuinely dead slug can hide
+ * behind a mention, which costs one missed line on a worklist. Being strict
+ * would mean warning about a field the API fixtures read every run, which is
+ * how a warning gets ignored.
+ */
+function findSlugsReferencedInCode(manifest: ManifestSlugs): Set<string> {
+  const found = new Set<string>();
+  const candidates = [...manifest.requiredSlugs, ...manifest.optionalSlugs];
+  if (candidates.length === 0) { return found; }
+  for (const root of CODE_SCAN_ROOTS) {
+    const abs = join(REPO_ROOT, root);
+    if (!existsSync(abs)) { continue; }
+    for (const file of walkCodeFiles(abs)) {
+      let text: string;
+      try { text = readFileSync(file, 'utf8'); }
+      catch { continue; }
+      for (const slug of candidates) {
+        if (!found.has(slug) && slugUsedAsIdentifier(text, slug)) { found.add(slug); }
+      }
+      if (found.size === candidates.length) { return found; }
+    }
+  }
+  return found;
+}
+
+/**
+ * Whether `text` uses `slug` the way CODE uses a manifest slug, rather than the
+ * way prose mentions a word.
+ *
+ * A plain substring match was the first attempt and it was useless: half these
+ * slugs are ordinary English (`workflow`, `scope`, `evidence`, `fix`), so every
+ * candidate matched some comment somewhere and the check reported zero findings
+ * forever. A check that can only ever say "nothing" is worse than no check,
+ * because it looks like coverage.
+ *
+ * The three shapes that are real consumption: a quoted key into
+ * `jira-fields.json`, a property access, or a `{{jira.<slug>}}` template inside
+ * a TS string. Prose does none of them.
+ */
+export function slugUsedAsIdentifier(text: string, slug: string): boolean {
+  const esc = slug.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+  return new RegExp(`(?:['"\`]${esc}['"\`]|\\.${esc}\\b|\\{\\{jira\\.${esc}\\b)`).test(text);
+}
+
+/** Every `.ts` / `.js` file under a root, skipping the usual noise. */
+function walkCodeFiles(dir: string): string[] {
+  const out: string[] = [];
+  let entries: Dirent[];
+  try { entries = readdirSync(dir, { withFileTypes: true }); }
+  catch { return out; }
+  for (const entry of entries) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (SKIP_DIRS.has(entry.name)) { continue; }
+      out.push(...walkCodeFiles(full));
+      continue;
+    }
+    if (/\.(?:ts|js|mjs|cjs)$/.test(entry.name)) { out.push(full); }
+  }
+  return out;
 }
 
 /**
@@ -794,11 +881,30 @@ function scanFiles(files: string[]): ScanResult {
 // Step 4 — produce report
 // -----------------------------------------------------------------------------
 
+/**
+ * A catalog that is the empty `{}` placeholder the installer writes before any
+ * sync reads as ABSENT (`null`): nothing has been synced yet, so an option or a
+ * work type it lacks says nothing about the reference. Checked against it as a
+ * real catalog, every `{{jira.<field>.<option>}}` in a shipped skill became an
+ * UNKNOWN option ERROR, and a fresh project's first commit was refused by its
+ * own pre-commit hook. A populated catalog is returned unchanged.
+ */
+export function asSyncedCatalog<T extends object>(catalog: T | null): T | null {
+  return catalog !== null && Object.keys(catalog).length === 0 ? null : catalog;
+}
+
 function main(): void {
   const declared = loadDeclaredVariables(PROJECT_YAML);
   const manifest = loadManifestSlugs(JIRA_REQUIRED_YAML);
-  const catalog = loadCatalog(JIRA_CATALOG_JSON);
-  const workflows = loadWorkflowsCatalog(JIRA_WORKFLOWS_JSON);
+  const rawCatalog = loadCatalog(JIRA_CATALOG_JSON);
+  const rawWorkflows = loadWorkflowsCatalog(JIRA_WORKFLOWS_JSON);
+  const catalog = asSyncedCatalog(rawCatalog);
+  const workflows = asSyncedCatalog(rawWorkflows);
+  // The placeholders that were read as absent: one warning each, never an error.
+  const unsyncedCatalogs = [
+    ...(rawCatalog !== null && catalog === null ? [{ file: '.agents/jira-fields.json', fix: 'bun run jira:sync-fields' }] : []),
+    ...(rawWorkflows !== null && workflows === null ? [{ file: '.agents/jira-workflows.json', fix: 'bun run jira:sync-workflows' }] : []),
+  ];
   const files = collectFiles();
   const result = scanFiles(files);
 
@@ -834,6 +940,32 @@ function main(): void {
   const allDeclared = new Set<string>([...declared.flat, ...declared.envScoped]);
   const declaredButUnused = [...allDeclared]
     .filter(d => !usedNames.has(d) && !explicitlyUsedEnvScoped.has(d))
+    .sort();
+
+  // --- REVERSE DIRECTION for Jira slugs -------------------------------------
+  //
+  // The forward check below fails when a skill references a slug the manifest
+  // does not declare. Nothing checked the other way, and the other way is what
+  // rots: a slug stays in `required:` long after the skill that needed it was
+  // rewritten, and `bun run jira:check` keeps demanding that every consumer
+  // project provision a custom field nobody reads. Measured on this repo when
+  // the check was written: 8 of 24 `required:` slugs.
+  //
+  // TWO reference sources, because SCAN_ROOTS does not cover code. Skills
+  // reference a slug as `{{jira.<slug>}}`; a script or a fixture reaches the
+  // same field through `jira-fields.json` with the slug as a plain string. A
+  // reverse check blind to the second would report a field the test runtime
+  // depends on. The code scan is a deliberately loose substring match: it can
+  // only SUPPRESS a warning, never raise one, so a false negative costs one
+  // missed orphan while a false positive costs the feature's credibility.
+  //
+  // WARN, never fail. An unused declaration is debt, not breakage, and the
+  // call on each one is a human's: some are waiting for a skill that is being
+  // written, and `vars:check` runs in `repo:check` and pre-commit.
+  const codeReferencedSlugs = findSlugsReferencedInCode(manifest);
+  const jiraSlugsUsed = new Set(result.jiraSlugHits.map(h => h.slug));
+  const jiraDeclaredButUnused = [...manifest.requiredSlugs, ...manifest.optionalSlugs]
+    .filter(slug => !jiraSlugsUsed.has(slug) && !codeReferencedSlugs.has(slug))
     .sort();
 
   // Jira reference validation. Three failure modes:
@@ -1128,8 +1260,9 @@ function main(): void {
     + `(across ${declared.envNames.size} envs: ${envList}) = ${declaredTotal} variables`,
   );
   console.log(`Declared in jira-required.yaml:  ${manifest.all.size} slugs (${manifest.required} required + ${manifest.optional} optional + ${manifest.unmapped} unmapped) + ${manifest.workTypes.size} work_type(s) + ${manifest.linkTypes.size} link_type(s)`);
-  console.log(`Catalog jira-fields.json:               ${catalog === null ? 'absent (option-value checks skipped — run `bun run jira:sync-fields`)' : `${Object.keys(catalog).length} fields available for option-value lookup`}`);
-  console.log(`Catalog jira-workflows.json:     ${workflows === null ? 'absent (workflow checks skipped — run `bun run jira:sync-workflows`)' : `${Object.keys(workflows).length} work_type(s) available for status/transition lookup`}`);
+  const absence = (raw: object | null): string => raw === null ? 'absent' : 'empty placeholder, not synced yet';
+  console.log(`Catalog jira-fields.json:               ${catalog === null ? `${absence(rawCatalog)} (option-value checks skipped — run \`bun run jira:sync-fields\`)` : `${Object.keys(catalog).length} fields available for option-value lookup`}`);
+  console.log(`Catalog jira-workflows.json:     ${workflows === null ? `${absence(rawWorkflows)} (workflow checks skipped — run \`bun run jira:sync-workflows\`)` : `${Object.keys(workflows).length} work_type(s) available for status/transition lookup`}`);
   console.log('');
 
   console.log(`ERRORS (${totalErrors}):`);
@@ -1207,7 +1340,7 @@ function main(): void {
     ? []
     : [...manifest.workTypes.keys()].filter(wt => !(wt in workflows)).sort();
 
-  const totalWarnings = declaredButUnused.length + workTypeWarnings.length + unsyncedWorkTypes.length;
+  const totalWarnings = declaredButUnused.length + jiraDeclaredButUnused.length + workTypeWarnings.length + unsyncedWorkTypes.length + unsyncedCatalogs.length;
   console.log(`WARNINGS (${totalWarnings}):`);
   if (totalWarnings === 0) {
     console.log('  <none>');
@@ -1215,6 +1348,16 @@ function main(): void {
   else {
     for (const name of declaredButUnused) {
       console.log(`  - DECLARED_BUT_UNUSED: ${name}  (no occurrences in scanned files)`);
+    }
+    for (const slug of jiraDeclaredButUnused) {
+      const section = manifest.requiredSlugs.has(slug) ? 'required' : 'optional';
+      console.log(`  - JIRA_SLUG_DECLARED_BUT_UNUSED: '${slug}' is declared under \`${section}:\` in jira-required.yaml, and no skill references {{jira.${slug}}} nor does any file under ${CODE_SCAN_ROOTS.join('/, ')}/ name it.`);
+      if (section === 'required') {
+        console.log('      `bun run jira:check` makes every consumer project provision this field. If nothing reads it, move it to `optional:` or drop it.');
+      }
+    }
+    for (const c of unsyncedCatalogs) {
+      console.log(`  - CATALOG_NOT_SYNCED: ${c.file} is the empty \`{}\` placeholder, so its checks were skipped. Fill it with \`${c.fix}\`.`);
     }
     for (const wt of unsyncedWorkTypes) {
       console.log(`  - WORK_TYPE_NOT_IN_CATALOG: '${wt}' is declared in jira-required.yaml but absent from jira-workflows.json`);
@@ -1263,4 +1406,6 @@ function main(): void {
   process.exit(totalErrors > 0 ? 1 : 0);
 }
 
-main();
+// Guarded so a test can import the pure helpers without running the linter and
+// calling process.exit. Same reason as scripts/git-policy.ts.
+if (import.meta.main) { main(); }

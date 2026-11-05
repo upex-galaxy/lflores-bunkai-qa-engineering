@@ -337,9 +337,9 @@ const FOLDER_PREFIX: Record<string, string> = {
 // Ladder-aware filenames
 //
 // The ratified title grammar is `{ACRONYM}: {scope}: {desc}`
-// (docs/qa-standard/planning-ladder-proposal.md §3), so altitude is legible in
+// (.agents/skills/agentic-qa-core/references/planning-ladder.md §3), so altitude is legible in
 // the first token of a Jira title. The filename mirrors that signal: one `ls`
-// of `test-plans/` then shows the ladder state (FTP / STP / ATP) at a glance
+// of `test-plans/` then shows the ladder state (FTP / STP / RTP / ATP) at a glance
 // instead of a wall of identical `TESTPLAN-` files.
 // ---------------------------------------------------------------------------
 
@@ -351,8 +351,8 @@ const FOLDER_PREFIX: Record<string, string> = {
  * `ReTest:` spelling the Re-Test Execution subtask has always used.
  */
 const LADDER_TITLE_ACRONYMS: Record<string, readonly string[]> = {
-  test_plan: ['FTP', 'STP', 'ATP'],
-  test_execution: ['STR', 'ATR'],
+  test_plan: ['FTP', 'STP', 'ATP', 'RTP'],
+  test_execution: ['STR', 'ATR', 'RTR'],
   re_test_execution: ['RETEST'],
 };
 
@@ -638,7 +638,7 @@ interface SyncResult {
     tests: number
     tech_stories: number
     tech_debts: number
-    /** Higher-altitude ladder artifacts (FTP/STP/ATP · STR/ATR · Test Sets · Preconditions). */
+    /** Higher-altitude ladder artifacts (FTP/STP/RTP/ATP · STR/RTR/ATR · Test Sets · Preconditions). */
     qa_artifacts: number
   }
   warnings: string[]
@@ -917,6 +917,51 @@ function classifyQaArtifactEpic(
   if (cfg.cachedKeys.has(epic.key)) { return { via: 'cached-key' }; }
   if (epic.fields.summary.startsWith('QA ')) { return { via: 'name-prefix' }; }
   return null;
+}
+
+/** Default when `.agents/project.yaml` does not declare `qa.qa_epics.master_test_plan_epic.name`. */
+const DEFAULT_MTP_EPIC_NAME = 'QA Master Test Plan';
+
+interface MasterTestPlanEpicConfig {
+  /** Cached `qa.qa_epics.master_test_plan_epic.key`; null until a skill discovers it. */
+  key: string | null
+  /** Convention name the Epic is found by when the key is not cached yet. */
+  name: string
+}
+
+/**
+ * Reads how the Master Test Plan Epic is identified: its cached key, else its name.
+ * Same fallback posture as `readQaArtifactConfig` — a yaml that never mentions it
+ * still gets the convention name.
+ */
+function readMasterTestPlanEpicConfig(): MasterTestPlanEpicConfig {
+  const fallback: MasterTestPlanEpicConfig = { key: null, name: DEFAULT_MTP_EPIC_NAME };
+  if (!existsSync(PROJECT_YAML_PATH)) { return fallback; }
+
+  let parsed: unknown;
+  try {
+    parsed = parseYaml(readFileSync(PROJECT_YAML_PATH, 'utf8'));
+  }
+  catch {
+    return fallback;
+  }
+  const qa = (parsed as Record<string, unknown> | null)?.qa as Record<string, unknown> | undefined;
+  const epics = qa?.qa_epics as Record<string, unknown> | undefined;
+  const entry = epics?.master_test_plan_epic as Record<string, unknown> | undefined;
+  if (entry === null || typeof entry !== 'object') { return fallback; }
+
+  const key = typeof entry.key === 'string' && entry.key.trim() !== '' ? entry.key.trim() : null;
+  const name = typeof entry.name === 'string' && entry.name.trim() !== '' ? entry.name.trim() : DEFAULT_MTP_EPIC_NAME;
+  return { key, name };
+}
+
+/**
+ * Decides whether an Epic is THE Master Test Plan Epic. The cached key wins; the
+ * convention name (case-insensitive) covers an instance whose key was never cached.
+ */
+function isMasterTestPlanEpic(epic: JiraIssue, cfg: MasterTestPlanEpicConfig): boolean {
+  if (cfg.key !== null) { return epic.key === cfg.key; }
+  return epic.fields.summary.trim().toLowerCase() === cfg.name.toLowerCase();
 }
 
 /**
@@ -1651,6 +1696,27 @@ function syncModuleContextFile(
 // MARKDOWN GENERATORS
 // ============================================================================
 
+/**
+ * Jira timestamps, rendered machine-independently.
+ *
+ * `toLocaleDateString()` / `toLocaleString()` follow the host's ICU locale, so
+ * the same issue cached as `9/18/2026` on en-US and `18/09/2026` on es-ES. The
+ * cache under `.context/PBI/` is gitignored, so this never produced a git
+ * conflict; it did mean two teammates reading one ticket saw different dates,
+ * and any regex over these lines was locale-dependent. ISO-8601 is the same
+ * string everywhere, and it sorts.
+ */
+function isoDate(raw: string): string {
+  const d = new Date(raw);
+  return Number.isNaN(d.getTime()) ? 'Unknown' : d.toISOString().slice(0, 10);
+}
+
+/** Same contract as `isoDate`, to the minute, in UTC. */
+function isoDateTime(raw: string): string {
+  const d = new Date(raw);
+  return Number.isNaN(d.getTime()) ? 'Unknown' : `${d.toISOString().slice(0, 16).replace('T', ' ')} UTC`;
+}
+
 function generateEpicMarkdown(
   epic: JiraIssue,
   stories: JiraIssue[],
@@ -1721,8 +1787,8 @@ function generateEpicMarkdown(
     '',
     '## Metadata',
     '',
-    `- **Created:** ${fields.created ? new Date(fields.created).toLocaleDateString() : 'Unknown'}`,
-    `- **Updated:** ${fields.updated ? new Date(fields.updated).toLocaleDateString() : 'Unknown'}`,
+    `- **Created:** ${fields.created ? isoDate(fields.created) : 'Unknown'}`,
+    `- **Updated:** ${fields.updated ? isoDate(fields.updated) : 'Unknown'}`,
     `- **Reporter:** ${fields.reporter?.displayName || 'Unknown'}`,
     `- **Assignee:** ${fields.assignee?.displayName || 'Unassigned'}`,
   );
@@ -1800,8 +1866,8 @@ function generateStoryMarkdown(
     '',
     '## Metadata',
     '',
-    `- **Created:** ${fields.created ? new Date(fields.created).toLocaleDateString() : 'Unknown'}`,
-    `- **Updated:** ${fields.updated ? new Date(fields.updated).toLocaleDateString() : 'Unknown'}`,
+    `- **Created:** ${fields.created ? isoDate(fields.created) : 'Unknown'}`,
+    `- **Updated:** ${fields.updated ? isoDate(fields.updated) : 'Unknown'}`,
     `- **Reporter:** ${fields.reporter?.displayName || 'Unknown'}`,
     `- **Assignee:** ${fields.assignee?.displayName || 'Unassigned'}`,
   );
@@ -1835,7 +1901,7 @@ function generateCommentsMarkdown(
   else {
     for (const comment of comments) {
       const author = comment.author?.displayName || 'Unknown';
-      const date = new Date(comment.created).toLocaleString();
+      const date = isoDateTime(comment.created);
       const body = adfToMarkdown(comment.body as AdfDocument);
 
       lines.push(`### ${author} - ${date}`, '', body, '', '---', '');
@@ -1943,8 +2009,8 @@ function generateBugMarkdown(
     '',
     '## Metadata',
     '',
-    `- **Created:** ${fields.created ? new Date(fields.created).toLocaleDateString() : 'Unknown'}`,
-    `- **Updated:** ${fields.updated ? new Date(fields.updated).toLocaleDateString() : 'Unknown'}`,
+    `- **Created:** ${fields.created ? isoDate(fields.created) : 'Unknown'}`,
+    `- **Updated:** ${fields.updated ? isoDate(fields.updated) : 'Unknown'}`,
     `- **Reporter:** ${fields.reporter?.displayName || 'Unknown'}`,
     `- **Assignee:** ${fields.assignee?.displayName || 'Unassigned'}`,
   );
@@ -2047,8 +2113,8 @@ function generateDefectMarkdown(
     '',
     '## Metadata',
     '',
-    `- **Created:** ${fields.created ? new Date(fields.created).toLocaleDateString() : 'Unknown'}`,
-    `- **Updated:** ${fields.updated ? new Date(fields.updated).toLocaleDateString() : 'Unknown'}`,
+    `- **Created:** ${fields.created ? isoDate(fields.created) : 'Unknown'}`,
+    `- **Updated:** ${fields.updated ? isoDate(fields.updated) : 'Unknown'}`,
     `- **Reporter:** ${fields.reporter?.displayName || 'Unknown'}`,
     `- **Assignee:** ${fields.assignee?.displayName || 'Unassigned'}`,
   );
@@ -2106,8 +2172,8 @@ function generateImprovementMarkdown(
     '',
     '## Metadata',
     '',
-    `- **Created:** ${fields.created ? new Date(fields.created).toLocaleDateString() : 'Unknown'}`,
-    `- **Updated:** ${fields.updated ? new Date(fields.updated).toLocaleDateString() : 'Unknown'}`,
+    `- **Created:** ${fields.created ? isoDate(fields.created) : 'Unknown'}`,
+    `- **Updated:** ${fields.updated ? isoDate(fields.updated) : 'Unknown'}`,
     `- **Reporter:** ${fields.reporter?.displayName || 'Unknown'}`,
     `- **Assignee:** ${fields.assignee?.displayName || 'Unassigned'}`,
   );
@@ -2164,8 +2230,8 @@ function generateTestMarkdown(
     '',
     '## Metadata',
     '',
-    `- **Created:** ${fields.created ? new Date(fields.created).toLocaleDateString() : 'Unknown'}`,
-    `- **Updated:** ${fields.updated ? new Date(fields.updated).toLocaleDateString() : 'Unknown'}`,
+    `- **Created:** ${fields.created ? isoDate(fields.created) : 'Unknown'}`,
+    `- **Updated:** ${fields.updated ? isoDate(fields.updated) : 'Unknown'}`,
     `- **Reporter:** ${fields.reporter?.displayName || 'Unknown'}`,
     `- **Assignee:** ${fields.assignee?.displayName || 'Unassigned'}`,
   );
@@ -2230,8 +2296,8 @@ function generateXrayArtifactMarkdown(
     '',
     '## Metadata',
     '',
-    `- **Created:** ${fields.created ? new Date(fields.created).toLocaleDateString() : 'Unknown'}`,
-    `- **Updated:** ${fields.updated ? new Date(fields.updated).toLocaleDateString() : 'Unknown'}`,
+    `- **Created:** ${fields.created ? isoDate(fields.created) : 'Unknown'}`,
+    `- **Updated:** ${fields.updated ? isoDate(fields.updated) : 'Unknown'}`,
     `- **Reporter:** ${fields.reporter?.displayName || 'Unknown'}`,
     `- **Assignee:** ${fields.assignee?.displayName || 'Unassigned'}`,
   );
@@ -2351,13 +2417,25 @@ const STORY_ATS_PREFIX = /^ATS:/i;
  * is an **Epic**, never a Test Plan work type — see
  * `agentic-qa-core/references/defect-management-doctrine.md` Part 4 — so no Test
  * Plan can legitimately carry that prefix, and an Epic never reaches this guard.
+ *
+ * `RTP` is the product-altitude Regression Test Plan: long-lived, one per
+ * project (or module), the promotion target `/test-documentation` moves a
+ * regression-worthy TC into. An RTP linked to a Story is never that Story's
+ * ATP, so the guard skips it with an info line, exactly like FTP / STP.
+ *
+ * `RTR` is the product-altitude regression run record: the Test Execution
+ * `/regression-testing` creates per verdict (`RTR: {env}-{date}: Regression
+ * Testing`), linked to the RTP through Xray's `testPlan` field. One per
+ * verdict, never reused. An RTR linked to a Story is never that Story's ATR:
+ * it records a whole regression run, not that Story's acceptance results.
  */
-const HIGHER_ALTITUDE_PREFIX = /^(FTP|FTR|STP|STR):/i;
+const HIGHER_ALTITUDE_PREFIX = /^(FTP|FTR|STP|STR|RTP|RTR):/i;
 
 /** Human label for a skipped higher-altitude artifact's info line. */
 function higherAltitudeLabel(summary: string): string {
   const m = HIGHER_ALTITUDE_PREFIX.exec(summary.trim());
   const p = (m?.[1] ?? '').toUpperCase();
+  if (p === 'RTP' || p === 'RTR') { return 'product-altitude'; }
   return p === 'STP' || p === 'STR' ? 'sprint-altitude' : 'feature-altitude';
 }
 
@@ -2753,6 +2831,16 @@ async function syncEpic(
     return null;
   }
 
+  // The MTP Epic is a QA bucket, not a product module: `get <MTP-KEY>` refreshes
+  // the MTP cache instead of growing a product folder under `epics/`.
+  if (isMasterTestPlanEpic(epic, readMasterTestPlanEpicConfig())) {
+    if (syncMasterTestPlanFile(epic, config, options.dryRun, result) && !options.json) {
+      log.info(`Synced Master Test Plan from ${epic.key} → qa-artifacts/master-test-plan.md`);
+    }
+    result.synced.epics++;
+    return null;
+  }
+
   // Fetch stories for this epic (only Stories, not Bugs/Tests/etc.)
   const stories = await searchIssues(
     config,
@@ -2864,6 +2952,67 @@ async function syncSingleStory(
 const QA_ARTIFACTS_DIR = 'qa-artifacts';
 
 /**
+ * Heading that carries the Master Test Plan inside the MTP Epic `description`.
+ *
+ * The Epic description IS the MTP (ADR-0007): `project-context` mode `test-plan`
+ * writes this section read-first, leaving any other text on the Epic untouched,
+ * and the sync splits it back out into the cache file below.
+ */
+const MTP_HEADING = 'Master Test Plan';
+
+/** Cache file the MTP section is materialized into, under `qa-artifacts/`. */
+const MTP_CACHE_FILE = 'master-test-plan.md';
+
+/**
+ * Renders the MTP cache from the Epic description, or null when the Epic carries
+ * no `## Master Test Plan` section (the plan was never written to Jira yet).
+ * Only the section is rendered: any PO or human text around it stays in Jira.
+ */
+function renderMasterTestPlanCache(epic: JiraIssue, displayUrl: string): string | null {
+  const { section } = splitDescriptionSection(adfToMarkdown(epic.fields.description), MTP_HEADING);
+  if (!section) { return null; }
+  return [
+    `# ${epic.key} — Master Test Plan`,
+    '',
+    `> Jira source: the \`## ${MTP_HEADING}\` section of the Epic description · [View in Jira](${displayUrl}/browse/${epic.key})`,
+    '> Cache. Never hand-edit: `project-context` mode `test-plan` writes the Epic, then the sync rewrites this file.',
+    '',
+    section.trim(),
+    '',
+    '---',
+    '_Synced from Jira by sync-jira-issues_',
+    '',
+  ].join('\n');
+}
+
+/**
+ * Materializes `qa-artifacts/master-test-plan.md` from the MTP Epic. Returns true
+ * when written. A section removed from Jira removes the stale cache too: a cache
+ * that outlives its source is the one failure a cache must never have.
+ */
+function syncMasterTestPlanFile(
+  epic: JiraIssue,
+  config: Config,
+  dryRun: boolean,
+  result: SyncResult,
+): boolean {
+  const dir = join(config.outputDir, QA_ARTIFACTS_DIR);
+  const filePath = join(dir, MTP_CACHE_FILE);
+  const content = renderMasterTestPlanCache(epic, config.displayUrl);
+  if (content === null) {
+    if (existsSync(filePath) && !dryRun) { unlinkSync(filePath); }
+    result.warnings.push(
+      `${epic.key}: the Master Test Plan Epic has no \`## ${MTP_HEADING}\` section — `
+      + 'no MTP cache written (author it with `project-context` mode `test-plan`)',
+    );
+    return false;
+  }
+  if (!dryRun) { ensureDir(dir); }
+  bumpFile(writeFieldFile(filePath, content, dryRun), result);
+  return true;
+}
+
+/**
  * Writes `qa-artifacts/_index.md` — the register of Epics that are QA buckets.
  *
  * No per-epic folder is created on purpose: their content is already distributed
@@ -2877,6 +3026,7 @@ function writeQaArtifactsIndex(
   config: Config,
   dryRun: boolean,
   result: SyncResult,
+  mtpKey: string | null = null,
 ): void {
   const dir = join(config.outputDir, QA_ARTIFACTS_DIR);
   if (!dryRun) { ensureDir(dir); }
@@ -2894,6 +3044,9 @@ function writeQaArtifactsIndex(
   for (const { epic, via } of epics) {
     lines.push(`| [${epic.key}](${config.displayUrl}/browse/${epic.key}) | ${epic.fields.summary} | ${via} |`);
   }
+  if (mtpKey !== null) {
+    lines.push('', `Master Test Plan (from ${mtpKey}): [${MTP_CACHE_FILE}](${MTP_CACHE_FILE})`);
+  }
   lines.push('', '---', '_Synced from Jira by sync-jira-issues_', '');
 
   bumpFile(writeIndexFile(join(dir, '_index.md'), lines.join('\n'), dryRun).status, result);
@@ -2903,7 +3056,8 @@ function writeQaArtifactsIndex(
  * Decides whether a child of a QA-process Epic is materialized by the sweep below.
  *
  * The sweep exists for the artifacts NOTHING else can reach — the higher-altitude
- * ladder (FTP / STP / STR) plus the supporting Test Sets and Preconditions. Every
+ * ladder (FTP / STP / STR, and the product-altitude RTP) plus the supporting Test
+ * Sets and Preconditions. Every
  * other child of a QA bucket already has an owner and must be left to it, or the
  * sweep writes a second copy of work the rest of the pipeline placed correctly:
  *
@@ -2924,7 +3078,7 @@ function sweptFromQaEpic(entry: WorkTypeEntry, summary: string): boolean {
  * Sweeps the children of the QA-process Epics so the top rungs of the planning
  * ladder materialize locally.
  *
- * WHY a separate path: FTP / STP / STR sit ABOVE a Story, so the coverage walk —
+ * WHY a separate path: FTP / STP / STR / RTP sit ABOVE a Story, so the coverage walk —
  * which descends from a coverable issue through its links — structurally cannot
  * reach them, and the Story-altitude guard (HIGHER_ALTITUDE_PREFIX) is right to
  * keep skipping them there. The QA Epics ARE the index of these artifacts, which
@@ -3026,7 +3180,14 @@ async function syncAll(config: Config, options: SyncOptions): Promise<SyncResult
       }
 
       if (qaArtifactEpics.length > 0) {
-        writeQaArtifactsIndex(qaArtifactEpics, config, options.dryRun, result);
+        // The MTP Epic description IS the Master Test Plan: its section becomes the
+        // local cache. Already fetched with the Epic list, so no extra query runs.
+        const mtpCfg = readMasterTestPlanEpicConfig();
+        const mtpEpic = options.noQaArtifacts
+          ? undefined
+          : qaArtifactEpics.find(e => isMasterTestPlanEpic(e.epic, mtpCfg))?.epic;
+        const mtpWritten = mtpEpic ? syncMasterTestPlanFile(mtpEpic, config, options.dryRun, result) : false;
+        writeQaArtifactsIndex(qaArtifactEpics, config, options.dryRun, result, mtpWritten && mtpEpic ? mtpEpic.key : null);
         // The name-prefix signal is the guessy one — surface it so the label (or the
         // cached key) can be set and the guess stops being load-bearing.
         const guessed = qaArtifactEpics.filter(e => e.via === 'name-prefix').map(e => e.epic.key);
@@ -3619,8 +3780,8 @@ function renderAutoContent(issue: JiraIssue, entry: WorkTypeEntry, config: Confi
     '',
     '## Metadata',
     '',
-    `- **Created:** ${f.created ? new Date(f.created).toLocaleDateString() : 'Unknown'}`,
-    `- **Updated:** ${f.updated ? new Date(f.updated).toLocaleDateString() : 'Unknown'}`,
+    `- **Created:** ${f.created ? isoDate(f.created) : 'Unknown'}`,
+    `- **Updated:** ${f.updated ? isoDate(f.updated) : 'Unknown'}`,
     `- **Reporter:** ${f.reporter?.displayName ?? 'Unknown'}`,
     `- **Assignee:** ${f.assignee?.displayName ?? 'Unassigned'}`,
   );
@@ -4157,6 +4318,9 @@ ${colors.bold}PLANNING LADDER (higher-altitude artifacts)${colors.reset}
     test-executions/  STR-<KEY>-<slug>.md · ATR-… · RETEST-…
   A title that does not follow the grammar keeps the legacy prefix (TESTPLAN- /
   TESTEXEC- / RETESTEXEC-). Skip the whole sweep with --no-qa-artifacts.
+  The MTP itself is the \`## Master Test Plan\` section of the QA Master Test Plan
+  Epic description, cached as qa-artifacts/master-test-plan.md by the same
+  \`pull\` and by \`get <MTP-KEY>\`.
 
 ${colors.bold}TRACEABILITY VALIDATION${colors.reset}
   End-of-run WARNINGS flag: an ATP/ATR linked via the wrong link type (expected the
@@ -4304,13 +4468,18 @@ async function main(): Promise<void> {
 
 export {
   classifyQaArtifactEpic,
+  DEFAULT_MTP_EPIC_NAME,
   DEFAULT_QA_ARTIFACT_LABEL,
   fileNamePrefix,
   HIGHER_ALTITUDE_PREFIX,
   higherAltitudeLabel,
+  isMasterTestPlanEpic,
   ladderTitleAcronym,
   MODULE_CONTEXT_FILE,
   MODULE_CONTEXT_HEADING,
+  MTP_CACHE_FILE,
+  MTP_HEADING,
+  renderMasterTestPlanCache,
   splitDescriptionSection,
   standaloneSkipReason,
   sweptFromQaEpic,

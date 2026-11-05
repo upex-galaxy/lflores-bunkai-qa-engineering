@@ -13,11 +13,20 @@ Test workers (N)                 Coordinator (1)                Teardown (1)
 -----------------                ---------------                ------------
 @atc/@step ──► test.step()       KataReporter.onEnd()           global.teardown
      │                               │                                │
-     ├─► KataReporter (terminal)     ├─► read NDJSON lines            ├─► read atc_results.json
-     ├─► allure-playwright (auto)    ├─► aggregate by testId           ├─► show ATC Coverage summary
-     └─► storeResult() → NDJSON      ├─► write atc_results.json        └─► if AUTO_SYNC=true
-                                     └─► delete NDJSON                      call syncResults()
+     ├─► KataReporter (terminal)     ├─► read NDJSON lines            ├─► read .atc_partial.ndjson
+     ├─► allure-playwright (auto)    ├─► aggregate by testId           └─► show ATC Coverage summary
+     └─► storeResult() → NDJSON      ├─► write atc_results.json
+                                     └─► delete NDJSON
+
+                                 ── process exits ──
+                                          │
+                                          └─► bun run test:sync → syncResults()
 ```
+
+The teardown project finishes BEFORE `onEnd()`, so it reads the NDJSON partial
+file, not the aggregate — and it cannot sync, because the file the sync reads
+does not exist yet. The TMS write-back is a separate command run after the
+Playwright process exits.
 
 Key invariants:
 
@@ -79,6 +88,8 @@ reports/atc_results.json
 ```
 
 Written by `KataReporter.onEnd()` in the coordinator process. Persists after the run — downstream tooling (teardown, TMS sync, dashboards) reads from here.
+
+Beside it, `KataReporter.onEnd()` writes `reports/test-outcomes.json`: one record per Playwright test with its outcome class (`passed`, `failed`, `known-defect`, `unexpected-pass`, `skipped`) and the ATC ids it ran, which `@atc` pushes as an `atc` annotation (ADR-0020). The run headline comes from that file. The TMS write-back keeps reading `atc_results.json`.
 
 ### 3.2 Schema
 
@@ -156,7 +167,7 @@ A parameterised ATC that varies by input is still one ATC for TMS purposes — t
 
 ## 5. Sensitive parameter masking
 
-Both decorators mask argument values whose keys are in the `SENSITIVE_KEYS` set in `tests/utils/decorators.ts` (canonical keys: `password`, `token`, `secret`, `authorization`, `access_token`). See `api-patterns.md` for the canonical parameter-name rules that make masking work by default. To mask additional keys, add them to that set.
+Both decorators mask argument values whose keys are in the `SENSITIVE_KEYS` set in `tests/utils/decorators.ts`. See `api-patterns.md` for the canonical parameter-name rules that make masking work by default. To mask additional keys, add them to that set.
 
 ---
 
@@ -193,7 +204,7 @@ Filter criterion: KataReporter only prints steps where `step.category === 'test.
 
 ## 7. Global teardown summary
 
-After the reporter fires, the teardown prints a stand-alone summary from `reports/atc_results.json`:
+Before the reporter fires, the teardown prints a stand-alone summary from `reports/.atc_partial.ndjson`:
 
 ```
 ============================================================
@@ -202,12 +213,13 @@ KATA Architecture - Global Teardown
 ATC Coverage:
    1 unique ATC tracked (2 total executions)
    ✅ Passed: 1 | ❌ Failed: 0 | ⏭️ Skipped: 0
-[SKIP] TMS sync disabled (set AUTO_SYNC=true to enable)
+[SKIP] TMS sync is OFF — these results were NOT written back to the TMS. Set AUTO_SYNC=true to enable it, then run `bun run test:sync` after the suite.
 ============================================================
 📊 ATC Report generated: reports/atc_results.json
 ```
 
-If `AUTO_SYNC=true`, `syncResults()` runs next and routes to the configured provider.
+The sync does not run here. With `AUTO_SYNC=true` the teardown only says so; the
+write-back happens when `bun run test:sync` runs after the process exits.
 
 ---
 
@@ -215,12 +227,29 @@ If `AUTO_SYNC=true`, `syncResults()` runs next and routes to the configured prov
 
 ### 8.1 Trigger
 
-```typescript
-// tests/teardown/global.teardown.ts
-if (process.env.AUTO_SYNC === 'true') {
-  await syncResults();
-}
+A separate command, never an in-process call. `reports/atc_results.json` is
+written by `KataReporter.onEnd()`, which fires after every project — the
+teardown included — so anything that syncs from inside the run reads the
+previous run's file (local) or none at all (CI).
+
+```bash
+AUTO_SYNC=true bun run test   # writes reports/atc_results.json on exit
+bun run test:sync             # reads it and writes the results back
 ```
+
+The suite workflows under `.github/workflows/` run the second line as a
+`Sync Results to TMS` step gated on `AUTO_SYNC == 'true'`, right after the test
+step. On an Xray project, `regression.yml` skips that step and its `XrayImport`
+job imports the same file instead, through the same payload builder
+(`tests/utils/xrayResults.ts`). `syncResults()` itself still honours the `AUTO_SYNC` gate, and in CI it
+exits non-zero when the report file is missing rather than returning silently.
+
+**When you may run `bun run test:sync`.** Only after a run against the environment the TC's
+precondition names (the Test Execution's Test Environment). The write-back records `PASSED` / `FAILED`,
+and a case is `PASSED` or `FAILED` only when observed in that environment
+(`../../agentic-qa-core/references/discovery-driven-doctrine.md` §5.2). A Code-phase run, the local
+gate, a local stack or any environment other than the Execution's is evidence about the code,
+never a TMS result: leave `AUTO_SYNC` off for it. This is a usage rule; the sync code does not check the environment.
 
 ### 8.2 Provider routing
 
@@ -228,7 +257,9 @@ if (process.env.AUTO_SYNC === 'true') {
 syncResults()
 ├── provider = 'xray'  → syncToXray()
 │   ├── POST /authenticate  (bearer token)
-│   └── POST /import/execution (batch, all ATCs in one payload)
+│   └── POST /import/execution (batch, all ATCs in one payload:
+│        one entry per ATC, testKey = the @atc id, never testInfo,
+│        so the import cannot create a Test)
 │
 ├── provider = 'jira'  → syncToJiraDirect()
 │   ├── For each testId:
@@ -254,13 +285,13 @@ Xray Cloud:
 XRAY_CLIENT_ID=...
 XRAY_CLIENT_SECRET=...
 XRAY_PROJECT_KEY=PROJ
-STP_EXECUTION_KEY=PROJ-456   # Xray only — the STR Test Execution the run writes back to
+STP_EXECUTION_KEY=PROJ-456   # Xray only — the RTR (or sprint-close STR) the run writes back to
 ```
 
 `STP_EXECUTION_KEY` decides WHERE results land. Despite the name it must hold the key of
-the **STR Test Execution** linked to the sprint STP, **never the STP's own key** —
-`tests/utils/jiraSync.ts` reads the target's issue type and refuses a Test Plan outright.
-Unset → every run mints a NEW, unparented Execution instead of appending to the STR.
+a Test Execution — the **RTR** of a regression run, or the sprint-close **STR** — **never a
+Test Plan's own key** — `tests/utils/jiraSync.ts` reads the target's issue type and refuses
+a Test Plan outright. Unset → every run mints a NEW, unparented Execution.
 
 Jira Direct:
 
@@ -329,15 +360,7 @@ bun run kata:manifest:check        # CI-grade freshness check; exits 1 if kata-m
                                    # tests/components/, scripts/kata-manifest.ts, or kata-manifest.json.
 ```
 
-Scan roots (hard-coded):
-
-```
-tests/components/api/**/*.ts
-tests/components/ui/**/*.ts
-tests/components/steps/**/*.ts
-```
-
-Excluded files: `ApiBase.ts`, `UiBase.ts`, `TestContext.ts`, `TestFixture.ts`, `ApiFixture.ts`, `UiFixture.ts`, `index.ts`.
+Scan roots and excluded files: the `COMPONENT_PATHS` and `EXCLUDED_FILES` constants in `scripts/kata-manifest.ts`.
 
 Extraction pattern: `@atc\s*\(\s*['"]([^'"]+)['"]` — a literal string key is required. Template literals and computed IDs are not picked up.
 
@@ -403,7 +426,7 @@ The manifest is a static registry — it says what **exists in code**. `atc_resu
 | Sensitive value visible in step title | Key not in `SENSITIVE_KEYS` | Add the key to `SENSITIVE_KEYS` in `tests/utils/decorators.ts` |
 | Sync reports "No ATC results to sync" | `atc_results.json` empty | Run tests first; check KataReporter ran `generateAtcReport()`; confirm reporter config |
 | Sync fails with 401 | Bad TMS credentials | Verify `XRAY_CLIENT_*` or `ATLASSIAN_API_TOKEN`; check expiry and permissions |
-| Sync fails with "Test key not found" | TMS issue missing or mistyped | Create the issue in the TMS first; check case-sensitive exact match |
+| Sync fails with "Test key not found" | TMS issue missing or mistyped | Check case-sensitive exact match; a missing Test goes to `/test-documentation` (signed ROI first, `../SKILL.md` §"TC source gate"), never created here |
 | Custom-field error (Jira Direct) | Wrong `JIRA_TEST_STATUS_FIELD` ID | `[ISSUE_TRACKER_TOOL] list_fields()` (load `/acli`) and grep for the field; or re-run `bun run jira:sync-fields --force` |
 | Sync is slow | Jira Direct = one request per ATC | Batch via Xray if budget allows; move sync off the local loop — run only in CI on `main` |
 
@@ -415,11 +438,11 @@ The manifest is a static registry — it says what **exists in code**. `atc_resu
 |------|----------------|
 | `tests/utils/decorators.ts` | `@atc`, `@step`, `formatArgs`, `storeResult` (NDJSON writer), `SENSITIVE_KEYS` |
 | `tests/KataReporter.ts` | Terminal tree output; `generateAtcReport()` in `onEnd()` (NDJSON → JSON); NDJSON cleanup |
-| `tests/teardown/global.teardown.ts` | Reads `atc_results.json`, prints summary, calls `syncResults()` if `AUTO_SYNC=true` |
+| `tests/teardown/global.teardown.ts` | Reads `.atc_partial.ndjson`, prints the ATC Coverage summary, states whether the write-back is on. Does NOT sync |
 | `tests/utils/jiraSync.ts` | `syncToXray()`, `syncToJiraDirect()`, provider router |
 | `playwright.config.ts` | Reporter chain (KataReporter must be registered), `global-teardown` PROJECT (wired via `teardown:` on the `global-setup` project, not a `globalTeardown` hook) |
 | `config/variables.ts` | `config.tms.*` — reads the env vars listed in §8.3 |
 | `scripts/kata-manifest.ts` | Static scanner — produces `kata-manifest.json` |
 | `reports/.atc_partial.ndjson` | Ephemeral per-run capture (deleted in `onEnd()`) |
-| `reports/atc_results.json` | Persistent aggregated result — input to teardown and sync |
+| `reports/atc_results.json` | Persistent aggregated result — input to `bun run test:sync` (written too late for the teardown) |
 | `kata-manifest.json` | Static registry of components and ATCs in source |

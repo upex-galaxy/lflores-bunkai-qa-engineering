@@ -73,8 +73,8 @@ exercising a different partition, boundary, state, or context.
   not?", not "did we hit a target count?". There is no minimum count and no
   maximum count — the count is whatever the techniques in Part 2 yield.
 
-> This inverts the old "do not force a minimum scenario count" framing. The bias
-> is now **expansion with justified collapse**, not **minimization by default**.
+> The bias is **expansion with justified collapse**, not **minimization by
+> default**.
 > EP-style merging (one parameterized case for inputs with identical behavior) is
 > still correct — that is collapsing *within* a partition, which the techniques
 > themselves prescribe. It must never be used to collapse *across* distinct
@@ -129,13 +129,19 @@ min-1 | min | min+1 ............ max-1 | max | max+1
   length, collection size, date/time window, pagination, quota, or limit → BVA
   cases are mandatory. EP without BVA misses off-by-one defects.
 
-#### BVA on the derived value — REQUIRED wherever the functionality rounds
+#### BVA on the derived value — REQUIRED wherever the functionality rounds or truncates
 
 - **Trigger (binding):** the AC or its implementation rounds or truncates a
-  computed value (percentage, ratio, average, or similar) → derive BVA cases
-  against the **output boundary** (raw inputs nearest the point where rounding
-  crosses into the extreme), in addition to the literal input min/max. No
-  rounding/truncation involved → this trigger is N/A.
+  computed value (percentage, ratio, average, currency, or similar) → derive
+  BVA cases against the **output boundary**: the raw inputs nearest the point
+  where rounding crosses into an extreme displayed value, in addition to the
+  literal input min/max. No rounding/truncation involved → this trigger is N/A.
+- Worked example (real defect from a downstream project):
+  `coveragePercent = Math.round(bound / total * 100)`. Input-boundary BVA
+  covered `bound = 0 → 0%` and `bound = total → 100%`, but missed
+  `(199, 200) → 100%` and `(1, 201) → 0%`: inputs nowhere near the input
+  boundary that round into the same displayed extreme and contradicted the
+  breakdown shown on the same screen.
 
 ### State-Transition testing — REQUIRED for stateful entities
 
@@ -180,6 +186,56 @@ empty submit, double-click, back-button mid-flow, paste of `<script>` / SQL,
 huge payloads, Unicode/emoji, expired token, clock skew, network drop. Frame
 exploration as a **charter** (a time-boxed mission against a specific risk area),
 not aimless clicking. Charters complement — never replace — the systematic cases.
+
+#### Trigger: a state the test seeds but the product may never produce
+
+**When it fires**: a case's precondition is put in place by a shortcut (an API call, a DB seed, a
+fixture row, an admin edit) instead of the product flow that creates it in real use, AND the screen
+or report under test DERIVES something from it: a badge, a status, a total, a counter, a filter
+result.
+
+**The risk**: the case reads a field that only the seed ever writes. The test passes on seeded data
+while in real use nothing fills that field, so the feature is dead in production under a green
+suite: a counter stuck at zero, a status nobody can reach, an AC that cannot be satisfied. Naming the
+field in the AC, the ticket or a decision comment is not evidence that any user action or background
+job writes it.
+
+**Required case**: at least one case produces that state through the real path (the user action,
+the lifecycle step, the scheduled job that sets it in production) and then asserts the derived
+value. Seeded cases stay; they are fast and they cover the variants. When no real path exists in the
+target environment, the case is `BLOCKED — unreachable precondition` with what it would take while
+recreation is still being tried, and `DEFERRED (execution)` once QA defers it, per the section below, and the gap itself may be the report worth filing.
+
+### Unreachable preconditions — the empty state on a shared, long-lived account
+
+A derived case is only real if the environment can be put into the state it needs. The
+recurring case is the **empty state**: "with no orders yet, the list shows the onboarding
+panel". On a shared staging account that the whole team has been using for a long time, zero
+orders is unreachable, and the case quietly becomes untestable. The measured failure
+(see ADR-0006) is not that it was skipped: it is that it was skipped **silently**, reported as
+covered, and the AC's own promise was never checked.
+
+Three legitimate outcomes, in order of preference:
+
+1. **A fixture identity.** Create (or take) a dedicated account / tenant / workspace that
+   exists to be empty, name it in the test's preconditions, and run the case there. This is
+   the answer for anything cheap to provision, and the same trick reaches a first-login,
+   never-verified or zero-quota state.
+2. **A reset path the product already has.** An owned tenant the test can empty, a seed
+   script, a soft-delete the product exposes. Use it only when the case can afford the blast
+   radius on a shared environment — never empty data another session is using
+   (`sprint-testing/references/fleet-conductor.md` §8 claims, when several sessions run).
+3. **Declared unobservable, with a product decision attached.** When neither 1 nor 2 is
+   available, the case is **not dropped**: it is `BLOCKED — unreachable precondition: <state>`
+   while recreation is still being tried, and becomes `DEFERRED (execution) <date> by QA decision:
+   <reason>; follow-up <KEY>` once QA defers it; the plan and the results carry that line, with what
+   it would take (a fixture account, a seed hook, a reset endpoint). That is a product / test-environment
+   decision to be raised, not a QA omission to be hidden — and per the `Improvement` bridge it
+   may itself be the report worth filing. In-sprint, this outcome is steps 2-4 of the blocking
+   ladder in `discovery-driven-doctrine.md` §5 (QA deferral with a follow-up task).
+
+**Never** substitute a similar-looking state for the empty one ("only two orders" is not
+"none"), and never mark such a case PASSED on a partial observation.
 
 ### Risk-based prioritization — orders the set, never truncates it silently
 
@@ -257,6 +313,14 @@ a justified N/A) to each is not done.
 [ ] PARAM Same-behavior data variants collapsed into ONE parameterized artifact
          per partition (Examples / fixture rows), not N separate artifacts?
 [ ] RISK Cases prioritized; any scope-driven drop logged explicitly?
+[ ] OBS  Every case's precondition reachable in the target environment? Empty /
+         first-time / zero-quota states either have a fixture identity or are
+         `BLOCKED — unreachable precondition` while being recreated, then
+         `DEFERRED (execution)` with what it would take?
+         (or N/A: no case needs a state the environment cannot produce)
+[ ] SEED A derived value read from seeded state → at least one case produces that
+         state through the real product path and asserts the value?
+         (or N/A: every precondition comes from the product flow itself)
 ```
 
 **N/A is a valid answer — but it must be a deliberate, stated N/A, not a skipped

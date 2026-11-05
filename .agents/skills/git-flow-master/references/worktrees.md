@@ -113,16 +113,25 @@ which runs each subagent in its own temporary, auto-cleaned worktree. Use that o
 parallel subagents mutate files and would otherwise collide — not to isolate a whole
 session.
 
-### Manual vs harness at a glance
+## Approach C — Orchestrated worktree (managed by the orchestration layer)
 
-| | `git worktree` (manual) | `EnterWorktree` (Claude Code) |
-| --- | --- | --- |
-| Portability | any tool / agent | Claude Code only |
-| Directory location | anywhere you choose (`../dir`) | fixed under `.claude/worktrees/` |
-| Base ref | whatever you pass | setting: `fresh`=origin/default or `head` |
-| Moves the agent's session | no (you `cd`) | yes, automatically |
-| Cleanup | manual (`remove`/`prune`) | `ExitWorktree remove` |
-| Branch naming | you choose | derived from the name (rename with `git branch -m`) |
+When several agent sessions are being coordinated — a conductor plus N workers — the worktrees are created and destroyed by the orchestration layer instead of by hand, one per worker, outside the repo. The mechanics (create, provision, launch a session into it, remove) belong to `orca-orchestration/SKILL.md`; from git's point of view it is still an ordinary linked worktree, so everything else in this file applies unchanged. Write the calls as `[ORCHESTRATION_TOOL] <verb>: …` pseudocode and load that skill for the HOW. Topology choice per activity: `orca-orchestration/references/topologies.md`.
+
+The distinction that matters here: an orchestrated worktree is **visible to the owner** (board card, managed terminal, phone) and outlives the session that made it, while a harness worktree lives inside the repo and is invisible outside the session that created it.
+
+Launching a session into that worktree can go through the native path (supervised — the orchestrator recognizes the session and can address it directly) or the custom-argv path (never supervised, the default fallback); from git's point of view the worktree itself is identical either way.
+
+### Manual vs harness vs orchestrated at a glance
+
+| | `git worktree` (manual) | `EnterWorktree` (Claude Code) | Orchestrated (Approach C) |
+| --- | --- | --- | --- |
+| Portability | any tool / agent | Claude Code only | any agent, but needs the orchestration app + binary on the machine |
+| Directory location | anywhere you choose (`../dir`) | fixed under `.claude/worktrees/` | the orchestrator's own workspace dir, outside the repo |
+| Base ref | whatever you pass | setting: `fresh`=origin/default or `head` | the base you pass at create time — **verify the new HEAD against `origin/<base>`**, it resolves local refs |
+| Moves the agent's session | no (you `cd`) | yes, automatically | no — it creates the tree, then a session is launched INTO it |
+| Cleanup | `bun run worktree:audit` then `remove`/`prune` | `bun run worktree:audit` then `ExitWorktree remove` | orchestrated removal (the committed `orca.yaml` archive hook runs the audit) + `git worktree prune` |
+| Branch naming | you choose | derived from the name (rename with `git branch -m`) | you choose at create time |
+| Owner can see it (board / phone) | no | no | yes |
 
 ---
 
@@ -145,6 +154,21 @@ tracked files, git sees them as deleted in the source tree. Restore with:
 ```bash
 git checkout -- path/to/tracked-file        # bring a tracked file back into the source tree
 ```
+
+---
+
+## Provisioning: what a fresh worktree does NOT have (all approaches)
+
+Untracked files are only half of it. Everything **gitignored** is missing too, and that half fails in ways that point at the wrong cause: no `.env` means every MCP server's `.env` loader finds nothing to hand it, so the server starts with empty values and dies on its first authenticated call with an error that reads like a broken tool (AGENTS.md Critical Rule #10), and any login script has no credentials; no `node_modules/` reports `Cannot find module`; a missing `.claude/skills` alias makes every Claude Code skill invocation an `Unknown skill`; a missing `.context/PBI/` cache fails **silently** — the session simply cannot see the synced ticket.
+
+```bash
+bun run worktree:provision          # in the new worktree: .env, deps, the skills alias, community skills, .auth/
+bun run context:hydrate             # rebuild the Jira cache (needs credentials, so run it after the above)
+```
+
+Worktrees the HARNESS creates (Claude Code `--worktree`, subagent and desktop worktrees; Codex-managed worktrees in the Codex app) copy the gitignored inputs listed in the committed `.worktreeinclude` by themselves (`.env` and its local overrides, Claude Code's local settings, `.auth/` minus the retired plaintext MCP credential copies, the OpenAPI config and synced spec, local MCP overrides, the installer state: the same list `worktree:provision` copies). They do NOT get dependencies, the `.husky/_` hook shims or the skills alias, and without `.husky/_` every git hook is skipped and commits pass no gate. The Codex app runs `bun run worktree:provision` itself through the committed `.codex/environments/environment.toml`; in a Claude Code worktree the prompt hook prints one `WORKTREE:` warning line until you run it. A worktree made with plain `git worktree add` or by an orchestration layer reads no `.worktreeinclude`, so `worktree:provision` is the whole story there (Orca runs it from the committed `orca.yaml`).
+
+`.session/` is deliberately NOT provisioned: a plan, brief, or roster written inside a worktree dies with it. Keep those in the primary checkout and cite them by **absolute** path. Full gap table and how to wire provisioning as an orchestration setup hook: `orca-orchestration/references/provisioning.md`.
 
 ---
 
@@ -178,8 +202,26 @@ Rule of thumb: **one session = one worktree = one branch.**
 
 ---
 
+## Orphan audit — run BEFORE removing any worktree
+
+Removing a worktree deletes its directory, and **gitignored files are not in git**: `.env`, `.auth/`, captured evidence and screenshots, local reports, anything under `.session/`. A clean `git status` says nothing about them — it is exactly the state in which they look safe to delete.
+
+```bash
+git -C <worktree> status --porcelain            # tracked work: must be committed AND pushed
+git -C <worktree> log --oneline origin/<base>.. # commits that exist only here
+bun run worktree:audit <worktree>               # THE audit: every gitignored file about to die, classified
+bun run worktree:audit <worktree> --rescue      # copy the STATE class into the primary, never overwriting
+```
+
+`worktree:audit` sorts every gitignored path into STATE (belongs in the primary checkout: `.session/`, `.scratch/`, PBI evidence and `[LOCAL]` notes, `.context/reports/`, updater state), CACHE (a command it names brings it back), DISPOSABLE (test output, editor litter, and the test-run outputs the owner accepted losing: Allure history, `reports/`, refreshed `.auth/` tokens) and UNKNOWN (no rule matched). It exits 1 while STATE or UNKNOWN is only in the worktree. `--rescue` copies STATE to the same path under the primary; a file the primary already holds with different bytes is a CONFLICT left for you, and every UNKNOWN entry is decided by hand. A durable document belongs in the primary checkout or in the tracker, never only in a worktree. Only on exit 0 remove the worktree. The classification table and the class definitions: `orca-orchestration/references/provisioning.md` §5.
+
+The removal paths that skip this on their own: `git worktree remove` without `--force` exits 0 and deletes ignored files without a word; Claude Code removes a worktree it judges clean, and ignored files do not count against clean; a subagent `isolation: "worktree"` tree is cleaned automatically, so nothing can be audited there. A subagent that must leave durable output writes it straight to the primary checkout by absolute path.
+
+---
+
 ## Cleanup checklist
 
+- [ ] `bun run worktree:audit <path>` exits 0 (after `--rescue` and any hand-resolved conflict).
 - [ ] Branch's work is committed and pushed (or deliberately discarded).
 - [ ] `git worktree remove <path>` (or `ExitWorktree remove`) — succeeds only when clean.
 - [ ] `git branch -d <branch>` once the branch is merged.
@@ -198,6 +240,8 @@ Rule of thumb: **one session = one worktree = one branch.**
 | Claude Code, want the session moved for you | `EnterWorktree` (base `fresh` for independence) |
 | Any other agent / portable script | `git worktree add … -b …` (Approach A) |
 | Parallel subagents mutating files | `Agent`/workflow `isolation: "worktree"` |
+| A coordinated fleet of worker sessions the owner wants to watch and steer | Orchestrated worktree per worker (Approach C) — `orca-orchestration/SKILL.md` |
+| Several sessions that only read code and write to the tracker (manual QA, AC refinement) | **No worktree** — same checkout. The isolation they need is a browser profile and a session dir, not a second tree |
 
 ---
 
@@ -212,5 +256,6 @@ When an AI session needs isolation from in-progress work on another branch:
 4. Hide the nested worktree from the primary tree via local `info/exclude`.
 5. Do all further work (edits, verifies, commits) in the worktree; the other branch stays
    untouched.
-6. On completion, commit on the worktree's branch → open its own PR → `ExitWorktree`
-   (`keep` to preserve, `remove` when merged/abandoned).
+6. On completion, commit on the worktree's branch → open its own PR → run
+   `bun run worktree:audit --rescue` from the worktree → `ExitWorktree` (`keep` to preserve,
+   `remove` when merged/abandoned, and only once the audit exits 0).
