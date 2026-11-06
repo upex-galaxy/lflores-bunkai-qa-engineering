@@ -1,0 +1,13 @@
+{
+  "id": "fabc130b-7bbe-4d46-8f3f-92d4a34dd2dc",
+  "token": "bk_pat_dTxQR9Ujf7gb.wTHfVyp9QfnAO_5qIdsMSFWC2rIFYIc",
+  "name": "pat-1793955918132-gtcESx",
+  "scopes": [
+    "atc:read",
+    "run:execute"
+  ],
+  "workspace_id": null,
+  "expires_at": null,
+  "created_at": "2026-11-06T09:05:18.257773+00:00",
+  "warning": "Store this token now — it cannot be retrieved later."
+}
