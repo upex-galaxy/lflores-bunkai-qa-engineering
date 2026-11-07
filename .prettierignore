@@ -92,3 +92,12 @@ packages/decks/
 
 # ----- 2026-09-02 (sync) -----
 .backups*/
+
+# ----- 2026-11-07 (sync) -----
+.pi/*
+!.pi/mcp.json
+!.pi/settings.json
+!.pi/extensions/
+!.pi/skills/
+!.pi/prompts/
+!.pi/themes/

@@ -1,11 +1,12 @@
 /**
- * @fileoverview ONE prompt-time emitter for the three harnesses.
+ * @fileoverview ONE prompt-time emitter for every harness.
  *
  * Claude Code and Codex run this file as a `UserPromptSubmit` command hook and
  * read its stdout, and run it again on `SessionStart` to re-arm the routes
  * (see "Re-arm sources" below); OpenCode imports the same exports from its
  * plugin adapter (`.opencode/plugins/personality-reinject.js`): OpenCode 1
- * also routes from `chat.message`, OpenCode 2 is router-only. The emitter
+ * also routes from `chat.message`, OpenCode 2 is router-only. Pi imports them
+ * from its extension (`.pi/extensions/agentic-qa.js`). The emitter
  * carries four payloads, in this order (the AGENTS.md §2 output contract is
  * not one of them: the harness loads it once per session):
  *
@@ -24,8 +25,9 @@
  *      `AGENTS.md` and each section's frontmatter (see `routeLines`), capped,
  *      plus at most one `ROUTE-OPTIONAL:` line. 0 bytes when nothing new
  *      matches. A re-arm (below) clears them and prints nothing. A harness
- *      notification (`isHarnessNotification`: a task notification, or a
- *      prompt made only of harness blocks such as system reminders) routes
+ *      notification (`isHarnessNotification`: a task notification, a bare
+ *      agent-message hand-back, or a prompt made only of harness blocks such
+ *      as system reminders) routes
  *      nothing and leaves the session state untouched: no human wrote it.
  *      Harness blocks inside a human prompt are dropped before it is
  *      classified (`stripHarnessBlocks`).
@@ -44,6 +46,8 @@
  *   - OpenCode 1, `.opencode/plugins/personality-reinject.js`: the
  *     `experimental.session.compacting` event only; OpenCode 2 is router-only
  *     and keeps no state to re-arm.
+ *   - Pi, `.pi/extensions/agentic-qa.js`: the `session_compact` event only;
+ *     `/new` starts a new session id.
  *   `bun run agents:compat:check` asserts the two command-host lists
  *   (`REARM_SESSION_START_SOURCES` in `cli/lib/agent-compatibility-contracts.ts`).
  *
@@ -149,6 +153,15 @@ export const HARNESS_NOTIFICATION_PREFIX = '<task-notification>';
  */
 export const HARNESS_NOTIFICATION_PREFIXES = [HARNESS_NOTIFICATION_PREFIX, '[SYSTEM NOTIFICATION - NOT USER INPUT]'];
 
+/**
+ * A hand-back Claude Code delivers as a bare prompt, with no reminder around
+ * it: the agent-message preamble, then the `<agent-message>` block that holds
+ * a subagent's (or a peer session's) report (measured 2026-11-06). Model text,
+ * never a human's. The preamble alone is not enough: a human who quotes it
+ * without the block still routes.
+ */
+const HARNESS_HANDBACK_PATTERN = /^Another Claude session sent a message[^\n:]*:\s*<agent-message\b/;
+
 /** Blocks the harness injects into a prompt. No human typed their content. */
 const HARNESS_BLOCK_TAGS = ['system-reminder', 'tools-used-before-summary'];
 
@@ -194,7 +207,9 @@ export function stripHarnessBlocks(prompt) {
 export function isHarnessNotification(prompt) {
   if (typeof prompt !== 'string' || prompt.trim().length === 0) { return false; }
   const rest = stripHarnessBlocks(prompt).trimStart();
-  return rest.length === 0 || HARNESS_NOTIFICATION_PREFIXES.some(prefix => rest.startsWith(prefix));
+  return rest.length === 0
+    || HARNESS_NOTIFICATION_PREFIXES.some(prefix => rest.startsWith(prefix))
+    || HARNESS_HANDBACK_PATTERN.test(rest);
 }
 
 /**

@@ -77,19 +77,24 @@ export function buildAuthPayload(
 
 /**
  * Extract the token fields from the auth response.
- * Override if your API returns tokens in a different shape.
  *
- * Expected response format (default):
- *   { access_token: string, token_type: string, expires_in: number, refresh_token?: string }
+ * Bunkai POST /api/v1/auth/signin returns
+ *   { user, session: { access_token, ... }, pat: { token, expires_at, scopes, ... }, warning }.
+ * The Bearer token used by tests/MCP tools is `pat.token` (see AuthApi.ts), not the
+ * Supabase session token. PATs have no refresh_token.
  */
 export function extractTokenFromResponse(
   body: Record<string, unknown>,
   _context: ApiLoginContext,
 ): ExtractedToken {
+  const pat = (body.pat ?? {}) as Record<string, unknown>;
+  const expiresAt = pat.expires_at ? Date.parse(String(pat.expires_at)) : Number.NaN;
+  const expiresIn = Number.isFinite(expiresAt) ? Math.max(0, Math.round((expiresAt - Date.now()) / 1000)) : 86400;
+
   return {
-    accessToken: String(body.access_token ?? ''),
-    tokenType: String(body.token_type ?? 'Bearer'),
-    expiresIn: Number(body.expires_in ?? 86400),
-    refreshToken: body.refresh_token ? String(body.refresh_token) : null,
+    accessToken: String(pat.token ?? ''),
+    tokenType: 'Bearer',
+    expiresIn,
+    refreshToken: null,
   };
 }

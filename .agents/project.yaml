@@ -31,6 +31,8 @@ testing:
   default_env: staging # Default testing environment — must match a key under `environments:` (e.g. staging)
   tms_cli: bun xray # Test management CLI command (e.g. bun xray). Set to acli (== issue_tracker_cli) -> Modality jira-native, no Xray on Jira.
   tc_creation_stage: auto # When to create Test issues (see .agents/project.schema.yaml). Unset or unrecognized is treated as auto.
+  browser:
+    pair_mode: null # added 2026-11-07 from upstream 6b939c7 (default); see .agents/project.schema.yaml
 
 harnesses: null
 
@@ -59,6 +61,10 @@ qa:
     defect_epic:
       name: QA Defect Management # convention name; the `QA ` prefix marks a process epic, not product
       key: BK-183 # discovered/created at runtime, then cached here (e.g. PROJ-123)
+  methodology: # added 2026-11-07 from upstream 6b939c7 (defaults); see .agents/project.schema.yaml
+    stages: [shift-left, planning, execution, reporting, documentation, automation, regression]
+    gate_mode: strict
+    execution_profile: agentic
 
 board:
   source: auto

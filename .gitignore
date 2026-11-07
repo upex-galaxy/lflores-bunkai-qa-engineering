@@ -206,3 +206,14 @@ env.d.ts
 !.context/PBI/
 .agents/skills/skill-creator/
 .agents/skills/diagram-design/
+
+# ----- 2026-11-07 (sync) -----
+.pi/*
+!.pi/mcp.json
+!.pi/settings.json
+!.pi/SYSTEM.md
+!.pi/APPEND_SYSTEM.md
+!.pi/extensions/
+!.pi/skills/
+!.pi/prompts/
+!.pi/themes/
