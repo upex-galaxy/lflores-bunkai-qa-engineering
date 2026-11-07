@@ -1,34 +1,36 @@
 {
   "schemaVersion": 7,
   "templateRepo": "upex-galaxy/agentic-qa-boilerplate",
-  "templateCommit": "",
+  "templateCommit": "6b939c7030241ac07053826974e1f9c3fad74562",
   "perComponentCommit": {
-    "skills": "06947fa1e0e334db64660502d83620ec11b6210a",
+    "skills": "6b939c7030241ac07053826974e1f9c3fad74562",
     "commands": "06947fa1e0e334db64660502d83620ec11b6210a",
-    "scripts": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
-    "docs": "06947fa1e0e334db64660502d83620ec11b6210a",
-    "cli": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
-    "vscode": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
-    "husky": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
-    "agents-docs": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
+    "scripts": "6b939c7030241ac07053826974e1f9c3fad74562",
+    "docs": "6b939c7030241ac07053826974e1f9c3fad74562",
+    "cli": "6b939c7030241ac07053826974e1f9c3fad74562",
+    "vscode": "6b939c7030241ac07053826974e1f9c3fad74562",
+    "husky": "6b939c7030241ac07053826974e1f9c3fad74562",
+    "agents-docs": "6b939c7030241ac07053826974e1f9c3fad74562",
     "claude-config": "06947fa1e0e334db64660502d83620ec11b6210a",
-    "tooling": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
-    "env-template": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
-    "agent-compatibility": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
-    "codex-config": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
-    "agent-root-config": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
-    "instructions": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
-    "config-core": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
-    "tests-utils": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
-    "env-schema": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
-    "worktree-include": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
-    "orca-config": "3c17f9a972b3e1888154278a1f78938cdf7ed398",
-    "playwright-cli-config": "3c17f9a972b3e1888154278a1f78938cdf7ed398"
+    "tooling": "6b939c7030241ac07053826974e1f9c3fad74562",
+    "env-template": "6b939c7030241ac07053826974e1f9c3fad74562",
+    "agent-compatibility": "6b939c7030241ac07053826974e1f9c3fad74562",
+    "codex-config": "6b939c7030241ac07053826974e1f9c3fad74562",
+    "agent-root-config": "6b939c7030241ac07053826974e1f9c3fad74562",
+    "instructions": "6b939c7030241ac07053826974e1f9c3fad74562",
+    "config-core": "6b939c7030241ac07053826974e1f9c3fad74562",
+    "tests-utils": "6b939c7030241ac07053826974e1f9c3fad74562",
+    "env-schema": "6b939c7030241ac07053826974e1f9c3fad74562",
+    "worktree-include": "6b939c7030241ac07053826974e1f9c3fad74562",
+    "orca-config": "6b939c7030241ac07053826974e1f9c3fad74562",
+    "playwright-cli-config": "6b939c7030241ac07053826974e1f9c3fad74562",
+    "pi-adapter": "6b939c7030241ac07053826974e1f9c3fad74562",
+    "pi-config": "6b939c7030241ac07053826974e1f9c3fad74562"
   },
   "syncedComponents": [],
   "ignoreFileSync": {
     ".gitignore": {
-      "lastSyncedSha": "3c8c958c485266512b91153a279a7691af0469f5",
+      "lastSyncedSha": "b36c54ec990a6664d5492897138d797e6a44f892",
       "appendedLines": [
         "**/evidence/",
         ".template/claude-md.upstream.sha",
@@ -73,11 +75,20 @@
         "!.context/reports/",
         "!.context/PBI/",
         ".agents/skills/skill-creator/",
-        ".agents/skills/diagram-design/"
+        ".agents/skills/diagram-design/",
+        ".pi/*",
+        "!.pi/mcp.json",
+        "!.pi/settings.json",
+        "!.pi/SYSTEM.md",
+        "!.pi/APPEND_SYSTEM.md",
+        "!.pi/extensions/",
+        "!.pi/skills/",
+        "!.pi/prompts/",
+        "!.pi/themes/"
       ]
     },
     ".prettierignore": {
-      "lastSyncedSha": "2d65bedc55be87885be51510bc1b977c8aef67c2",
+      "lastSyncedSha": "a4d3bb7e47a1f6c25853369a5f130adaef6f18b3",
       "appendedLines": [
         ".claude/settings.local.json",
         ".auth/",
@@ -91,7 +102,14 @@
         "packages/decks/",
         ".scratch/",
         ".session/",
-        ".backups*/"
+        ".backups*/",
+        ".pi/*",
+        "!.pi/mcp.json",
+        "!.pi/settings.json",
+        "!.pi/extensions/",
+        "!.pi/skills/",
+        "!.pi/prompts/",
+        "!.pi/themes/"
       ]
     }
   },
@@ -157,6 +175,6 @@
     }
   },
   "cliVersion": "8.5",
-  "lastSyncedAt": "2026-11-04T23:33:57.223Z",
+  "lastSyncedAt": "2026-11-07T13:49:18.725Z",
   "variableSystemVersion": 1
 }

@@ -295,6 +295,14 @@
         "to_status_id": "10039",
         "from_canonical": "estimation",
         "to_canonical": "backlog"
+      },
+      "refined": {
+        "id": "3",
+        "name": "refiened",
+        "from_status_id": "10041",
+        "to_status_id": "10013",
+        "from_canonical": "shift_left_qa",
+        "to_canonical": "ready_for_dev"
       }
     }
   },
