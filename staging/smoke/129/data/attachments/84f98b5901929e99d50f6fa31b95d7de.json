@@ -1,0 +1,12 @@
+{
+  "invite": {
+    "id": "e08ee038-b45d-4ab3-abb2-ec1c1fc34e0c",
+    "email": "test.ricardo.5bhhqp@example.com",
+    "role": "member",
+    "expires_at": "2026-11-14T08:34:17.709642+00:00",
+    "created_at": "2026-11-07T08:34:17.709642+00:00"
+  },
+  "token": "bk_inv_NmihwkjN6PXJqkywTpyubTxGzw6vy5t7d_18wGeJmow",
+  "accept_url": "https://staging-upexbunkai.vercel.app/invites/accept?token=bk_inv_NmihwkjN6PXJqkywTpyubTxGzw6vy5t7d_18wGeJmow",
+  "warning": "Copy this URL now — the token cannot be retrieved later."
+}
