@@ -240,14 +240,6 @@
         "from_canonical": "in_progress",
         "to_canonical": "ready_for_dev"
       },
-      "refiened": {
-        "id": "3",
-        "name": "refiened",
-        "from_status_id": "10041",
-        "to_status_id": "10013",
-        "from_canonical": "shift_left_qa",
-        "to_canonical": "ready_for_dev"
-      },
       "back_from_shift_left_qa": {
         "id": "14",
         "name": "back",
@@ -297,8 +289,8 @@
         "to_canonical": "backlog"
       },
       "refined": {
-        "id": "3",
-        "name": "refiened",
+        "id": null,
+        "name": "refined",
         "from_status_id": "10041",
         "to_status_id": "10013",
         "from_canonical": "shift_left_qa",
