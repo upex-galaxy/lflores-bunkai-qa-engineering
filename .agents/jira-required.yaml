@@ -447,8 +447,6 @@ work_types:
       ready_for_release: { description: QA-approved and queued for the next release window }
       deployed_to_production: { description: Released to production (terminal success state) }
       aborted: { description: Story cancelled / will not be delivered (terminal) }
-      estimation:
-        description: Story being estimated (planning poker / sizing)
     required_transitions:
       # ---- Forward path ----
       analyze:
@@ -522,22 +520,6 @@ work_types:
         from: aborted
         to: ready_for_dev
         description: Restore an aborted story back to ready_for_dev
-      ready_to_estimate:
-        from: backlog
-        to: estimation
-        description: Story sized for planning poker
-      estimate:
-        from: shift_left_qa
-        to: estimation
-        description: After shift-left QA, send to sizing
-      estimated_and_ready_to_work:
-        from: estimation
-        to: ready_for_dev
-        description: Sized and ready for dev pickup
-      back_from_estimation:
-        from: estimation
-        to: backlog
-        description: Cannot estimate — return to backlog
 
     used_by: [acli, sprint-testing, test-documentation, project-discovery]
 
