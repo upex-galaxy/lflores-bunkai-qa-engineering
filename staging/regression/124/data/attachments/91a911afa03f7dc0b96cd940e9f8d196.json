@@ -1,0 +1,32 @@
+{
+  "atc": {
+    "id": "46761299-e1be-4835-b6c1-9f6415b07e5a",
+    "slug": "defect-triage-module/atc-e156467e",
+    "tags": [],
+    "layer": "API",
+    "steps": [
+      {
+        "id": "a8002ab3-8d06-4106-9e73-4686b432d329",
+        "content": "Verify the capability gate sampling fixture.",
+        "expected": null,
+        "position": 1,
+        "input_data": null
+      }
+    ],
+    "title": "gate-fixture-atc-1794115678134-6sDp1m",
+    "status": "unrun",
+    "version": 1,
+    "priority": null,
+    "module_id": "175f8a08-20b9-4c96-a21a-e02dcae2837e",
+    "technique": null,
+    "assertions": [],
+    "created_at": "2026-11-08T05:27:58.458174+00:00",
+    "project_id": "2fee236f-1246-40c4-bfc4-d332287f9548",
+    "updated_at": "2026-11-08T05:27:58.458174+00:00",
+    "archived_at": null,
+    "user_story_id": "f8e371e1-d337-4dfd-bb16-d9ddbbbd412b",
+    "acceptance_criterion_ids": [
+      "89b30ccb-28de-4617-86e3-941c51805c41"
+    ]
+  }
+}
