@@ -1,0 +1,15 @@
+{
+  "title": "gate-fixture-atc-1794216427115-DkKI0t",
+  "module_id": "175f8a08-20b9-4c96-a21a-e02dcae2837e",
+  "user_story_id": "b80ec64c-5527-4a59-b098-402c6e4eed4d",
+  "acceptance_criterion_ids": [
+    "410af86c-6331-4844-a027-c33c93feedf3"
+  ],
+  "layer": "API",
+  "steps": [
+    {
+      "position": 1,
+      "content": "Verify the capability gate sampling fixture."
+    }
+  ]
+}

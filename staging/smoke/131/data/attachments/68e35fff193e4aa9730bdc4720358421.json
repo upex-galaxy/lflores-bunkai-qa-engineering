@@ -1,0 +1,12 @@
+{
+  "id": "e908586a-ac05-4a42-a762-ac6fdf30c900",
+  "token": "bk_pat_3x5q-t_jrkS2.rBHrlcVYQUCxZm0viR6558HSOipV69A",
+  "name": "pat-1794216423272-Vc4mfr",
+  "scopes": [
+    "run:execute"
+  ],
+  "workspace_id": "fcddf4b3-93b5-4249-b0c7-04f8a0eae8f5",
+  "expires_at": null,
+  "created_at": "2026-11-09T09:27:03.502047+00:00",
+  "warning": "Store this token now — it cannot be retrieved later."
+}

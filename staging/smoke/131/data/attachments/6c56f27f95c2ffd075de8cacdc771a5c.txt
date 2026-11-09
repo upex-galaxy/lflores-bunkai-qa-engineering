@@ -1,0 +1,12 @@
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/auth/signin
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
+✅ [BK-311] authenticateSuccessfully - PASS (717ms)
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/workspaces
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/workspaces/bb9425c5-c905-477c-91cb-c057aecae18d/invites
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/auth/signin
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
+✅ [BK-311] authenticateSuccessfully - PASS (731ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/invites/accept
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me/active-workspace
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/workspaces/bb9425c5-c905-477c-91cb-c057aecae18d/membership
+✅ [BK-680] allowCookieSessionOnSessionOnlyRoutes - PASS (767ms)

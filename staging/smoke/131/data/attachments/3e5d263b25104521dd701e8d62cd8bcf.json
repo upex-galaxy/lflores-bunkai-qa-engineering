@@ -1,0 +1,10 @@
+{
+  "error": {
+    "code": "conflict",
+    "message": "Jira is not connected for this workspace. Ask a workspace owner or admin to connect it in Settings > Jira.",
+    "details": {
+      "reason": "jira_not_connected"
+    },
+    "request_id": "8d84c93e-b2e5-43d3-988d-d7318e9d1dcc"
+  }
+}

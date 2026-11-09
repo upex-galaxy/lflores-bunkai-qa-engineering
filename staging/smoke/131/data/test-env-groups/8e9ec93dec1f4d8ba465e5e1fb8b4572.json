@@ -1,0 +1,1 @@
+{"id":"8e9ec93dec1f4d8ba465e5e1fb8b4572","fullName":"integration/tokens/enforceTokenRouteCookieOnlyPosture.test.ts:22:3","name":"BK-497: should reject a PAT-authenticated POST to the token-issuance route","status":"passed","testResultsByEnv":{"default":"6cf25d8a5d4de567c15c3c0834f192b3"}}

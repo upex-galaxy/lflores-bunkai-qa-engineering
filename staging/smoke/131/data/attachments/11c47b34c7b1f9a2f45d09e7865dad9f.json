@@ -1,0 +1,24 @@
+{
+  "user": {
+    "id": "b3a09a86-3381-4925-936f-988b2b53dc60",
+    "email": "bk569-nonmember@ambuusteln.resend.app"
+  },
+  "session": {
+    "access_token": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImUzNTEyOTEwLTY0ZDEtNGY4OS04ZDk2LTI4NjA5NzQ2ZTQ1YyIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2ZtYnBpa3pwa2FmcHRxeGltaHhuLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJiM2EwOWE4Ni0zMzgxLTQ5MjUtOTM2Zi05ODhiMmI1M2RjNjAiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzk0MjIwMDQzLCJpYXQiOjE3OTQyMTY0NDMsImVtYWlsIjoiYms1Njktbm9ubWVtYmVyQGFtYnV1c3RlbG4ucmVzZW5kLmFwcCIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWwiOiJiazU2OS1ub25tZW1iZXJAYW1idXVzdGVsbi5yZXNlbmQuYXBwIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBob25lX3ZlcmlmaWVkIjpmYWxzZSwic3ViIjoiYjNhMDlhODYtMzM4MS00OTI1LTkzNmYtOTg4YjJiNTNkYzYwIn0sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3OTQyMTY0NDN9XSwic2Vzc2lvbl9pZCI6IjE4MWQwMTFjLWQ5M2QtNDRiZS1hNDVkLTk1YjYyODNjOWQ0ZSIsImlzX2Fub255bW91cyI6ZmFsc2V9.tBpm7EozTD-qiPfetTX4xr-1rsHfd9TyQbhpMVI664liPLQRP_eBjJBgn2A0-ZRF06rCUMYSygCcrbf4pNmS0g",
+    "refresh_token": "hzailw2j6zde",
+    "expires_at": 1794220043,
+    "token_type": "bearer"
+  },
+  "pat": {
+    "token": "bk_pat_ayo7Oi_dAwoS.V4n8pX5OJRkYeSQaIJTAz1t8TUcyMAE",
+    "id": "3ad53efa-c5ab-4706-920f-bc475c4a4c06",
+    "name": "cli-signin",
+    "scopes": [
+      "atc:read",
+      "atc:write",
+      "run:execute"
+    ],
+    "expires_at": null
+  },
+  "warning": "Store the PAT token now — it cannot be retrieved later."
+}

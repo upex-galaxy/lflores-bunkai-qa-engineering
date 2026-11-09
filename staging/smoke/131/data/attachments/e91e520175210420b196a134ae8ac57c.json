@@ -1,0 +1,12 @@
+{
+  "acceptance_criterion": {
+    "id": "410af86c-6331-4844-a027-c33c93feedf3",
+    "title": "gate-fixture-ac-1794216426806-SM7H4M",
+    "position": 1,
+    "created_at": "2026-11-09T09:27:07.060187+00:00",
+    "archived_at": null,
+    "description": null,
+    "user_story_id": "b80ec64c-5527-4a59-b098-402c6e4eed4d",
+    "archive_batch_id": null
+  }
+}
