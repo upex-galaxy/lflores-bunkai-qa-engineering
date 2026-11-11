@@ -206,7 +206,7 @@ orchestration:
   orchestrator_skills: [orca-cli, orchestration]
 
 updater:
-  protected_paths: [] # extra synced files this project has hand-merged and wants the updater to stop overwriting (same semantics as the built-in watchlist)
+  protected_paths: [scripts/api-login.test.ts] # extra synced files this project has hand-merged and wants the updater to stop overwriting (same semantics as the built-in watchlist)
 
 secrets:
   provider: local
