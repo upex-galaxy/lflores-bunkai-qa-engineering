@@ -1,0 +1,12 @@
+{
+  "id": "dc2116ac-c900-4be6-917b-04644aa3cb36",
+  "token": "bk_pat_NVhoarjGoFps.NmRviRHtvbqauRg0YX0becsBMdeeYIQ",
+  "name": "pat-1794375412338-Pu3MO6",
+  "scopes": [
+    "workspace:admin"
+  ],
+  "workspace_id": "6646f244-a28c-441e-8486-9af33bdb5c11",
+  "expires_at": null,
+  "created_at": "2026-11-11T05:36:52.501345+00:00",
+  "warning": "Store this token now — it cannot be retrieved later."
+}

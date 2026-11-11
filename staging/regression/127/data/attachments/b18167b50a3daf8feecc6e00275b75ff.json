@@ -1,0 +1,12 @@
+{
+  "id": "ca9f5b1f-c716-4a3d-ad75-fb2f184c8b8e",
+  "token": "bk_pat_ACyE40edivpn.4kQUofGGOVI65RczqV2jYo0Ci9bZaGw",
+  "name": "pat-1794375413382-PlyrwO",
+  "scopes": [
+    "workspace:admin"
+  ],
+  "workspace_id": "6646f244-a28c-441e-8486-9af33bdb5c11",
+  "expires_at": null,
+  "created_at": "2026-11-11T05:36:53.514227+00:00",
+  "warning": "Store this token now — it cannot be retrieved later."
+}

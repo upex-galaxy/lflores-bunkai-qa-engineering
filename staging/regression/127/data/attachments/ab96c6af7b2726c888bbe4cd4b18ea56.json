@@ -1,0 +1,15 @@
+{
+  "test": {
+    "id": "84f01fda-0832-4e2a-a6ef-da4c17759326",
+    "steps": [
+      {
+        "atc_id": "289cb350-b3bc-4633-92b2-9cf40df4831f",
+        "position": 1
+      }
+    ],
+    "title": "gate-fixture-test-1794375388290-Nup7vt",
+    "created_at": "2026-11-11T05:36:28.437111+00:00",
+    "created_by": "2742da39-e0ff-4f0c-a0a1-88dae804e14f",
+    "workspace_id": "6646f244-a28c-441e-8486-9af33bdb5c11"
+  }
+}
