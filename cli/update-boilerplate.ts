@@ -22,7 +22,8 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import pc from 'picocolors';
 import { checkAgentCompatibility, repairAgentSurfaces, SHADOWING_COMMANDS_BACKUP_DIR, SKILLS_ALIAS_DEFERRED_MARKER } from './lib/agent-compatibility.ts';
-import { applyInsertions, changedDefaults, describeChangedDefault, planInsertions, projectDelta, SCHEMA_FILE, SCHEMA_SOURCE } from './lib/agents-schema.ts';
+import { applyInsertions, changedDefaults, describeChangedDefault, isMaintainerCopy, isSchemaOwner, planInsertions, projectDelta, SCHEMA_FILE, SCHEMA_SOURCE } from './lib/agents-schema.ts';
+import { BOILERPLATE_TEST_PATHS, BOILERPLATE_TEST_PATTERNS } from './lib/boilerplate-only.ts';
 import { declaredHarnesses, isUnderAny, unusedHarnessPaths } from './lib/harness-selection.ts';
 import * as tui from './lib/tui';
 import { startUpdaterUi } from './lib/ui/updater-run.ts';
@@ -73,6 +74,7 @@ import {
   RESOLVED_BY_APPLY_MARK,
   resolvedByApply,
   runVerdict,
+  selfUpdateBlockedFindings,
 } from './lib/updater-parity';
 import { makePbiCacheMigrationHook } from './lib/updater-pbi';
 import { CLAUDE_SETTINGS_FILE, formatHookCommand, mergeHookGroups, mergePermissionLists, readDeclinedDenies, readDeclinedHooks } from './lib/updater-settings';
@@ -345,6 +347,22 @@ export const COMPONENTS: Component[] = [
   { name: 'orca-config', type: 'file-list', paths: ['.'], files: ORCA_CONFIG_FILES, bootstrapOnly: true },
   { name: 'playwright-cli-config', type: 'file-list', paths: ['.playwright'], files: PLAYWRIGHT_CLI_CONFIG_FILES, bootstrapOnly: true },
 ];
+
+// --- BOILERPLATE-ONLY FILES (cli/lib/boilerplate-only.ts) ---
+
+export { BOILERPLATE_TEST_PATHS, BOILERPLATE_TEST_PATTERNS };
+
+/**
+ * The boilerplate's own checkout: the package name AND the maintainer sentinel
+ * (the test `contractsEnforced` makes in scripts/lib/doc-contracts.ts; cli/ may
+ * not import from scripts/).
+ */
+export function isBoilerplateCheckout(root: string): boolean {
+  const pkg = path.join(root, 'package.json');
+  const yaml = path.join(root, '.agents', 'project.yaml');
+  return fs.existsSync(pkg) && isSchemaOwner(fs.readFileSync(pkg, 'utf8'))
+    && fs.existsSync(yaml) && isMaintainerCopy(fs.readFileSync(yaml, 'utf8'));
+}
 
 // --- ARG PARSE ---
 interface ParsedArgs {
@@ -1723,6 +1741,10 @@ function makeParityHook(sink: ReportSink, priorLockSha: string, dryRun: boolean,
       packageJsonKept: summary.packageJsonKept ?? [],
       packageJsonAppended: summary.packageJsonAppended ?? [],
       testSiblingsHeldBack: summary.testSiblingsHeldBack ?? [],
+      boilerplateCopiesRemoved: summary.boilerplateCopiesRemoved ?? [],
+      boilerplateCopiesKept: summary.boilerplateCopiesKept ?? [],
+      boilerplateCleanupBackup: summary.boilerplateCleanupBackup ?? null,
+      selfUpdateRepair: summary.selfUpdateRepair ?? null,
       gates: runFacts.gates,
       pbiCache: runFacts.pbiCache,
       shadowingCommandsMoved: runFacts.shadowingCommandsMoved,
@@ -1757,6 +1779,28 @@ function makeParityHook(sink: ReportSink, priorLockSha: string, dryRun: boolean,
       sink.warn(`No se pudo guardar ${PARITY_PROMPT_PATH}: ${err instanceof Error ? err.message : String(err)}`);
     }
   };
+}
+
+/**
+ * A run the self-update aborted (the new updater does not load): no apply ran,
+ * so no parity hook either. Its blocking rows still get the table, the saved
+ * prompt and the copy block, naming the protected file to merge.
+ */
+function reportSelfUpdateBlocked(blocked: NonNullable<RunSummary['selfUpdateBlocked']>, upstreamSha: string, lockSha: string): void {
+  const findings = selfUpdateBlockedFindings(blocked);
+  const report = renderParityReport(findings, { templateRepo: TEMPLATE_REPO, upstreamSha, lockSha, promptFile: PARITY_PROMPT_PATH, dryRun: false });
+  runFacts.parity = { findings, report };
+  const glyph = (state: 'ok' | 'warn' | 'blocked'): string => tui.statusIcon(state === 'blocked' ? 'fail' : state);
+  tui.section('Estado por superficie');
+  process.stdout.write(`${tui.table(['', 'Superficie', 'Detalle'], report.surfaces.map(r => [glyph(r.state), r.label, r.cell]))}\n`);
+  try {
+    const out = path.join(process.cwd(), PARITY_PROMPT_PATH);
+    fs.mkdirSync(path.dirname(out), { recursive: true });
+    fs.writeFileSync(out, report.fileBody);
+    tui.log.info(`Prompt guardado en ${pc.cyan(PARITY_PROMPT_PATH)}.`);
+  }
+  catch (err) { tui.log.warn(`No se pudo guardar ${PARITY_PROMPT_PATH}: ${err instanceof Error ? err.message : String(err)}`); }
+  process.stdout.write(`\n${pc.dim('────────  COPY PROMPT BELOW  ────────')}\n${report.prompt}\n${pc.dim('────────  COPY PROMPT ABOVE  ────────')}\n\n`);
 }
 
 /** End-of-run visual: per-surface table, the parity prompt, the summary box. */
@@ -1903,7 +1947,9 @@ async function closeUi(status: 'done' | 'done-with-pending' | 'failed' | 'aborte
 
 // --- SINK ---
 function abortOnCancel<T>(v: T | symbol): T {
-  if (tui.isCancel(v)) {
+  // A plain `typeof` narrowing: an adopted app resolves `@clack/prompts` to a
+  // newer minor whose `isCancel` guard no longer narrows `T | symbol` to `T`.
+  if (typeof v === 'symbol' || tui.isCancel(v)) {
     throw Object.assign(new Error('Aborted by user.'), { name: 'ExitPromptError' });
   }
   return v;
@@ -2320,15 +2366,24 @@ async function main(): Promise<void> {
     // `.context/ADR/` needs no entry here: `.context` is not a synced component,
     // so ADRs only ever travel through the scaffold tarball, which prunes the
     // recorded ones (`ADR-<digits>-*`) and keeps the template and the README. A
-    // prefix entry would drop those two as well, and this list has no pattern
-    // form; the component-registry test holds the invariant instead. The synced
+    // prefix entry would drop those two as well, and with `.context` unsynced no
+    // pattern is needed either; the component-registry test holds the invariant. The synced
     // linters skip a cite of a pruned ADR outside the boilerplate.
     repoOnlyPaths: [
       'docs/reports',
+      // The boilerplate's own tests, fixtures and maintainer-only scripts.
+      ...BOILERPLATE_TEST_PATHS,
       // The files of a harness this project does not use (ADR-0012): it
       // deleted them on purpose, so no detection path re-delivers them.
       ...unusedHarnessPaths(process.cwd()),
     ],
+    // The boilerplate's own unit tests and snapshots, wherever they sit under
+    // cli/, scripts/ and the skills (BOILERPLATE_TEST_PATTERNS).
+    repoOnlyPatterns: BOILERPLATE_TEST_PATTERNS,
+    // A project that still holds upstream's unedited copies of them (they
+    // travelled before) loses those copies, with a backup and a row; inert in
+    // the boilerplate's own checkout, where they are the source.
+    ...(isBoilerplateCheckout(process.cwd()) ? {} : { cleanupRepoOnly: { paths: BOILERPLATE_TEST_PATHS, patterns: BOILERPLATE_TEST_PATTERNS } }),
     // Watchlist files are NOT synced — included in the sparse clone only so
     // the protected-drift detection can read their upstream copies.
     sparseExtraPaths: watchlist.map(e => e.path),
@@ -2422,6 +2477,7 @@ async function main(): Promise<void> {
   // An aborted run has nothing to report: no table, no box, no success line.
   const aborted = summary.aborted === true;
   if (!aborted) { printEndOfRun(summary, parsed.dryRun); }
+  else if (summary.selfUpdateBlocked) { reportSelfUpdateBlocked(summary.selfUpdateBlocked, summary.newHeadSha, priorLockSha); }
 
   const verdict = runVerdict({ aborted, dryRun: parsed.dryRun, strict: parsed.strict }, runFacts.parity?.findings ?? []);
   if (verdict.reason) { tui.log.error(verdict.reason); }
