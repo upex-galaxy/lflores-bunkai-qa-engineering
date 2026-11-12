@@ -1,0 +1,8 @@
+{
+  "name": "pat-1794465785610-FGeGp7",
+  "scopes": [
+    "atc:read",
+    "atc:write",
+    "run:execute"
+  ]
+}
