@@ -57,6 +57,9 @@ export type WorkspaceInviteCreateResponse = components['schemas']['WorkspaceInvi
 /** Response for GET /api/v1/workspaces/{id}/invites — { invites: WorkspaceInvite[] }. */
 export type WorkspaceInviteListResponse = components['schemas']['WorkspaceInviteListResponse'];
 
+/** Response for DELETE /api/v1/workspaces/{id}/invites/{inviteId} — { ok: true }. */
+export type WorkspaceInviteDeleteResponse = components['schemas']['WorkspaceInviteDeleteResponse'];
+
 /** One invite row — includes `revoked_at`, used to confirm a rejected revoke left it untouched. */
 export type WorkspaceInvite = components['schemas']['WorkspaceInvite'];
 

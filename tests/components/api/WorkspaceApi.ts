@@ -24,6 +24,7 @@ import type {
   WorkspaceCreateResponse,
   WorkspaceInviteCreateBody,
   WorkspaceInviteCreateResponse,
+  WorkspaceInviteDeleteResponse,
   WorkspaceInviteListResponse,
   WorkspaceLeaveResponse,
   WorkspacePatchBody,
@@ -137,6 +138,27 @@ export class WorkspaceApi extends ApiBase {
     return this.apiPOST<WorkspaceInviteCreateResponse, WorkspaceInviteCreateBody>(
       `/workspaces/${args.workspaceId}/invites`,
       args.body,
+    );
+  }
+
+  /**
+   * Helper: Revoke a workspace invite with the OWNER session/PAT.
+   *
+   * Cleanup counterpart of `createWorkspaceInvite` — BK-548 revokes the
+   * pending invite it generated so runs stop accumulating pending invites in
+   * the reserved QA workspace. Not an ATC on its own: no fixed assertions.
+   *
+   * @param args - Target workspace id and the invite's id
+   * @param args.workspaceId - Target workspace id
+   * @param args.inviteId - Invite id to revoke
+   * @returns Tuple with response and the revoke result
+   */
+  @step
+  async revokeWorkspaceInvite(
+    args: { workspaceId: string, inviteId: string },
+  ): Promise<[APIResponse, WorkspaceInviteDeleteResponse]> {
+    return this.apiDELETE<WorkspaceInviteDeleteResponse>(
+      `/workspaces/${args.workspaceId}/invites/${args.inviteId}`,
     );
   }
 
