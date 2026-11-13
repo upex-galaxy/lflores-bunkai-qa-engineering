@@ -1,0 +1,28 @@
+{
+  "bug": {
+    "id": "192ec5d2-a62c-4aa7-b6e3-bf05fb6ae065",
+    "title": "BK-482 automated fixture bug (resolved->open) - 1794561499856",
+    "atc_id": null,
+    "module": {
+      "id": "589e386c-4220-4dbd-9519-66cf19f40c75",
+      "name": "Defect Triage",
+      "path": "defect-triage",
+      "archived_at": null
+    },
+    "origin": null,
+    "run_id": null,
+    "status": "resolved",
+    "severity": "P3",
+    "module_id": "589e386c-4220-4dbd-9519-66cf19f40c75",
+    "created_at": "2026-11-13T09:18:20.186793+00:00",
+    "created_by": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+    "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+    "updated_at": "2026-11-13T09:18:20.860179+00:00",
+    "description": null,
+    "run_step_id": null,
+    "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+    "evidence_urls": [],
+    "assignee_user_id": null,
+    "steps_to_reproduce": ""
+  }
+}

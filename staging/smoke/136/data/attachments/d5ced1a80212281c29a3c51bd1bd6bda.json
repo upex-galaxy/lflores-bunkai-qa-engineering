@@ -1,0 +1,124 @@
+{
+  "invites": [
+    {
+      "id": "ed39d929-f61d-4ae5-a0be-e4f68c3e73cd",
+      "email": "test.benny.woswip@example.com",
+      "role": "member",
+      "expires_at": "2026-11-20T05:59:34.555928+00:00",
+      "accepted_at": null,
+      "revoked_at": "2026-11-13T05:59:35.774+00:00",
+      "created_at": "2026-11-13T05:59:34.555928+00:00",
+      "status": "revoked"
+    },
+    {
+      "id": "e7ccc8c7-40be-4d29-9150-337bcf44720f",
+      "email": "test.teresa.oho5ww@example.com",
+      "role": "member",
+      "expires_at": "2026-11-20T00:39:00.020655+00:00",
+      "accepted_at": null,
+      "revoked_at": "2026-11-13T00:39:02.019+00:00",
+      "created_at": "2026-11-13T00:39:00.020655+00:00",
+      "status": "revoked"
+    },
+    {
+      "id": "902ea640-2f14-4527-90b9-f6a4ea1654d6",
+      "email": "test.rossie.eixwn2@example.com",
+      "role": "member",
+      "expires_at": "2026-11-20T00:38:52.169805+00:00",
+      "accepted_at": null,
+      "revoked_at": "2026-11-13T00:38:53.916+00:00",
+      "created_at": "2026-11-13T00:38:52.169805+00:00",
+      "status": "revoked"
+    },
+    {
+      "id": "a0999d19-4f54-4dec-9321-b572cf4c6b93",
+      "email": "test.conrad.cqascr@example.com",
+      "role": "member",
+      "expires_at": "2026-11-20T00:38:37.515415+00:00",
+      "accepted_at": null,
+      "revoked_at": "2026-11-13T00:38:39.409+00:00",
+      "created_at": "2026-11-13T00:38:37.515415+00:00",
+      "status": "revoked"
+    },
+    {
+      "id": "d463097b-b068-4e97-93b2-014d49538e55",
+      "email": "test.dariana.ni3rkh@example.com",
+      "role": "member",
+      "expires_at": "2026-11-20T00:38:29.739034+00:00",
+      "accepted_at": null,
+      "revoked_at": "2026-11-13T00:38:31.445+00:00",
+      "created_at": "2026-11-13T00:38:29.739034+00:00",
+      "status": "revoked"
+    },
+    {
+      "id": "6100380c-410e-4c0a-852e-801b520a07ac",
+      "email": "test.montana.znxlj6@example.com",
+      "role": "member",
+      "expires_at": "2026-11-20T00:38:18.079232+00:00",
+      "accepted_at": null,
+      "revoked_at": "2026-11-13T00:38:20.114+00:00",
+      "created_at": "2026-11-13T00:38:18.079232+00:00",
+      "status": "revoked"
+    },
+    {
+      "id": "c5ba4334-ac0f-44b5-83b4-445dfee2b418",
+      "email": "test.kasandra.ypbly6@example.com",
+      "role": "member",
+      "expires_at": "2026-11-20T00:38:10.092713+00:00",
+      "accepted_at": null,
+      "revoked_at": "2026-11-13T00:38:11.796+00:00",
+      "created_at": "2026-11-13T00:38:10.092713+00:00",
+      "status": "revoked"
+    },
+    {
+      "id": "9f9d1b8d-6c06-403b-a57e-03b7fb0204eb",
+      "email": "test.leonard.yofux3@example.com",
+      "role": "member",
+      "expires_at": "2026-11-20T00:26:26.354219+00:00",
+      "accepted_at": null,
+      "revoked_at": "2026-11-13T00:39:30.759+00:00",
+      "created_at": "2026-11-13T00:26:26.354219+00:00",
+      "status": "revoked"
+    },
+    {
+      "id": "356adc5a-4cab-492f-9ae8-ed83c7ab7d91",
+      "email": "test.leonard.c7efwc@example.com",
+      "role": "member",
+      "expires_at": "2026-11-19T11:30:00.495606+00:00",
+      "accepted_at": null,
+      "revoked_at": "2026-11-13T00:39:31.178+00:00",
+      "created_at": "2026-11-12T11:30:00.495606+00:00",
+      "status": "revoked"
+    },
+    {
+      "id": "05f96323-b234-4b87-9fa1-79cf734a88b5",
+      "email": "test.yvonne.9m8cld@example.com",
+      "role": "member",
+      "expires_at": "2026-11-19T11:27:22.128824+00:00",
+      "accepted_at": null,
+      "revoked_at": "2026-11-13T00:39:31.808+00:00",
+      "created_at": "2026-11-12T11:27:22.128824+00:00",
+      "status": "revoked"
+    },
+    {
+      "id": "9b189743-9c9f-4671-a5c6-d444ac8014b8",
+      "email": "bk264-viewer2@ambuusteln.resend.app",
+      "role": "viewer",
+      "expires_at": "2026-11-19T11:19:10.465856+00:00",
+      "accepted_at": "2026-11-12T11:19:11.620083+00:00",
+      "revoked_at": null,
+      "created_at": "2026-11-12T11:19:10.465856+00:00",
+      "status": "accepted"
+    },
+    {
+      "id": "d17e7f15-4b3d-4791-8f6b-20bea891eaed",
+      "email": "bk264-member2@ambuusteln.resend.app",
+      "role": "member",
+      "expires_at": "2026-11-19T11:19:08.531661+00:00",
+      "accepted_at": "2026-11-12T11:19:09.877586+00:00",
+      "revoked_at": null,
+      "created_at": "2026-11-12T11:19:08.531661+00:00",
+      "status": "accepted"
+    }
+  ]
+}

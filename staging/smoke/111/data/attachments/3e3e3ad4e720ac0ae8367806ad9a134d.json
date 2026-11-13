@@ -1,7 +1,0 @@
-{
-  "error": {
-    "code": "forbidden",
-    "message": "Personal access tokens have no switchable active workspace. Use a browser session. Pass workspace_id explicitly on each request instead.",
-    "request_id": "ca6b8012-7c0a-4018-ae93-6dd121c0635c"
-  }
-}

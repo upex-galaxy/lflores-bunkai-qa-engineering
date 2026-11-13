@@ -1,0 +1,1 @@
+{"id":"2dc6308f8d9962ab3ed5dc5535176adc.78da8f10f4bdec4f42c9a38fa7183165","fullName":"integration/capability/enforceCapabilityGate.test.ts › BK-499: Capability Gate API › BK-499: should return 403 given PAT missing atc:read","name":"BK-499: should return 403 given PAT missing atc:read","status":"passed","testResultsByEnv":{"default":"b483a2a91e4bacdf4ddd53b271d91fc9"}}

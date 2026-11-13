@@ -1,0 +1,170 @@
+{
+  "user": {
+    "id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+    "email": "luis-flores-qa@ambuusteln.resend.app"
+  },
+  "workspaces": [
+    {
+      "id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "slug": "luisflores",
+      "name": "luisflores",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-12T10:53:13.446574+00:00"
+    },
+    {
+      "id": "43e06eaa-185a-4b31-9647-9b7352c0f984",
+      "slug": "ws-1794482775371-zrxygm",
+      "name": "Workspace-1794482775371-Gitlyt",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-12T11:26:16.017149+00:00"
+    },
+    {
+      "id": "30f2830c-5f9e-44a8-8691-1725d84e58ff",
+      "slug": "ws-1794482813279-nff6go",
+      "name": "Workspace-1794482813279-2cEIkv",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-12T11:26:53.934953+00:00"
+    },
+    {
+      "id": "360fb2bb-26d0-44dc-abd5-6bf40823fabd",
+      "slug": "ws-1794482830324-tt8krc",
+      "name": "Workspace-1794482830324-kECNdX",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-12T11:27:10.887659+00:00"
+    },
+    {
+      "id": "edc05dc7-99f0-4b94-9502-46f539d5e489",
+      "slug": "ws-1794482835641-gq2tqj",
+      "name": "Workspace-1794482835640-HDXdBs",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-12T11:27:16.311112+00:00"
+    },
+    {
+      "id": "c06cf562-cfac-4d8c-bdb1-bbb5352c3ebd",
+      "slug": "ws-1794482933099-dg14a7",
+      "name": "Workspace-1794482933099-9C9lVZ",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-12T11:28:53.811589+00:00"
+    },
+    {
+      "id": "8993dfc7-aa44-4b76-9dfe-dfd2c0bbbcc3",
+      "slug": "ws-1794482972242-2j6k83",
+      "name": "Workspace-1794482972242-ViKx98",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-12T11:29:32.871675+00:00"
+    },
+    {
+      "id": "c9219f15-dc18-4d03-849a-e256d4f5f37a",
+      "slug": "ws-1794482989077-fb6eqc",
+      "name": "Workspace-1794482989077-qKYyPu",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-12T11:29:49.748007+00:00"
+    },
+    {
+      "id": "4a884372-3fe6-4eec-9912-cce28ac4f769",
+      "slug": "ws-1794482994286-xvcwmj",
+      "name": "Workspace-1794482994286-dJmMmP",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-12T11:29:54.721312+00:00"
+    },
+    {
+      "id": "60876f12-c629-4121-985f-b587b7d597d0",
+      "slug": "ws-1794529544295-rsk7f1",
+      "name": "Workspace-1794529544295-iGJ1Sp",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-13T00:25:44.544849+00:00"
+    },
+    {
+      "id": "acf391d6-f3b8-4711-aa03-66b78ae50cf3",
+      "slug": "ws-1794529568420-4x2hfk",
+      "name": "Workspace-1794529568420-WZ9AGx",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-13T00:26:08.670669+00:00"
+    },
+    {
+      "id": "bf1d9ca2-0f8f-4086-9736-b2be8d7a771f",
+      "slug": "ws-1794529578745-j0f2ic",
+      "name": "Workspace-1794529578745-zLYFQj",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-13T00:26:19.068896+00:00"
+    },
+    {
+      "id": "d7853dfc-f148-41a5-93f8-4caa937ad82c",
+      "slug": "ws-1794529582257-8wtshx",
+      "name": "Workspace-1794529582257-seyRkm",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-13T00:26:22.507284+00:00"
+    },
+    {
+      "id": "33ed1297-4670-4e7c-88ac-f05ee309d6c4",
+      "slug": "ws-1794549526585-jhi42b",
+      "name": "Workspace-1794549526585-FdIE1R",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-13T05:58:46.885082+00:00"
+    },
+    {
+      "id": "fa9df9b5-0d40-4047-bae6-f7c7decc1121",
+      "slug": "ws-1794549553997-exziub",
+      "name": "Workspace-1794549553997-QdqRrl",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-13T05:59:14.276527+00:00"
+    },
+    {
+      "id": "9f0979c0-e6af-4749-8a6a-30628de9d8e8",
+      "slug": "ws-1794549566036-gpdg2u",
+      "name": "Workspace-1794549566036-nLRF0T",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-13T05:59:26.410741+00:00"
+    },
+    {
+      "id": "6668c0ca-7662-49e4-9aad-7465371fe501",
+      "slug": "ws-1794549569992-1hsrso",
+      "name": "Workspace-1794549569992-cpRZHW",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-13T05:59:30.282154+00:00"
+    },
+    {
+      "id": "f32eb571-cbc3-49db-a6b1-717ab5280714",
+      "slug": "ws-1794561514868-1rsvcz",
+      "name": "Workspace-1794561514868-gbWeJj",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-13T09:18:35.152783+00:00"
+    },
+    {
+      "id": "d18c913c-bd37-42d1-8094-dae6bcc29d3e",
+      "slug": "ws-1794561542790-pzokn1",
+      "name": "Workspace-1794561542790-hnRsp8",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-13T09:19:03.167968+00:00"
+    }
+  ],
+  "active_workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+  "active_workspace_role": "owner",
+  "auth": {
+    "source": "bearer",
+    "scopes": [
+      "atc:read",
+      "atc:write",
+      "run:execute"
+    ]
+  }
+}
