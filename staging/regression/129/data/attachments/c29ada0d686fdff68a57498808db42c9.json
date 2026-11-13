@@ -1,0 +1,59 @@
+{
+  "user_stories": [
+    {
+      "id": "ced40a49-35ae-4e78-a5be-86654c20a47a",
+      "module_id": "589e386c-4220-4dbd-9519-66cf19f40c75",
+      "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+      "title": "sweep-us-1794549454633-ER8mkv",
+      "description": null,
+      "external_id": null,
+      "external_url": null,
+      "created_at": "2026-11-13T05:57:34.960428+00:00",
+      "archived_at": null
+    },
+    {
+      "id": "cd5a5308-5638-4d60-aef0-bef5e98b4c30",
+      "module_id": "589e386c-4220-4dbd-9519-66cf19f40c75",
+      "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+      "title": "sweep-us-1794529505248-Prt2m4",
+      "description": null,
+      "external_id": null,
+      "external_url": null,
+      "created_at": "2026-11-13T00:25:05.532057+00:00",
+      "archived_at": null
+    },
+    {
+      "id": "be8d8dab-52d9-4559-9164-44b2c64e7562",
+      "module_id": "589e386c-4220-4dbd-9519-66cf19f40c75",
+      "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+      "title": "sweep-us-1794482870117-RQHtQF",
+      "description": null,
+      "external_id": null,
+      "external_url": null,
+      "created_at": "2026-11-12T11:27:50.706837+00:00",
+      "archived_at": null
+    },
+    {
+      "id": "84be886c-b2c1-4398-aada-cb875d3362ac",
+      "module_id": "589e386c-4220-4dbd-9519-66cf19f40c75",
+      "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+      "title": "sweep-us-1794482676371-N2QTXj",
+      "description": null,
+      "external_id": null,
+      "external_url": null,
+      "created_at": "2026-11-12T11:24:37.046665+00:00",
+      "archived_at": null
+    },
+    {
+      "id": "3095e8b2-66ef-454c-8652-2ff78d631752",
+      "module_id": "589e386c-4220-4dbd-9519-66cf19f40c75",
+      "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+      "title": "sweep-fixture-us-1794482674777-VYX7tk",
+      "description": null,
+      "external_id": null,
+      "external_url": null,
+      "created_at": "2026-11-12T11:24:35.500366+00:00",
+      "archived_at": null
+    }
+  ]
+}

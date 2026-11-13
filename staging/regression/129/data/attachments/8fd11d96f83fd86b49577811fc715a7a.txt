@@ -1,0 +1,13 @@
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/auth/signin
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
+✅ [BK-311] authenticateSuccessfully - PASS (802ms)
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/bugs
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/9c8b9f54-2569-40b1-b5ec-498b9049c19d/status
+✅ [BK-479] advanceStatusLegally - PASS (331ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/9c8b9f54-2569-40b1-b5ec-498b9049c19d/status
+✅ [BK-479] advanceStatusLegally - PASS (289ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/9c8b9f54-2569-40b1-b5ec-498b9049c19d/status
+✅ [BK-479] advanceStatusLegally - PASS (364ms)
+---- API NOK: 422 - https://staging-upexbunkai.vercel.app/api/v1/bugs/9c8b9f54-2569-40b1-b5ec-498b9049c19d/status
+✅ [BK-482] rejectStatusBackwardOrSame - PASS (289ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/9c8b9f54-2569-40b1-b5ec-498b9049c19d

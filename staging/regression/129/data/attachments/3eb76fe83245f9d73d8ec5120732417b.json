@@ -1,0 +1,9 @@
+{
+  "name": "pat-1794549549156-D64oja",
+  "scopes": [
+    "atc:read",
+    "atc:write",
+    "run:execute"
+  ],
+  "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40"
+}

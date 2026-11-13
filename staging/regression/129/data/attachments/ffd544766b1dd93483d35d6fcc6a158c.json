@@ -1,0 +1,10 @@
+{
+  "error": {
+    "code": "validation_failed",
+    "message": "A bug must move to 'in_progress' first.",
+    "details": {
+      "reason": "status_transition_skipped"
+    },
+    "request_id": "0045fb82-8969-4cbe-b795-eccf92e9b234"
+  }
+}

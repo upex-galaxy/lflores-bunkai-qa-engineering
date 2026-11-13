@@ -1,0 +1,24 @@
+{
+  "user": {
+    "id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+    "email": "luis-flores-qa@ambuusteln.resend.app"
+  },
+  "session": {
+    "access_token": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImUzNTEyOTEwLTY0ZDEtNGY4OS04ZDk2LTI4NjA5NzQ2ZTQ1YyIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2ZtYnBpa3pwa2FmcHRxeGltaHhuLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiIwMTE2NmExNi02MDdiLTRmZDItYjcyZS0yODg2NzJmZjFkZDUiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzk0NTUzMTgwLCJpYXQiOjE3OTQ1NDk1ODAsImVtYWlsIjoibHVpcy1mbG9yZXMtcWFAYW1idXVzdGVsbi5yZXNlbmQuYXBwIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6eyJlbWFpbCI6Imx1aXMtZmxvcmVzLXFhQGFtYnV1c3RlbG4ucmVzZW5kLmFwcCIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInN1YiI6IjAxMTY2YTE2LTYwN2ItNGZkMi1iNzJlLTI4ODY3MmZmMWRkNSJ9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzk0NTQ5NTgwfV0sInNlc3Npb25faWQiOiJiZWYxYTc2Mi01ZTNiLTRhNDItODNiYi00OWJmNWRmMDU3OTUiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.0C034CDBOja6zIMJNQ6V5izH8xZirAnxBplQHZ4g4vnPxcycCB9snbAJ03smJFjSD4R5SVmjoL2aeq9uSAxbLA",
+    "refresh_token": "6uzctwv2kozu",
+    "expires_at": 1794553180,
+    "token_type": "bearer"
+  },
+  "pat": {
+    "token": "bk_pat_y7uEhTXVikb6.fRebLIshA3VVHYdE2ks1jZcSb6CWThM",
+    "id": "a96be391-d9b5-4709-a2c8-7c97e91f6df5",
+    "name": "cli-signin",
+    "scopes": [
+      "atc:read",
+      "atc:write",
+      "run:execute"
+    ],
+    "expires_at": null
+  },
+  "warning": "Store the PAT token now — it cannot be retrieved later."
+}
