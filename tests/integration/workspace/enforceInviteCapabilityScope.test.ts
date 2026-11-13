@@ -85,24 +85,32 @@ test.describe('BK-497: Workspace Invite Capability Scope API', { tag: ['@critica
         body: { email: api.data.createUser().email, role: 'member' },
       });
 
-      const pat = await api.tokens.mintPatWithScopes({
-        scopes: ['atc:write', 'run:execute'],
-        workspace_id: workspaceId,
-      });
-      api.workspace.setAuthToken(pat.token);
+      try {
+        const pat = await api.tokens.mintPatWithScopes({
+          scopes: ['atc:write', 'run:execute'],
+          workspace_id: workspaceId,
+        });
+        api.workspace.setAuthToken(pat.token);
 
-      // ACTION: ATC handles fixed assertions — 403, error.code === 'forbidden'
-      await api.workspace.rejectRevokeInviteWithoutAdminScope({
-        workspaceId,
-        inviteId: createdInvite.invite.id,
-      });
+        // ACTION: ATC handles fixed assertions — 403, error.code === 'forbidden'
+        await api.workspace.rejectRevokeInviteWithoutAdminScope({
+          workspaceId,
+          inviteId: createdInvite.invite.id,
+        });
 
-      // Test-level assertion: the invite's revoked_at is still null
-      // (OWNER session, restored — a different credential than the one under test)
-      api.workspace.clearAuthToken();
-      const [, invitesBody] = await api.workspace.getWorkspaceInvites(workspaceId);
-      const invite = invitesBody.invites.find(item => item.id === createdInvite.invite.id);
-      expect(invite?.revoked_at).toBeNull();
+        // Test-level assertion: the invite's revoked_at is still null
+        // (OWNER session, restored — a different credential than the one under test)
+        api.workspace.clearAuthToken();
+        const [, invitesBody] = await api.workspace.getWorkspaceInvites(workspaceId);
+        const invite = invitesBody.invites.find(item => item.id === createdInvite.invite.id);
+        expect(invite?.revoked_at).toBeNull();
+      }
+      finally {
+        // Cleanup (OWNER session): revoke the generated invite so runs do not
+        // accumulate pending invites in the reserved QA workspace
+        api.workspace.clearAuthToken();
+        await api.workspace.revokeWorkspaceInvite({ workspaceId, inviteId: createdInvite.invite.id });
+      }
     },
   );
 });
