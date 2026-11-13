@@ -120,7 +120,7 @@ figcaption{font-size:13px;color:var(--muted);margin-top:.4rem}
 <h3>Performance hooks</h3>
 <p>No caching layer: the old in-process coverage cache was removed (one workspace RPC per render, <code>lib/home/coverage.ts</code>). Pagination caps, size caps, timeouts and the one rate limiter are listed in <code>nfr-performance</code>. Idempotency replays protect creates for 24 hours (<code>lib/api/idempotency.ts</code>).</p>
 <h3>ADRs</h3>
-<p>The target repo keeps its own decision log in <code>.context/ADR/</code> (46 files: auth model, idempotency, run snapshots, Vault credentials and more); this map cites it by number. The QA framework's own test-architecture records live in this repo's <code>.context/ADR/</code> and are reviewed at the end of this discovery.</p>
+<p>The target repo keeps its own decision log in <code>.context/ADR/</code> (46 files: auth model, idempotency, run snapshots, Vault credentials and more); this map cites it by number. The QA framework's own test-architecture decisions found in this discovery are recorded in this repo: <code>.context/ADR/ADR-0026-two-auth-rails-in-tests.md</code>, <code>ADR-0027-data-testid-selector-contract.md</code>, <code>ADR-0028-serial-workspace-scoped-test-data.md</code>.</p>
 <h3>QA relevance</h3>
 <ul>
 <li>Two auth rails to cover: the cookie session for UI and cookie-only routes, the PAT for API and agent flows. A PAT cannot mint a PAT, so admin token tests need a browser session.</li>
