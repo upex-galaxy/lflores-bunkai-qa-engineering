@@ -814,6 +814,7 @@ function childEnv(drop: (name: string) => boolean, add: Record<string, string> =
   for (const [k, v] of Object.entries(process.env)) {
     if (!drop(k)) { env[k] = v; }
   }
+
   return { ...env, ...add } as NodeJS.ProcessEnv;
 }
 
@@ -1491,7 +1492,7 @@ export async function appendVarsToEnv(vars: Record<string, string>): Promise<voi
     const indent = m[1];
     const exportPrefix = m[2] ?? '';
     const key = m[3];
-    if (Object.prototype.hasOwnProperty.call(remaining, key)) {
+    if (Object.hasOwn(remaining, key)) {
       lines[i] = `${indent}${exportPrefix}${key}=${remaining[key]}`;
       delete remaining[key];
     }
