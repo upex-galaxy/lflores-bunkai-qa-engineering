@@ -6,6 +6,7 @@
 
 | # | Gotcha | Symptom | Fix | Measured | Verified against |
 |---|---|---|---|---|---|
+| 1 | The staging read-only DB role (`qa_inspector_ro`, the `db_mcp` of the active env) cannot see triggers through `information_schema` nor read the `cron` schema | `information_schema.triggers` returns 0 rows and `select ... from cron.job` fails with `permission denied for schema cron`, which reads as "no triggers, no scheduled jobs" | List triggers from `pg_trigger` joined to `pg_proc` (filter `not tgisinternal`); read pg_cron jobs from the backend migrations (`git grep -n "cron.schedule" -- supabase/migrations` in the backend repo) | 2026-11-13 | staging DB via the dbhub MCP; `upex-bunkai-tms` migrations at `origin/staging` |
 
 ## 2 · No longer true
 
