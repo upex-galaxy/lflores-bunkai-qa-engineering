@@ -12,7 +12,7 @@ import { config, test } from '@TestFixture';
 
 /**
  * A real bugs row confirmed (read-only DB query, 2026-08-15) to belong to a
- * workspace unrelated to "BK-264 QA Sandbox" and to the caller's own
+ * workspace unrelated to the QA workspace and to the caller's own
  * workspace — exercises the genuine foreign-workspace-id case, not a
  * substitute nonexistent id.
  */

@@ -421,8 +421,10 @@ export class AuthoringSweepApi extends ApiBase {
     expect(envBody.environment.id).toBeDefined();
     expect(msBody.milestone.id).toBeDefined();
     for (const row of results) {
-      expect(row.response.status()).toBeGreaterThanOrEqual(200);
-      expect(row.response.status()).toBeLessThan(300);
+      // Name the family, status and body on failure: a bare `409 < 300` hides
+      // which family failed and why (e.g. imports -> `jira_not_connected`).
+      const failureDetail = row.response.ok() ? '' : await row.response.text();
+      expect(row.response.ok(), `${row.family} write returned ${row.response.status()}: ${failureDetail}`).toBe(true);
       expect(row.id).toBeDefined();
     }
 

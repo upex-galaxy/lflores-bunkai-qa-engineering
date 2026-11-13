@@ -13,18 +13,20 @@ import { config, expect, test } from '@TestFixture';
 
 /**
  * Fixed reference workspace where the BK-6 test user HAS a `workspace_members` row but
- * its `status` is `suspended` — hand-mutated once via `QA_INSPECTOR_RW_URL` (direct psql,
- * RW credential; the `staging-dbhub` MCP connection used elsewhere in this project is
- * READ-ONLY) on 2026-08-07, verified via SELECT immediately after. No runtime DB client
- * exists in this framework, so a permanent documented fixture is the only viable strategy
- * — same convention as WORKSPACE_NOT_MEMBER_ID above. See
- * atc/BK-252-switch-suspended-workspace.md §7 for the full decision trail.
+ * its `status` is `suspended`. Re-seeded 2026-11-12 for the staging-user-migration:
+ * owned by `STAGING_MEMBER_EMAIL`, the test user invited + accepted as `member` via the
+ * API, then the row hand-mutated to `suspended` via `QA_INSPECTOR_RW_URL` (the product
+ * exposes no suspend endpoint; the `staging-dbhub` MCP connection is READ-ONLY), verified
+ * via SELECT immediately after. No runtime DB client exists in this framework, so a
+ * permanent documented fixture is the only viable strategy — same convention as
+ * WORKSPACE_NOT_MEMBER_ID above. See atc/BK-252-switch-suspended-workspace.md §7 for the
+ * original decision trail.
  *
  * RESERVED FIXTURE — do not reactivate this membership, do not delete the workspace or the
  * row. Doing so breaks this TC with a false result, not a real regression. This workspace
  * is also therefore excluded from BK-250's active-membership discovery pool.
  */
-const WORKSPACE_SUSPENDED_ID = 'c828d131-f1c7-413c-9ba4-723fa1c45c00'; // BK5 Test Workspace
+const WORKSPACE_SUSPENDED_ID = '4527091f-47ff-44f8-a8d6-560122fb52de'; // QA Suspended Membership Fixture
 
 test.describe('BK-6: Workspace Switch API', { tag: ['@critical'] }, () => {
   /**

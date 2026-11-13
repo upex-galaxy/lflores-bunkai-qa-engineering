@@ -35,15 +35,23 @@ export const WORKSPACE_NOT_MEMBER_ID = '047c106e-5334-4a80-8b66-d99ef4c474b4'; /
 export const INVALID_BEARER_TOKEN = 'bk_pat_invalid.does-not-exist-00000000';
 
 /**
- * Fixed reference project/workspace/module used by BK-498's capability-scope
- * enforcement TCs on the authoring domain (Modules family). Same fixtures
- * Stage 2 execution used live on staging (Engram `#216`) — a real project the
- * BK-6 test user is an active member of, with a pre-existing module to read
- * user stories from.
+ * QA workspace — the staging workspace "luisflores" owned by the main test user
+ * (`STAGING_USER_EMAIL`), with Jira connected. Shared by the authoring,
+ * capability, modules and bugs (defect-triage) suites. Seeded 2026-11-12,
+ * replacing the retired "BK-264 QA Sandbox" fixtures (staging-user-migration).
  *
- * Promoted here (not file-local) since BK-498's plan already scopes these as
- * shared across both `ModulesApi` and the later `AuthoringSweepApi` test files.
+ * Members (one per role; user ids read back from `workspace_members`):
+ * - owner  = `STAGING_USER_EMAIL`
+ * - member = `STAGING_MEMBER_EMAIL`
+ * - viewer = `STAGING_VIEWER_EMAIL`
+ *
+ * RESERVED FIXTURE — do not remove any of these members, disconnect Jira, or
+ * delete the workspace/project/module. Doing so breaks these TCs with a false
+ * result, not a real regression.
  */
-export const BK264_DEFECT_TRIAGE_PROJECT_ID = '2fee236f-1246-40c4-bfc4-d332287f9548';
-export const BK264_QA_SANDBOX_WORKSPACE_ID = '6646f244-a28c-441e-8486-9af33bdb5c11';
-export const DEFECT_TRIAGE_MODULE_ID = '175f8a08-20b9-4c96-a21a-e02dcae2837e';
+export const QA_WORKSPACE_ID = '18a65b3b-6f03-478a-93b3-b7a3ae518d40'; // luisflores
+export const QA_WORKSPACE_PROJECT_ID = '0fe6b7ba-20ef-4486-a7e4-16c7572adee3'; // QA Defect Triage
+export const QA_WORKSPACE_MODULE_ID = '589e386c-4220-4dbd-9519-66cf19f40c75'; // Defect Triage
+export const QA_WORKSPACE_OWNER_USER_ID = '01166a16-607b-4fd2-b72e-288672ff1dd5'; // STAGING_USER_EMAIL
+export const QA_WORKSPACE_MEMBER_USER_ID = 'a8548f64-1aa8-43b1-9a5b-c44b27c4782a'; // STAGING_MEMBER_EMAIL
+export const QA_WORKSPACE_VIEWER_USER_ID = '23673d9a-4aac-46eb-ba63-c9d58a245458'; // STAGING_VIEWER_EMAIL

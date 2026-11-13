@@ -54,6 +54,15 @@ export type {
   WorkspaceResponse,
 } from '@schemas/workspace.types';
 
+/**
+ * GET /api/v1/workspaces/{id}/jira-connection (BK-1170) — the member-visible
+ * subset of the response. Local type: the endpoint is not in the synced
+ * OpenAPI contract yet; move to `@schemas/workspace.types` after `bun run api:sync`.
+ */
+export interface WorkspaceJiraConnectionResponse {
+  jira_connection: { connected: boolean }
+}
+
 // ============================================
 // Workspace API Component
 // ============================================
@@ -163,6 +172,20 @@ export class WorkspaceApi extends ApiBase {
   @step
   async getWorkspaceById(id: string): Promise<[APIResponse, WorkspaceResponse]> {
     return this.apiGET<WorkspaceResponse>(`/workspaces/${id}`);
+  }
+
+  /**
+   * Helper: Raw GET /api/v1/workspaces/{id}/jira-connection wrapper — reads
+   * whether the workspace has its own Jira connection (BK-1170). Any active
+   * member gets `{ connected }`. Used as an environment precondition by tests
+   * that enqueue Jira imports. Not an ATC on its own.
+   *
+   * @param workspaceId - Target workspace id
+   * @returns Tuple with response and the connection presence
+   */
+  @step
+  async getWorkspaceJiraConnection(workspaceId: string): Promise<[APIResponse, WorkspaceJiraConnectionResponse]> {
+    return this.apiGET<WorkspaceJiraConnectionResponse>(`/workspaces/${workspaceId}/jira-connection`);
   }
 
   /**

@@ -17,7 +17,7 @@ test.describe('BK-499: Session-only routes allow cookie sessions', { tag: ['@cri
    *
    * Precondition: OWNER (`config.testUser`) creates a disposable workspace,
    * then invites `config.testViewer` — a real, permanently provisioned
-   * second identity (BK-264 QA Sandbox) — as a member. A freshly bootstrapped
+   * second identity (QA workspace) — as a member. A freshly bootstrapped
    * workspace's SOLE OWNER is blocked from leaving it (409 `sole_owner`,
    * confirmed live on staging 2026-08-30), so this ATC needs a non-owner
    * member instead. `config.testViewer` then accepts the invite and IS the
