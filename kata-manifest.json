@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-11-05T01:49:16.467Z",
+  "generatedAt": "2026-11-12T11:23:13.325Z",
   "components": {
     "api": [
       {
@@ -38,17 +38,17 @@
           {
             "id": "BK-563",
             "method": "acceptReadsAcrossFamilies",
-            "line": 465
+            "line": 467
           },
           {
             "id": "BK-566",
             "method": "rejectReadsAcrossFamilies",
-            "line": 499
+            "line": 501
           },
           {
             "id": "BK-568",
             "method": "completeImportLifecycleDualScope",
-            "line": 535
+            "line": 537
           }
         ]
       },
@@ -296,57 +296,57 @@
           {
             "id": "BK-250",
             "method": "switchToActiveWorkspace",
-            "line": 248
+            "line": 271
           },
           {
             "id": "BK-251",
             "method": "switchToNonMemberWorkspace",
-            "line": 277
+            "line": 300
           },
           {
             "id": "BK-252",
             "method": "switchToSuspendedWorkspace",
-            "line": 306
+            "line": 329
           },
           {
             "id": "BK-544",
             "method": "rejectInviteCreationWithReadOnlyPat",
-            "line": 337
+            "line": 360
           },
           {
             "id": "BK-548",
             "method": "rejectRevokeInviteWithoutAdminScope",
-            "line": 368
+            "line": 391
           },
           {
             "id": "BK-550",
             "method": "allowWorkspaceAdminActionWithBoundPat",
-            "line": 398
+            "line": 421
           },
           {
             "id": "BK-551",
             "method": "rejectCrossWorkspaceAdminPat",
-            "line": 430
+            "line": 453
           },
           {
             "id": "BK-671",
             "method": "createWorkspaceWithAnyScope",
-            "line": 220
+            "line": 243
           },
           {
             "id": "BK-678",
             "method": "rejectBearerOnDeleteMembership",
-            "line": 461
+            "line": 484
           },
           {
             "id": "BK-679",
             "method": "rejectBearerOnPostActiveWorkspaceMessage",
-            "line": 491
+            "line": 514
           },
           {
             "id": "BK-680",
             "method": "allowCookieSessionOnSessionOnlyRoutes",
-            "line": 530
+            "line": 553
           }
         ]
       }

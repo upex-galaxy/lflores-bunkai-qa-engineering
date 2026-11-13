@@ -11,16 +11,13 @@
 import type { LoginPayload } from '@api/AuthApi';
 import type { ApiFixture } from '@ApiFixture';
 
+import { QA_WORKSPACE_ID, QA_WORKSPACE_MEMBER_USER_ID, QA_WORKSPACE_MODULE_ID, QA_WORKSPACE_PROJECT_ID } from '@data/constants';
 import { config, expect, test } from '@TestFixture';
 
 /**
- * Fixed reference workspace — same "BK-264 QA Sandbox" fixture as
+ * Fixed reference workspace — same QA workspace fixture as
  * assignBug.test.ts. See that file's header comment for provenance.
  */
-const BK264_SANDBOX_WORKSPACE_ID = '6646f244-a28c-441e-8486-9af33bdb5c11';
-const BK264_SANDBOX_PROJECT_ID = '2fee236f-1246-40c4-bfc4-d332287f9548'; // BK264 Defect Triage
-const BK264_SANDBOX_MODULE_ID = '175f8a08-20b9-4c96-a21a-e02dcae2837e'; // Defect Triage Module
-const BK264_SANDBOX_MEMBER2_USER_ID = 'a8548f64-1aa8-43b1-9a5b-c44b27c4782a'; // matches STAGING_MEMBER_EMAIL
 
 /** Authenticate + propagate the token to every API component. See rejectViewerWrite.test.ts for why. */
 async function authenticateAs(api: ApiFixture, credentials: LoginPayload): Promise<void> {
@@ -41,22 +38,22 @@ test.describe('BK-264: Bug Assignment Notification Contract API', { tag: ['@medi
   test('BK-264: should write a notifications row given a bug is assigned', async ({ api }) => {
     await authenticateAs(api, { email: config.testUser.email, password: config.testUser.password });
     const [, filed] = await api.bugs.fileBugSuccessfully({
-      project_id: BK264_SANDBOX_PROJECT_ID,
-      module_id: BK264_SANDBOX_MODULE_ID,
+      project_id: QA_WORKSPACE_PROJECT_ID,
+      module_id: QA_WORKSPACE_MODULE_ID,
       title: `BK-489 automated fixture bug - ${Date.now()}`,
       severity: 'P3',
     });
 
-    await api.bugs.assignBugTriggersNotification(filed.bug.id, { assignee_user_id: BK264_SANDBOX_MEMBER2_USER_ID });
+    await api.bugs.assignBugTriggersNotification(filed.bug.id, { assignee_user_id: QA_WORKSPACE_MEMBER_USER_ID });
 
     // Test-level assertion: the recipient's own inbox carries the fan-out row
     await authenticateAs(api, { email: config.testMember.email, password: config.testMember.password });
-    const [, page] = await api.notifications.getNotifications(BK264_SANDBOX_WORKSPACE_ID);
+    const [, page] = await api.notifications.getNotifications(QA_WORKSPACE_ID);
     const row = page.items.find(item => item.entity_id === filed.bug.id && item.event_type === 'bug.assigned');
 
     expect(row).toBeDefined();
     expect(row?.entity_type).toBe('bug');
-    expect((row?.payload as { assignee_user_id?: string, previous_assignee_user_id?: string | null })?.assignee_user_id).toBe(BK264_SANDBOX_MEMBER2_USER_ID);
+    expect((row?.payload as { assignee_user_id?: string, previous_assignee_user_id?: string | null })?.assignee_user_id).toBe(QA_WORKSPACE_MEMBER_USER_ID);
     expect((row?.payload as { assignee_user_id?: string, previous_assignee_user_id?: string | null })?.previous_assignee_user_id).toBeNull();
   });
 });

@@ -15,7 +15,7 @@
  * Project: integration (depends on api-setup)
  */
 
-import { BK264_DEFECT_TRIAGE_PROJECT_ID, BK264_QA_SANDBOX_WORKSPACE_ID, DEFECT_TRIAGE_MODULE_ID } from '@data/constants';
+import { QA_WORKSPACE_ID, QA_WORKSPACE_MODULE_ID, QA_WORKSPACE_PROJECT_ID } from '@data/constants';
 import { config, test } from '@TestFixture';
 
 test.describe('BK-498: Authoring Sweep — reject writes across families', { tag: ['@critical'] }, () => {
@@ -25,7 +25,7 @@ test.describe('BK-498: Authoring Sweep — reject writes across families', { tag
    * Precondition: fresh login (OWNER session); discover-or-create a real
    * user-story id under the module (needed as the Acceptance Criteria row's
    * parent) BEFORE narrowing to the under-scoped PAT; mint an `atc:read`-only
-   * PAT bound to the QA sandbox workspace.
+   * PAT bound to the QA workspace.
    */
   test(
     'BK-498: should reject writes across all authoring families given a PAT scoped exactly atc:read',
@@ -38,10 +38,10 @@ test.describe('BK-498: Authoring Sweep — reject writes across families', { tag
       // Precondition (not a BK-559 assertion): discover a real user-story id
       // under the fixture module, creating one under the OWNER session if
       // none exists yet — the Acceptance Criteria row needs a real parent.
-      const [, listBody] = await api.modules.getModuleUserStories(DEFECT_TRIAGE_MODULE_ID);
+      const [, listBody] = await api.modules.getModuleUserStories(QA_WORKSPACE_MODULE_ID);
       let userStoryId = listBody.user_stories[0]?.id;
       if (!userStoryId) {
-        const [, createBody] = await api.authoringSweep.createUserStory(DEFECT_TRIAGE_MODULE_ID, {
+        const [, createBody] = await api.authoringSweep.createUserStory(QA_WORKSPACE_MODULE_ID, {
           title: api.data.createTestId('sweep-fixture-us'),
         });
         userStoryId = createBody.user_story.id;
@@ -49,15 +49,15 @@ test.describe('BK-498: Authoring Sweep — reject writes across families', { tag
 
       const pat = await api.tokens.mintPatWithScopes({
         scopes: ['atc:read'],
-        workspace_id: BK264_QA_SANDBOX_WORKSPACE_ID,
+        workspace_id: QA_WORKSPACE_ID,
       });
       api.authoringSweep.setAuthToken(pat.token);
 
       // ACTION: attempt a minimal-valid write on all 5 families — ATC
       // handles fixed assertions (403 on every row, Imports row included)
       await api.authoringSweep.rejectWritesAcrossFamilies(
-        DEFECT_TRIAGE_MODULE_ID,
-        BK264_DEFECT_TRIAGE_PROJECT_ID,
+        QA_WORKSPACE_MODULE_ID,
+        QA_WORKSPACE_PROJECT_ID,
         userStoryId,
       );
     },

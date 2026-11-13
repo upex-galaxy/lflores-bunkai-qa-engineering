@@ -11,14 +11,14 @@
 
 import type { CapabilityGateRouteRow } from '@api/CapabilityGateApi';
 import type { ApiFixture } from '@ApiFixture';
-import { BK264_DEFECT_TRIAGE_PROJECT_ID, BK264_QA_SANDBOX_WORKSPACE_ID, DEFECT_TRIAGE_MODULE_ID } from '@data/constants';
+import { QA_WORKSPACE_ID, QA_WORKSPACE_MODULE_ID, QA_WORKSPACE_PROJECT_ID } from '@data/constants';
 import { config, test } from '@TestFixture';
 import { authenticateAs } from '@utils/auth';
 
 /**
  * Precondition builder for TC3/TC4 (BK-673/674): resolves the 4 sampled
- * read-gated routes' real ids under the ALREADY-established BK-264 QA
- * Sandbox fixtures (`@data/constants` — same project/module used by BK-498's
+ * read-gated routes' real ids under the ALREADY-established QA
+ * workspace fixtures (`@data/constants` — same project/module used by BK-498's
  * own sweep) rather than bootstrapping a disposable project from scratch.
  * `/tests/{id}/runs` needs a real Test, which needs a real product-domain
  * ATC anchored to a real Acceptance Criterion — both generated fresh here
@@ -34,10 +34,10 @@ import { authenticateAs } from '@utils/auth';
 async function buildSampledReadGatedRoutes(api: ApiFixture): Promise<CapabilityGateRouteRow[]> {
   // Discover a real user-story id under the fixture module, creating one
   // under the OWNER session if none exists yet.
-  const [, listBody] = await api.modules.getModuleUserStories(DEFECT_TRIAGE_MODULE_ID);
+  const [, listBody] = await api.modules.getModuleUserStories(QA_WORKSPACE_MODULE_ID);
   let storyId = listBody.user_stories[0]?.id;
   if (!storyId) {
-    const [, createBody] = await api.authoringSweep.createUserStory(DEFECT_TRIAGE_MODULE_ID, {
+    const [, createBody] = await api.authoringSweep.createUserStory(QA_WORKSPACE_MODULE_ID, {
       title: api.data.createTestId('gate-fixture-us'),
     });
     storyId = createBody.user_story.id;
@@ -49,7 +49,7 @@ async function buildSampledReadGatedRoutes(api: ApiFixture): Promise<CapabilityG
 
   const [, atcBody] = await api.authoringSweep.createAtc({
     title: api.data.createTestId('gate-fixture-atc'),
-    module_id: DEFECT_TRIAGE_MODULE_ID,
+    module_id: QA_WORKSPACE_MODULE_ID,
     user_story_id: storyId,
     acceptance_criterion_ids: [acBody.acceptance_criterion.id],
     layer: 'API',
@@ -59,14 +59,14 @@ async function buildSampledReadGatedRoutes(api: ApiFixture): Promise<CapabilityG
   const [, testBody] = await api.authoringSweep.createTest({
     title: api.data.createTestId('gate-fixture-test'),
     atc_ids: [atcBody.atc.id],
-    workspace_id: BK264_QA_SANDBOX_WORKSPACE_ID,
+    workspace_id: QA_WORKSPACE_ID,
   });
 
   return [
-    { route: '/api/v1/activity', path: `/activity?workspace_id=${BK264_QA_SANDBOX_WORKSPACE_ID}` },
-    { route: '/api/v1/projects/{id}/traceability', path: `/projects/${BK264_DEFECT_TRIAGE_PROJECT_ID}/traceability?story=${storyId}` },
+    { route: '/api/v1/activity', path: `/activity?workspace_id=${QA_WORKSPACE_ID}` },
+    { route: '/api/v1/projects/{id}/traceability', path: `/projects/${QA_WORKSPACE_PROJECT_ID}/traceability?story=${storyId}` },
     { route: '/api/v1/tests/{id}/runs', path: `/tests/${testBody.test.id}/runs` },
-    { route: '/api/v1/workspaces/{id}', path: `/workspaces/${BK264_QA_SANDBOX_WORKSPACE_ID}` },
+    { route: '/api/v1/workspaces/{id}', path: `/workspaces/${QA_WORKSPACE_ID}` },
   ];
 }
 
@@ -189,7 +189,7 @@ test.describe('BK-499: Capability Gate API', { tag: ['@critical'] }, () => {
    * ATC: BK-683
    *
    * Precondition: fresh login as `config.testViewer` — a real, permanently
-   * provisioned second identity (BK-264 QA Sandbox), Viewer-role member of a
+   * provisioned second identity (QA workspace), Viewer-role member of a
    * real workspace + discover that workspace + mint a PAT scoped `atc:read`,
    * bound to it.
    */
@@ -219,7 +219,7 @@ test.describe('BK-499: Capability Gate API', { tag: ['@critical'] }, () => {
    *
    * Precondition: fresh login (OWNER session) + resolve the 4 sampled
    * read-gated routes' real ids via `buildSampledReadGatedRoutes` + mint a
-   * PAT scoped `atc:read`, bound to the BK-264 QA Sandbox workspace.
+   * PAT scoped `atc:read`, bound to the QA workspace workspace.
    */
   test(
     'BK-499: should return 200 with data given PAT scoped atc:read',
@@ -231,7 +231,7 @@ test.describe('BK-499: Capability Gate API', { tag: ['@critical'] }, () => {
 
       const rows = await buildSampledReadGatedRoutes(api);
 
-      const pat = await api.tokens.mintPatWithScopes({ scopes: ['atc:read'], workspace_id: BK264_QA_SANDBOX_WORKSPACE_ID });
+      const pat = await api.tokens.mintPatWithScopes({ scopes: ['atc:read'], workspace_id: QA_WORKSPACE_ID });
       api.setAuthToken(pat.token);
 
       // ACTION: ATC handles fixed assertions — 200 on all 4 sampled routes
@@ -244,7 +244,7 @@ test.describe('BK-499: Capability Gate API', { tag: ['@critical'] }, () => {
    *
    * Precondition: fresh login (OWNER session) + resolve the same 4 sampled
    * routes as BK-673 (own chain, per "each test generates its own data") +
-   * mint a PAT scoped only `run:execute`, bound to the BK-264 QA Sandbox
+   * mint a PAT scoped only `run:execute`, bound to the QA workspace
    * workspace.
    */
   test(
@@ -257,7 +257,7 @@ test.describe('BK-499: Capability Gate API', { tag: ['@critical'] }, () => {
 
       const rows = await buildSampledReadGatedRoutes(api);
 
-      const pat = await api.tokens.mintPatWithScopes({ scopes: ['run:execute'], workspace_id: BK264_QA_SANDBOX_WORKSPACE_ID });
+      const pat = await api.tokens.mintPatWithScopes({ scopes: ['run:execute'], workspace_id: QA_WORKSPACE_ID });
       api.setAuthToken(pat.token);
 
       // ACTION: ATC handles fixed assertions — 403 on all 4 sampled routes, naming atc:read
