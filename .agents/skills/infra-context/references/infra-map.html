@@ -102,7 +102,7 @@ figcaption{font-size:13px;color:var(--muted);margin-top:.4rem}
 </ol>
 <p>Every route declares one posture (<code>public</code>, <code>cookie-only</code>, <code>authenticated</code>, <code>required</code>) at compile time; counts per posture: api map <code>auth-model</code>.</p>
 <h3>Database</h3>
-<p>One Supabase Postgres. Live staging (read-only role) shows 46 public tables, 97 RLS policies, 129 <code>bunkai_*</code> functions and 23 triggers; the migrations describe 52 tables (data map <code>entities</code>), see <code>discovery-gaps</code>. Table groups: tenancy and access; catalog (projects, modules, stories, criteria, ATCs); tests, plans and milestones; run snapshots; bugs; billing; Jira; notifications, activity and chat; cross-cutting (idempotency, rate limits, storage cleanup, saved views, deletions and exports). Multi-table writes go through SECURITY DEFINER RPCs. Tables, columns and lifecycles: <code>business-data-context</code>.</p>
+<p>One Supabase Postgres. Live staging shows 52 public tables, all under RLS, with 97 RLS policies, 129 <code>bunkai_*</code> functions and 23 triggers, matching the migrations (data map <code>entities</code>). Table groups: tenancy and access; catalog (projects, modules, stories, criteria, ATCs); tests, plans and milestones; run snapshots; bugs; billing; Jira; notifications, activity and chat; cross-cutting (idempotency, rate limits, storage cleanup, saved views, deletions and exports). Multi-table writes go through SECURITY DEFINER RPCs. Tables, columns and lifecycles: <code>business-data-context</code>.</p>
 <h3>Security architecture</h3>
 <table>
 <thead><tr><th>Aspect</th><th>Implementation</th><th>Evidence</th></tr></thead>
@@ -504,7 +504,7 @@ bun run start</code></pre>
 <h2>Discovery gaps</h2>
 <p>Could not be verified from the code; each needs a person, a dashboard or a deeper read.</p>
 <ul>
-<li>Table count: live staging shows 46 public tables, the migrations describe 52 (data map). Either migrations are pending on staging or the map counts dropped tables. Not resolved.</li>
+<li>Introspection: count tables through <code>pg_class</code>, not <code>information_schema.tables</code>, which lists only what the read-only role has privileges on (an earlier pass read 46 instead of 52).</li>
 <li>Branch to environment mapping and deploy trigger (git integration or manual), preview URL pattern, Vercel per-environment env scoping and cron registration status: Vercel dashboard only.</li>
 <li>Supabase region, backups and point-in-time recovery: Supabase dashboard only. That one project backs every environment comes from the target's release ledger, not from config.</li>
 <li>Why GitHub lists the <code>tests</code> workflow as active while its file exists only on an unmerged branch: needs <code>gh run list</code> or the dev team.</li>
