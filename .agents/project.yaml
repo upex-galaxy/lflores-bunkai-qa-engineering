@@ -207,6 +207,8 @@ orchestration:
 
 updater:
   protected_paths: [scripts/api-login.test.ts] # extra synced files this project has hand-merged and wants the updater to stop overwriting (same semantics as the built-in watchlist)
+  declined_denies: [] # upstream permissions.deny entries NOT to append to .claude/settings.json (e.g. ['Bash(env)']); see .agents/project.schema.yaml
+  declined_hooks: [] # upstream hook commands NOT to append to .claude/settings.json; see .agents/project.schema.yaml
 
 secrets:
   provider: local
