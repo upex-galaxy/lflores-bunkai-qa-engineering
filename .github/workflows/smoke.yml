@@ -26,6 +26,11 @@ on:
         required: true
         default: true
         type: boolean
+      execution_key:
+        description: 'Key of the Test Execution this run imports into (an RTR created by /regression-testing, or the sprint-close STR). Empty = the Xray import is skipped; smoke never writes into a regression execution on its own.'
+        required: false
+        default: ''
+        type: string
 
 concurrency:
   # Same gh-pages publish race as regression.yml — queue, never cancel.
@@ -46,6 +51,37 @@ env:
   STAGING_VIEWER_PASSWORD: ${{ secrets.STAGING_VIEWER_PASSWORD }}
   STAGING_NON_MEMBER_EMAIL: ${{ secrets.STAGING_NON_MEMBER_EMAIL }}
   STAGING_NON_MEMBER_PASSWORD: ${{ secrets.STAGING_NON_MEMBER_PASSWORD }}
+  # TMS write-back (optional, opt-in). Mirrors regression.yml so a project that
+  # turns AUTO_SYNC on gets the same behaviour from every suite. This workflow
+  # has no separate Xray JUnit-import job, so the sync step below covers both
+  # modalities: 'xray' imports the ATC runs into the execution_key passed at
+  # dispatch (and skips without one), 'jira' writes a status field and a
+  # comment on each Test issue.
+  TMS_PROVIDER: ${{ vars.TMS_PROVIDER || 'xray' }}
+  AUTO_SYNC: ${{ secrets.AUTO_SYNC || 'false' }}
+  XRAY_CLIENT_ID: ${{ secrets.XRAY_CLIENT_ID }}
+  XRAY_CLIENT_SECRET: ${{ secrets.XRAY_CLIENT_SECRET }}
+  # Smoke and sanity never write into a regression execution. The
+  # STP_EXECUTION_KEY secret is NOT read here on purpose: it names the RTR (or
+  # the sprint-close STR) of the regression suite, and a smoke run of the
+  # @critical subset importing into it would flip Test Runs that belong to a
+  # full regression verdict. Pass an execution key explicitly at dispatch to
+  # import; otherwise the Xray leg is skipped. Empty on a schedule trigger.
+  STP_EXECUTION_KEY: ${{ github.event.inputs.execution_key }}
+  # Atlassian credentials — uncomment when AUTO_SYNC=true on a jira-native
+  # project. There is NO ATLASSIAN_URL secret: the host is read from the
+  # checked-out .agents/project.yaml (issue_tracker.atlassian_url).
+  # ATLASSIAN_EMAIL: ${{ secrets.ATLASSIAN_EMAIL }}
+  # ATLASSIAN_API_TOKEN: ${{ secrets.ATLASSIAN_API_TOKEN }}
+  # Secret manager (ADVANCED, optional; ADR-0010). Only for a project that
+  # committed .env.provider.schema: the service account reads the team vault
+  # inside every step that runs through the launcher (`bun run test*`,
+  # `test:env:check`, `test:sync`). It sits BESIDE the per-variable secrets
+  # above, never instead: a per-variable secret that is set still wins, and one
+  # left unset (an empty string here) is dropped by the launcher so it cannot
+  # blank the vault value. Steps that call a tool directly (`bun xray`, the
+  # portal publisher) still read the per-variable secrets only.
+  OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
 
 jobs:
   SmokeTest:
@@ -57,7 +93,7 @@ jobs:
 
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
@@ -78,9 +114,20 @@ jobs:
       - name: Run Smoke Tests (@critical) on ${{ env.TEST_ENV }}
         run: bun run test:smoke
 
+      # The TMS write-back runs HERE, after the Playwright process has exited:
+      # reports/atc_results.json is written by KataReporter.onEnd(), which fires
+      # after the global-teardown project, so nothing inside the run can read it
+      # (issue #27). `always()` so a failing suite still reports its results.
+      # jira-native writes a per-Test status and needs no execution key. Xray
+      # imports ONLY into an explicit key, so a smoke run never flips Test Runs
+      # inside the regression execution and never mints an orphan Execution.
+      - name: Sync Results to TMS
+        if: always() && env.AUTO_SYNC == 'true' && (env.TMS_PROVIDER != 'xray' || env.STP_EXECUTION_KEY != '')
+        run: bun run test:sync
+
       - name: Upload Allure Results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: smoke-allure-results
           path: allure-results/
@@ -88,7 +135,7 @@ jobs:
 
       - name: Upload Test Results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: smoke-test-results
           path: test-results/
@@ -96,7 +143,7 @@ jobs:
 
       - name: Upload Failure Evidence
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: smoke-failure-evidence
           path: |
@@ -132,10 +179,10 @@ jobs:
       # Full repo checkout: the report is generated with the repo's own
       # allurerc.mjs + allure devDependency (identical to local runs).
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Get Allure History
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: gh-pages
           path: gh-pages
@@ -143,7 +190,8 @@ jobs:
         continue-on-error: true
 
       - name: Download Smoke Test Artifacts
-        uses: actions/download-artifact@v4
+        id: download_results
+        uses: actions/download-artifact@v8
         with:
           name: smoke-allure-results
           path: smoke-artifacts/allure-results
@@ -152,7 +200,14 @@ jobs:
       - name: Check Allure Results
         id: check_allure
         shell: bash
+        env:
+          DOWNLOAD_OUTCOME: ${{ steps.download_results.outcome }}
         run: |
+          # continue-on-error above lets a skipped test job pass; it also hides a
+          # download-artifact v8 digest mismatch, so a failed download is named here.
+          if [ "$DOWNLOAD_OUTCOME" = "failure" ]; then
+            echo "::warning title=Artifact not downloaded::smoke-allure-results was not downloaded: absent, or its digest did not match the upload. See the Download step log."
+          fi
           if [ -d "smoke-artifacts/allure-results" ] && [ -n "$(ls -A smoke-artifacts/allure-results 2>/dev/null)" ]; then
             echo "Allure results found."
             echo "has_results=true" >> $GITHUB_OUTPUT
@@ -187,6 +242,9 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          # Used only when this run bootstraps gh-pages (no gh-pages checkout yet):
+          # publish-allure-pages.ts hands it to git push through the environment.
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           if [ -n "$PORTAL_URL" ]; then
             bun scripts/ci/publish-allure-portal.ts \
