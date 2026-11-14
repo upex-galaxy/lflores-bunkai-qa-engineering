@@ -1,0 +1,10 @@
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "Too many attempts. Please wait and try again.",
+    "details": {
+      "retry_after_seconds": 24
+    },
+    "request_id": "07640b52-7088-471c-ad75-26571222f21c"
+  }
+}
