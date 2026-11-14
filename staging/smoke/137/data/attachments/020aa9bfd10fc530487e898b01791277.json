@@ -1,0 +1,46 @@
+{
+  "environments": [
+    {
+      "id": "f47e2fa0-e830-4218-8c79-9113b262934d",
+      "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+      "name": "sweep-env-1794482677515-r23t4K",
+      "created_at": "2026-11-12T11:24:38.062339+00:00"
+    },
+    {
+      "id": "8f9b8d5f-366b-45ef-92d3-6bca343128c5",
+      "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+      "name": "sweep-env-1794482871179-RxxeNt",
+      "created_at": "2026-11-12T11:27:51.70352+00:00"
+    },
+    {
+      "id": "f6fb0ec1-92d6-482b-80ca-4700929849f8",
+      "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+      "name": "sweep-env-1794529505847-H5gN1H",
+      "created_at": "2026-11-13T00:25:06.073562+00:00"
+    },
+    {
+      "id": "f3132545-2f22-4db1-b74c-401e968da4c2",
+      "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+      "name": "sweep-env-1794549455480-cNhw8Q",
+      "created_at": "2026-11-13T05:57:35.716241+00:00"
+    },
+    {
+      "id": "229b77c8-4345-49aa-a953-b2624660f18e",
+      "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+      "name": "sweep-env-1794561467769-1Aco98",
+      "created_at": "2026-11-13T09:17:48.224054+00:00"
+    },
+    {
+      "id": "ad692b0f-8faf-49e4-b85f-f9f8a4f2a038",
+      "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+      "name": "sweep-env-1794635206680-kBpPWB",
+      "created_at": "2026-11-14T05:46:46.939369+00:00"
+    },
+    {
+      "id": "1a5d3981-7141-467c-905e-be0bc7d61894",
+      "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+      "name": "sweep-env-1794645981439-iuDAxk",
+      "created_at": "2026-11-14T08:46:21.648493+00:00"
+    }
+  ]
+}

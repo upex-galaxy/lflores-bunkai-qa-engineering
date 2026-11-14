@@ -1,0 +1,67 @@
+{
+  "milestones": [
+    {
+      "id": "04967ada-9748-46aa-8a62-6f57932100d9",
+      "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+      "name": "sweep-ms-1794482677989-5YRHLB",
+      "target_date": "2026-11-19",
+      "description": "",
+      "created_by": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-12T11:24:38.494149+00:00"
+    },
+    {
+      "id": "13ed629e-3e61-4610-b045-7a179d959ba0",
+      "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+      "name": "sweep-ms-1794482871613-MtCUAb",
+      "target_date": "2026-11-19",
+      "description": "",
+      "created_by": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-12T11:27:52.108759+00:00"
+    },
+    {
+      "id": "34330a90-be33-4fa3-9305-65b23d09f564",
+      "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+      "name": "sweep-ms-1794529506116-qIACJN",
+      "target_date": "2026-11-20",
+      "description": "",
+      "created_by": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-13T00:25:06.335373+00:00"
+    },
+    {
+      "id": "5c2281ed-d3df-4176-8384-a8c7be244ea4",
+      "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+      "name": "sweep-ms-1794561468278-fHKk8G",
+      "target_date": "2026-11-20",
+      "description": "",
+      "created_by": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-13T09:17:48.674126+00:00"
+    },
+    {
+      "id": "e605caf9-3e3c-4244-8797-1f5b6421a709",
+      "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+      "name": "sweep-ms-1794549455778-jjntaf",
+      "target_date": "2026-11-20",
+      "description": "",
+      "created_by": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-13T05:57:36.009029+00:00"
+    },
+    {
+      "id": "1dab1fc9-60c0-448e-a5f4-261de98cdab9",
+      "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+      "name": "sweep-ms-1794635206993-kKC6uP",
+      "target_date": "2026-11-21",
+      "description": "",
+      "created_by": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-14T05:46:47.233765+00:00"
+    },
+    {
+      "id": "83f4ab3d-1682-4791-83d7-2f2a47f6288e",
+      "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+      "name": "sweep-ms-1794645981689-SwmIrn",
+      "target_date": "2026-11-21",
+      "description": "",
+      "created_by": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-14T08:46:21.897693+00:00"
+    }
+  ]
+}
