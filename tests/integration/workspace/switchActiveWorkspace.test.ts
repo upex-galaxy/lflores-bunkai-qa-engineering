@@ -9,7 +9,8 @@
  */
 
 import { WORKSPACE_NOT_MEMBER_ID } from '@data/constants';
-import { config, expect, test } from '@TestFixture';
+import { expect, test } from '@TestFixture';
+import { useIdentity } from '@utils/auth';
 
 /**
  * Fixed reference workspace where the BK-6 test user HAS a `workspace_members` row but
@@ -32,19 +33,15 @@ test.describe('BK-6: Workspace Switch API', { tag: ['@critical'] }, () => {
   /**
    * ATC: BK-250
    *
-   * Precondition: fresh login (no shared state across tests) + discover at
+   * Precondition: cached owner session (`useIdentity`, ADR-0029) + discover at
    * least 2 active workspace memberships via GET /me (Discover pattern —
    * never assert on precondition data, skip when the fixture is missing).
    */
   test(
     'BK-6: should update active workspace context when switching to a workspace given the user is an active member',
     async ({ api }) => {
-      // Precondition: authenticate fresh
-      const credentials = {
-        email: config.testUser.email,
-        password: config.testUser.password,
-      };
-      await api.auth.authenticateSuccessfully(credentials);
+      // Precondition: act as the cached owner (useIdentity, ADR-0029)
+      await useIdentity(api, 'owner', { withSession: true });
 
       // Precondition: discover workspace memberships (Discover pattern)
       const [, meBefore] = await api.auth.getCurrentUser();
@@ -73,19 +70,15 @@ test.describe('BK-6: Workspace Switch API', { tag: ['@critical'] }, () => {
   /**
    * ATC: BK-251
    *
-   * Precondition: fresh login + a fixed reference workspace where the caller has
+   * Precondition: cached owner identity + a fixed reference workspace where the caller has
    * no membership row (WORKSPACE_NOT_MEMBER_ID — see the file-level comment above
    * for why this is a documented constant rather than a runtime Discover).
    */
   test(
     'BK-6: should reject workspace switch given the user has no active membership',
     async ({ api }) => {
-      // Precondition: authenticate fresh
-      const credentials = {
-        email: config.testUser.email,
-        password: config.testUser.password,
-      };
-      await api.auth.authenticateSuccessfully(credentials);
+      // Precondition: act as the cached owner (useIdentity, ADR-0029)
+      await useIdentity(api, 'owner', { withSession: true });
 
       const [, meBefore] = await api.auth.getCurrentUser();
 
@@ -103,19 +96,15 @@ test.describe('BK-6: Workspace Switch API', { tag: ['@critical'] }, () => {
   /**
    * ATC: BK-252
    *
-   * Precondition: fresh login + a fixed reference workspace where the caller HAS a
+   * Precondition: cached owner identity + a fixed reference workspace where the caller HAS a
    * membership row but its status is `suspended` (WORKSPACE_SUSPENDED_ID — see the
    * file-level comment above for the hand-mutated-fixture decision trail).
    */
   test(
     'BK-6: should reject workspace switch given the user has a suspended membership',
     async ({ api }) => {
-      // Precondition: authenticate fresh
-      const credentials = {
-        email: config.testUser.email,
-        password: config.testUser.password,
-      };
-      await api.auth.authenticateSuccessfully(credentials);
+      // Precondition: act as the cached owner (useIdentity, ADR-0029)
+      await useIdentity(api, 'owner', { withSession: true });
 
       const [, meBefore] = await api.auth.getCurrentUser();
 

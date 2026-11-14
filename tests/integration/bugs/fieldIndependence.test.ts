@@ -9,7 +9,8 @@
  */
 
 import { QA_WORKSPACE_MEMBER_USER_ID, QA_WORKSPACE_MODULE_ID, QA_WORKSPACE_OWNER_USER_ID, QA_WORKSPACE_PROJECT_ID } from '@data/constants';
-import { config, expect, test } from '@TestFixture';
+import { expect, test } from '@TestFixture';
+import { useIdentity } from '@utils/auth';
 
 /**
  * Fixed reference workspace — same QA workspace fixture as
@@ -22,7 +23,7 @@ test.describe('BK-264: Bug Field Independence API', { tag: ['@high'] }, () => {
    * status untouched.
    */
   test('BK-264: should keep status unchanged when reassigning a closed bug', async ({ api }) => {
-    await api.auth.authenticateSuccessfully({ email: config.testUser.email, password: config.testUser.password });
+    await useIdentity(api, 'owner');
     const [, filed] = await api.bugs.fileBugSuccessfully({
       project_id: QA_WORKSPACE_PROJECT_ID,
       module_id: QA_WORKSPACE_MODULE_ID,
@@ -48,7 +49,7 @@ test.describe('BK-264: Bug Field Independence API', { tag: ['@high'] }, () => {
    * ATC: BK-484, row 2 — advancing status leaves the assignee untouched.
    */
   test('BK-264: should keep assignee unchanged when advancing status', async ({ api }) => {
-    await api.auth.authenticateSuccessfully({ email: config.testUser.email, password: config.testUser.password });
+    await useIdentity(api, 'owner');
     const [, filed] = await api.bugs.fileBugSuccessfully({
       project_id: QA_WORKSPACE_PROJECT_ID,
       module_id: QA_WORKSPACE_MODULE_ID,

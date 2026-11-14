@@ -30,6 +30,8 @@ Max-2-positional-params rule: 4 fields → object param, satisfies the rule.
 
 ## Test file
 
+> Superseded 2026-11-14: `authenticateAs` was removed; tests switch actor with `useIdentity` (ADR-0029).
+
 `tests/integration/bugs/attributeActionToActualCaller.test.ts` — model directly on `tests/integration/bugs/statusTransitions.test.ts` (same sandbox fixture, same `authenticateAs` local helper, same `fileFreshBug` local helper). Reuse the fixed constants already established there:
 
 ```ts

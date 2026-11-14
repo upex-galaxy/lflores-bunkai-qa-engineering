@@ -80,6 +80,8 @@
 
 ## 4. Test Data Strategy
 
+> Superseded 2026-11-14: `authenticateAs` was removed; tests switch actor with `useIdentity` (ADR-0029).
+
 | TC | Precondition | Pattern | Source | Feasibility |
 |---|---|---|---|---|
 | BK-671 | Any-scope PAT, no pre-existing workspace | Generate | `mintPatWithScopes()` then the ATC itself creates the workspace | Feasible |

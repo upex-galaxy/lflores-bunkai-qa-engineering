@@ -9,23 +9,17 @@
  * Project: integration (depends on api-setup)
  */
 
-import type { LoginPayload } from '@api/AuthApi';
 import type { BugDetail, BugStatusTransitionBody } from '@api/BugsApi';
 import type { ApiFixture } from '@ApiFixture';
 
 import { QA_WORKSPACE_MEMBER_USER_ID, QA_WORKSPACE_MODULE_ID, QA_WORKSPACE_PROJECT_ID } from '@data/constants';
-import { config, expect, test } from '@TestFixture';
+import { expect, test } from '@TestFixture';
+import { isIdentityProvisioned, useIdentity } from '@utils/auth';
 
 /**
  * Fixed reference workspace — same QA workspace fixture as
  * assignBug.test.ts. See that file's header comment for provenance.
  */
-
-/** Authenticate + propagate the token to every API component. See rejectViewerWrite.test.ts for why. */
-async function authenticateAs(api: ApiFixture, credentials: LoginPayload): Promise<void> {
-  await api.auth.authenticateSuccessfully(credentials);
-  api.setAuthToken(api.auth.authToken!);
-}
 
 async function fileFreshBug(api: ApiFixture, label: string): Promise<BugDetail> {
   const [, filed] = await api.bugs.fileBugSuccessfully({
@@ -52,17 +46,19 @@ test.describe('BK-264: Bug Status Transition API', { tag: ['@critical'] }, () =>
    * sequential lifecycle chain on ONE bug, not independent partitions).
    */
   test('BK-264: should advance status through every legal forward transition', async ({ api }) => {
-    await authenticateAs(api, { email: config.testUser.email, password: config.testUser.password });
+    test.skip(!isIdentityProvisioned('member'), 'BK-264: config.testMember not provisioned for this environment');
+
+    await useIdentity(api, 'owner');
     const bug = await fileFreshBug(api, 'BK-479 automated fixture bug');
 
     // Precondition: the bug's assignee performs rows 1-2 (open->in_progress, in_progress->resolved)
     await api.bugs.assignBugToEligibleMember(bug.id, { assignee_user_id: QA_WORKSPACE_MEMBER_USER_ID });
-    await authenticateAs(api, { email: config.testMember.email, password: config.testMember.password });
+    await useIdentity(api, 'member');
     await api.bugs.advanceStatusLegally(bug.id, { status: 'in_progress' });
     await api.bugs.advanceStatusLegally(bug.id, { status: 'resolved' });
 
     // Row 3: a non-assignee Member+ actor (the owner) can legally close it
-    await authenticateAs(api, { email: config.testUser.email, password: config.testUser.password });
+    await useIdentity(api, 'owner');
     await api.bugs.advanceStatusLegally(bug.id, { status: 'closed' });
 
     const [, after] = await api.bugs.getBugById(bug.id);
@@ -79,7 +75,7 @@ test.describe('BK-264: Bug Status Transition API', { tag: ['@critical'] }, () =>
     { label: 'in_progress->closed', from: 'in_progress' as const, to: 'closed' as const },
   ]) {
     test(`BK-264: should reject a status change that skips a lifecycle stage ("${label}")`, async ({ api }) => {
-      await authenticateAs(api, { email: config.testUser.email, password: config.testUser.password });
+      await useIdentity(api, 'owner');
       const bug = await fileFreshBug(api, `BK-478 automated fixture bug (${label})`);
       if (from) { await advanceTo(api, bug.id, from); }
 
@@ -101,7 +97,7 @@ test.describe('BK-264: Bug Status Transition API', { tag: ['@critical'] }, () =>
     { label: 'in_progress->in_progress (same-status)', from: 'in_progress' as const, to: 'in_progress' as const },
   ]) {
     test(`BK-264: should reject a status change that moves backward or repeats the current status ("${label}")`, async ({ api }) => {
-      await authenticateAs(api, { email: config.testUser.email, password: config.testUser.password });
+      await useIdentity(api, 'owner');
       const bug = await fileFreshBug(api, `BK-482 automated fixture bug (${label})`);
       await advanceTo(api, bug.id, from);
 

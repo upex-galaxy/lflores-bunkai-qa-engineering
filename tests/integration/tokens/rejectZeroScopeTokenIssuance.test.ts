@@ -8,22 +8,20 @@
  * Project: integration (depends on api-setup)
  */
 
-import { config, expect, test } from '@TestFixture';
+import { expect, test } from '@TestFixture';
+import { useIdentity } from '@utils/auth';
 
 test.describe('BK-499: Zero-Scope Token Issuance API', { tag: ['@critical'] }, () => {
   /**
    * ATC: BK-672
    *
-   * Precondition: fresh login (session cookie only) — token issuance is
+   * Precondition: cached owner identity (session cookie only) — token issuance is
    * cookie-only, so no PAT is minted before this ACTION.
    */
   test(
     'BK-499: should reject token issuance given zero scopes requested',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
 
       // ACTION: ATC handles fixed assertions — 422 validation rejection
       const [, , sentPayload] = await api.tokens.rejectZeroScopeTokenIssuance();

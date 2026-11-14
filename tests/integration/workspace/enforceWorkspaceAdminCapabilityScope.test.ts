@@ -10,14 +10,15 @@
  */
 
 import { WORKSPACE_NOT_MEMBER_ID } from '@data/constants';
-import { config, test } from '@TestFixture';
+import { test } from '@TestFixture';
+import { useIdentity } from '@utils/auth';
 import { getOwnedWorkspace } from '@utils/workspace';
 
 test.describe('BK-497: Workspace Admin Capability Scope API', { tag: ['@critical'] }, () => {
   /**
    * ATC: BK-550
    *
-   * Precondition: fresh login + discover a workspace the caller OWNS (PATCH
+   * Precondition: cached owner identity + discover a workspace the caller OWNS (PATCH
    * /workspaces/{id} is owner-only per the OpenAPI spec — `active_workspace_id`
    * is not guaranteed to be an owned workspace, it can be a plain "member"
    * one, which the real endpoint 403s on regardless of PAT scope) + mint a
@@ -26,10 +27,7 @@ test.describe('BK-497: Workspace Admin Capability Scope API', { tag: ['@critical
   test(
     'BK-497: should allow a workspace-admin action when the PAT is correctly scoped and bound to the target workspace',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
       const [, me] = await api.auth.getCurrentUser();
       const currentWorkspace = getOwnedWorkspace(me);
       test.skip(!currentWorkspace, 'BK-497: test user needs to own at least one workspace');
@@ -55,7 +53,7 @@ test.describe('BK-497: Workspace Admin Capability Scope API', { tag: ['@critical
   /**
    * ATC: BK-551
    *
-   * Precondition: fresh login + discover a workspace the caller OWNS (A) —
+   * Precondition: cached owner identity + discover a workspace the caller OWNS (A) —
    * same owner-only rationale as BK-550 — + mint a `workspace:admin`-scoped
    * PAT bound to workspace A + a second, real workspace (B) the caller is
    * not a member of (`WORKSPACE_NOT_MEMBER_ID`).
@@ -63,10 +61,7 @@ test.describe('BK-497: Workspace Admin Capability Scope API', { tag: ['@critical
   test(
     'BK-497: should reject a workspace-admin action when the PAT is bound to a different workspace',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
       const [, me] = await api.auth.getCurrentUser();
       const ownedWorkspace = getOwnedWorkspace(me);
       test.skip(!ownedWorkspace, 'BK-497: test user needs to own at least one workspace');

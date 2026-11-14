@@ -574,7 +574,7 @@ export class WorkspaceApi extends ApiBase {
    */
   @atc('BK-680')
   async allowCookieSessionOnSessionOnlyRoutes(workspaceId: string): Promise<[APIResponse, APIResponse]> {
-    // authenticateSuccessfully() leaves an ambient Bearer PAT set (BK-166
+    // useIdentity(api, role, { withSession: true }) leaves an ambient Bearer PAT set (BK-166
     // coexistence) alongside the session cookie — suspend it for BOTH
     // actions (postActiveWorkspace already suspends around itself, but its
     // `finally` restores the ambient token before ACTION 2 runs, so the

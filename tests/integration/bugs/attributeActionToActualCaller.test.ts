@@ -11,23 +11,17 @@
  * Project: integration (depends on api-setup)
  */
 
-import type { LoginPayload } from '@api/AuthApi';
 import type { BugDetail } from '@api/BugsApi';
 import type { ApiFixture } from '@ApiFixture';
 
 import { QA_WORKSPACE_ID, QA_WORKSPACE_MEMBER_USER_ID, QA_WORKSPACE_MODULE_ID, QA_WORKSPACE_PROJECT_ID } from '@data/constants';
-import { config, expect, test } from '@TestFixture';
+import { expect, test } from '@TestFixture';
+import { isIdentityProvisioned, useIdentity } from '@utils/auth';
 
 /**
  * Fixed reference workspace/project/module — same QA workspace fixture
  * as statusTransitions.test.ts. See that file's header comment for provenance.
  */
-
-/** Authenticate + propagate the token to every API component. See rejectViewerWrite.test.ts for why. */
-async function authenticateAs(api: ApiFixture, credentials: LoginPayload): Promise<void> {
-  await api.auth.authenticateSuccessfully(credentials);
-  api.setAuthToken(api.auth.authToken!);
-}
 
 async function fileFreshBug(api: ApiFixture, label: string): Promise<BugDetail> {
   const [, filed] = await api.bugs.fileBugSuccessfully({
@@ -45,7 +39,7 @@ test.describe('BK-264: Bug Action Attribution', { tag: ['@critical'] }, () => {
    * must be the owner, never the resulting assignee (member2).
    */
   test('BK-264: should attribute a bug assignment to the actor, not the resulting assignee', async ({ api }) => {
-    await authenticateAs(api, { email: config.testUser.email, password: config.testUser.password });
+    await useIdentity(api, 'owner');
     const [, meBody] = await api.auth.getCurrentUser();
     const ownerUserId = meBody.user.id;
 
@@ -68,13 +62,15 @@ test.describe('BK-264: Bug Action Attribution', { tag: ['@critical'] }, () => {
    * to them; the activity row's actor must be the member who made the call.
    */
   test('BK-264: should attribute a bug status change to the actor who performed it', async ({ api }) => {
-    await authenticateAs(api, { email: config.testUser.email, password: config.testUser.password });
+    test.skip(!isIdentityProvisioned('member'), 'BK-264: config.testMember not provisioned for this environment');
+
+    await useIdentity(api, 'owner');
     const bug = await fileFreshBug(api, 'BK-487 automated fixture bug (status)');
 
     // Precondition: assign the bug to member2 before they act on it
     await api.bugs.assignBugToEligibleMember(bug.id, { assignee_user_id: QA_WORKSPACE_MEMBER_USER_ID });
 
-    await authenticateAs(api, { email: config.testMember.email, password: config.testMember.password });
+    await useIdentity(api, 'member');
 
     const [, matched] = await api.bugs.attributeActionToActualCaller({
       bugId: bug.id,

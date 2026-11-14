@@ -79,6 +79,114 @@ export function generateAllureFilename(args: AllureFilenameArgs): string {
 }
 
 // ============================================
+// Redaction
+// ============================================
+
+/** Normalise an object key for secret matching: lower-cased, `_` and `-` removed */
+function normalizeKey(key: string): string {
+  return key.toLowerCase().replace(/[_-]/g, '');
+}
+
+/**
+ * Object keys whose values never reach an Allure attachment or a step title.
+ * Stored normalised (`normalizeKey`), so `access_token`, `accessToken` and
+ * `Access-Token` all match.
+ */
+const SECRET_KEYS = new Set([
+  'password',
+  'token',
+  'access_token',
+  'refresh_token',
+  'provider_token',
+  'provider_refresh_token',
+  'session_token',
+  'authorization',
+  'cookie',
+  'cookies',
+  'set-cookie',
+  'secret',
+  'api_key',
+  'apikey',
+  'x-api-key',
+  'id_token',
+  'jwt',
+].map(normalizeKey));
+
+const REDACTED = '***';
+const PAT_PATTERN = /bk_pat_[\w.-]+/g;
+const TOKEN_QUERY_PARAM_PATTERN = /([?&](?:token|access_token|refresh_token)=)[^&#\s"]+/gi;
+const JWT_PATTERN = /eyJ[\w-]+\.[\w-]+\.[\w-]+/g;
+const BEARER_PATTERN = /(Bearer\s+)[^\s"',]+/gi;
+const SUPABASE_COOKIE_PATTERN = /base64-[\w+/=-]{20,}/g;
+
+/** True when `key` names a secret (case-, `_`- and `-`-insensitive) */
+export function isSecretKey(key: string): boolean {
+  return SECRET_KEYS.has(normalizeKey(key));
+}
+
+/**
+ * Mask secrets embedded in a string: every PAT (`bk_pat_...` becomes
+ * `bk_pat_***`), the value of every `token`, `access_token` or
+ * `refresh_token` URL query parameter, every JWT, every `Bearer <value>` and
+ * every Supabase cookie value (`base64-...`). Other text is returned
+ * unchanged. Idempotent.
+ */
+export function redactSecretString(value: string): string {
+  return value
+    .replace(PAT_PATTERN, `bk_pat_${REDACTED}`)
+    .replace(TOKEN_QUERY_PARAM_PATTERN, `$1${REDACTED}`)
+    .replace(JWT_PATTERN, REDACTED)
+    .replace(BEARER_PATTERN, `$1${REDACTED}`)
+    .replace(SUPABASE_COOKIE_PATTERN, `base64-${REDACTED}`);
+}
+
+/** True for `{}` literals and `Object.create(null)` objects, false for class instances */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (value === null || typeof value !== 'object') {
+    return false;
+  }
+  const proto: unknown = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
+}
+
+/**
+ * Return a deep copy of `value` with secrets masked, at any depth (plain
+ * objects and arrays): the value of every secret key (`isSecretKey`) becomes
+ * `'***'` and every string goes through `redactSecretString`. Other non-string
+ * values (Date, Buffer, class instances) are returned unchanged; a cycle
+ * becomes `'[Circular]'`. Idempotent; the input is never mutated.
+ */
+export function redactSecrets<T>(value: T): T {
+  return redactValue(value, new WeakSet<object>()) as T;
+}
+
+function redactValue(value: unknown, seen: WeakSet<object>): unknown {
+  if (typeof value === 'string') {
+    return redactSecretString(value);
+  }
+  if (!Array.isArray(value) && !isPlainObject(value)) {
+    return value;
+  }
+  if (seen.has(value)) {
+    return '[Circular]';
+  }
+  seen.add(value);
+  let copy: unknown;
+  if (Array.isArray(value)) {
+    copy = value.map(item => redactValue(item, seen));
+  }
+  else {
+    const record: Record<string, unknown> = {};
+    for (const [key, item] of Object.entries(value)) {
+      record[key] = isSecretKey(key) ? REDACTED : redactValue(item, seen);
+    }
+    copy = record;
+  }
+  seen.delete(value);
+  return copy;
+}
+
+// ============================================
 // Attachment Functions
 // ============================================
 
@@ -86,6 +194,9 @@ export function generateAllureFilename(args: AllureFilenameArgs): string {
  * Attach JSON data to Allure report with error handling.
  *
  * Silently fails if Allure is not available (e.g., in setup projects).
+ * Secrets are redacted first (`redactSecrets`): object data by key and string
+ * rules, raw-text data by the string rules (`redactSecretString`), because the
+ * Allure report is published publicly.
  *
  * @example
  * await attachJsonToAllure({
@@ -94,9 +205,10 @@ export function generateAllureFilename(args: AllureFilenameArgs): string {
  * });
  */
 export async function attachJsonToAllure(args: AttachJsonArgs): Promise<void> {
-  const { name, data, contentType = ContentType.JSON } = args;
+  const { name, contentType = ContentType.JSON } = args;
 
   try {
+    const data = redactSecrets(args.data);
     if (data === undefined || data === null) {
       return;
     }
@@ -118,7 +230,9 @@ export async function attachJsonToAllure(args: AttachJsonArgs): Promise<void> {
  * Attach HTTP request and response bodies to Allure report.
  *
  * Generates appropriate filenames and attaches both request and response
- * if they contain data.
+ * if they contain data. Both bodies are deep-cloned and redacted first
+ * (`redactSecrets`): passwords, tokens, cookies and PATs become `'***'`,
+ * because the Allure report is published publicly.
  *
  * @example
  * await attachRequestResponseToAllure({
@@ -131,9 +245,12 @@ export async function attachJsonToAllure(args: AttachJsonArgs): Promise<void> {
 export async function attachRequestResponseToAllure(
   args: AttachRequestResponseArgs,
 ): Promise<void> {
-  const { url, method, responseBody, requestBody } = args;
+  const { url, method } = args;
 
   try {
+    const responseBody = redactSecrets(args.responseBody);
+    const requestBody = redactSecrets(args.requestBody);
+
     // Attach response body if exists
     if (responseBody !== undefined && responseBody !== null) {
       const isNonEmpty = typeof responseBody !== 'object' || Object.keys(responseBody).length > 0;

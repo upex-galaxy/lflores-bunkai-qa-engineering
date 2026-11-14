@@ -10,23 +10,21 @@
  */
 
 import { WORKSPACE_NOT_MEMBER_ID } from '@data/constants';
-import { config, test } from '@TestFixture';
+import { test } from '@TestFixture';
+import { useIdentity } from '@utils/auth';
 
 test.describe('BK-499: Project creation capability gate', { tag: ['@critical'] }, () => {
   /**
    * ATC: BK-684
    *
-   * Precondition: fresh login + Generate a fresh workspace via the BK-671
+   * Precondition: cached owner identity + Generate a fresh workspace via the BK-671
    * bootstrap flow (owner counts as member, satisfying the role floor) +
    * mint a PAT scoped `atc:write`, bound to it.
    */
   test(
     'BK-499: should create a project given a correctly-scoped, member-role PAT',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
 
       const bootstrapPat = await api.tokens.mintPatWithScopes();
       api.setAuthToken(bootstrapPat.token);
@@ -50,7 +48,7 @@ test.describe('BK-499: Project creation capability gate', { tag: ['@critical'] }
   /**
    * ATC: BK-685
    *
-   * Precondition: fresh login + mint an UNBOUND PAT scoped only `atc:read`
+   * Precondition: cached owner identity + mint an UNBOUND PAT scoped only `atc:read`
    * (no `workspace_id`) — binding a PAT to `WORKSPACE_NOT_MEMBER_ID` at
    * mint time is itself rejected (403), since issuance requires the caller
    * already be a member of the workspace being bound. An unbound token
@@ -62,10 +60,7 @@ test.describe('BK-499: Project creation capability gate', { tag: ['@critical'] }
   test(
     'BK-499: should reject project creation with 403 naming the capability given a PAT missing atc:write on a non-member workspace',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
 
       const pat = await api.tokens.mintPatWithScopes({ scopes: ['atc:read'] });
       api.setAuthToken(pat.token);

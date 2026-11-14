@@ -8,7 +8,8 @@
  */
 
 import { QA_WORKSPACE_MODULE_ID, QA_WORKSPACE_PROJECT_ID, QA_WORKSPACE_VIEWER_USER_ID } from '@data/constants';
-import { config, expect, test } from '@TestFixture';
+import { expect, test } from '@TestFixture';
+import { useIdentity } from '@utils/auth';
 
 /**
  * Fixed reference workspace — same QA workspace fixture as
@@ -24,7 +25,7 @@ test.describe('BK-264: Bug Assignment Rejection API', { tag: ['@high'] }, () => 
    * the endpoint only checks membership, not user existence).
    */
   test('BK-264: should reject assignment given the target is not a workspace member', async ({ api }) => {
-    await api.auth.authenticateSuccessfully({ email: config.testUser.email, password: config.testUser.password });
+    await useIdentity(api, 'owner');
     const [, filed] = await api.bugs.fileBugSuccessfully({
       project_id: QA_WORKSPACE_PROJECT_ID,
       module_id: QA_WORKSPACE_MODULE_ID,
@@ -45,7 +46,7 @@ test.describe('BK-264: Bug Assignment Rejection API', { tag: ['@high'] }, () => 
    * the QA workspace (provisioned in a prior session).
    */
   test('BK-264: should reject assignment given the target is a Viewer-role member', async ({ api }) => {
-    await api.auth.authenticateSuccessfully({ email: config.testUser.email, password: config.testUser.password });
+    await useIdentity(api, 'owner');
     const [, filed] = await api.bugs.fileBugSuccessfully({
       project_id: QA_WORKSPACE_PROJECT_ID,
       module_id: QA_WORKSPACE_MODULE_ID,

@@ -98,8 +98,8 @@ export class TokensApi extends ApiBase {
    * suspends any ambient Bearer token for the duration of the mint call —
    * mirroring `WorkspaceApi.postActiveWorkspace`'s suspend/restore pattern —
    * then restores it. Requires a session cookie already present in the
-   * shared `APIRequestContext` (established by a prior
-   * `api.auth.authenticateSuccessfully()` call earlier in the same test).
+   * shared `APIRequestContext` (loaded earlier in the same test by
+   * `useIdentity(api, role, { withSession: true })`, ADR-0029).
    *
    * @param overrides - Fields to override on the default token body (scopes
    *   defaults to `['atc:read']`, name defaults to a generated test id)
@@ -306,7 +306,7 @@ export class TokensApi extends ApiBase {
       ...overrides,
     };
 
-    // authenticateSuccessfully() leaves an ambient Bearer PAT set (BK-166
+    // useIdentity(api, role, { withSession: true }) leaves an ambient Bearer PAT set (BK-166
     // coexistence) alongside the session cookie — suspend it so this request
     // actually exercises the cookie-only channel, mirroring mintPatWithScopes.
     const savedToken = this.authToken;

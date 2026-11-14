@@ -12,8 +12,8 @@
 import type { CapabilityGateRouteRow } from '@api/CapabilityGateApi';
 import type { ApiFixture } from '@ApiFixture';
 import { QA_WORKSPACE_ID, QA_WORKSPACE_MODULE_ID, QA_WORKSPACE_PROJECT_ID } from '@data/constants';
-import { config, test } from '@TestFixture';
-import { authenticateAs } from '@utils/auth';
+import { test } from '@TestFixture';
+import { isIdentityProvisioned, useIdentity } from '@utils/auth';
 
 /**
  * Precondition builder for TC3/TC4 (BK-673/674): resolves the 4 sampled
@@ -74,17 +74,14 @@ test.describe('BK-499: Capability Gate API', { tag: ['@critical'] }, () => {
   /**
    * ATC: BK-675
    *
-   * Precondition: fresh login + mint a PAT scoped ONLY `atc:write` + discover
+   * Precondition: cached owner identity + mint a PAT scoped ONLY `atc:write` + discover
    * any workspace the caller is a member of (ownership irrelevant — /activity
    * is a plain read).
    */
   test(
     'BK-499: should reject given PAT scoped atc:write only on a read-gated route',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
 
       const pat = await api.tokens.mintPatWithScopes({ scopes: ['atc:write'] });
       api.setAuthToken(pat.token);
@@ -101,16 +98,13 @@ test.describe('BK-499: Capability Gate API', { tag: ['@critical'] }, () => {
   /**
    * ATC: BK-676
    *
-   * Precondition: fresh login + mint a PAT scoped `atc:read` plus an
+   * Precondition: cached owner identity + mint a PAT scoped `atc:read` plus an
    * unrelated extra scope (`run:execute`) + discover any workspace.
    */
   test(
     'BK-499: should pass given PAT holds required scope plus an unrelated extra scope',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
 
       const pat = await api.tokens.mintPatWithScopes({ scopes: ['atc:read', 'run:execute'] });
       api.setAuthToken(pat.token);
@@ -127,18 +121,15 @@ test.describe('BK-499: Capability Gate API', { tag: ['@critical'] }, () => {
   /**
    * ATC: BK-681
    *
-   * Precondition: fresh login only — no PAT minted, the session cookie IS
+   * Precondition: cached owner identity only — no PAT minted, the session cookie IS
    * the precondition + discover any workspace.
    */
   test(
     'BK-499: should serve a capability-gated route to a browser session with no scope check',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
 
-      // authenticateSuccessfully() leaves an ambient Bearer PAT set (BK-166
+      // useIdentity() leaves the role's Bearer PAT set (BK-166
       // coexistence) alongside the session cookie — clear it so this test
       // actually exercises the cookie-only channel, not an incidentally
       // full-scoped Bearer token that would pass for the wrong reason.
@@ -156,7 +147,7 @@ test.describe('BK-499: Capability Gate API', { tag: ['@critical'] }, () => {
   /**
    * ATC: BK-682
    *
-   * Precondition: fresh login + Generate a fresh workspace via the BK-671
+   * Precondition: cached owner identity + Generate a fresh workspace via the BK-671
    * bootstrap flow (guarantees ownership — Discover could land on a plain
    * "member" workspace instead) + mint a PAT scoped ONLY `run:execute`,
    * bound to it.
@@ -164,10 +155,7 @@ test.describe('BK-499: Capability Gate API', { tag: ['@critical'] }, () => {
   test(
     'BK-499: should reject given owner role missing the required capability',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
 
       const bootstrapPat = await api.tokens.mintPatWithScopes();
       api.setAuthToken(bootstrapPat.token);
@@ -188,7 +176,7 @@ test.describe('BK-499: Capability Gate API', { tag: ['@critical'] }, () => {
   /**
    * ATC: BK-683
    *
-   * Precondition: fresh login as `config.testViewer` — a real, permanently
+   * Precondition: cached `viewer` identity (`config.testViewer`, `useIdentity`) — a real, permanently
    * provisioned second identity (QA workspace), Viewer-role member of a
    * real workspace + discover that workspace + mint a PAT scoped `atc:read`,
    * bound to it.
@@ -196,11 +184,8 @@ test.describe('BK-499: Capability Gate API', { tag: ['@critical'] }, () => {
   test(
     'BK-499: should pass given PAT holds required scope given viewer role',
     async ({ api }) => {
-      test.skip(!config.testViewer.email, 'BK-499: config.testViewer not provisioned for this environment');
-
-      // Not config.testUser — must propagate via authenticateAs, not a bare
-      // authenticateSuccessfully() call (see tests/utils/auth.ts doc comment).
-      await authenticateAs(api, { email: config.testViewer.email, password: config.testViewer.password });
+      test.skip(!isIdentityProvisioned('viewer'), 'BK-499: config.testViewer not provisioned for this environment');
+      await useIdentity(api, 'viewer', { withSession: true });
 
       const [, me] = await api.auth.getCurrentUser();
       test.skip(me.workspaces.length === 0, 'BK-499: config.testViewer needs at least one workspace membership');
@@ -217,17 +202,14 @@ test.describe('BK-499: Capability Gate API', { tag: ['@critical'] }, () => {
   /**
    * ATC: BK-673
    *
-   * Precondition: fresh login (OWNER session) + resolve the 4 sampled
+   * Precondition: cached owner session (`useIdentity`, ADR-0029) + resolve the 4 sampled
    * read-gated routes' real ids via `buildSampledReadGatedRoutes` + mint a
    * PAT scoped `atc:read`, bound to the QA workspace workspace.
    */
   test(
     'BK-499: should return 200 with data given PAT scoped atc:read',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
 
       const rows = await buildSampledReadGatedRoutes(api);
 
@@ -242,7 +224,7 @@ test.describe('BK-499: Capability Gate API', { tag: ['@critical'] }, () => {
   /**
    * ATC: BK-674
    *
-   * Precondition: fresh login (OWNER session) + resolve the same 4 sampled
+   * Precondition: cached owner session (`useIdentity`, ADR-0029) + resolve the same 4 sampled
    * routes as BK-673 (own chain, per "each test generates its own data") +
    * mint a PAT scoped only `run:execute`, bound to the QA workspace
    * workspace.
@@ -250,10 +232,7 @@ test.describe('BK-499: Capability Gate API', { tag: ['@critical'] }, () => {
   test(
     'BK-499: should return 403 given PAT missing atc:read',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
 
       const rows = await buildSampledReadGatedRoutes(api);
 
@@ -268,17 +247,14 @@ test.describe('BK-499: Capability Gate API', { tag: ['@critical'] }, () => {
   /**
    * ATC: BK-677
    *
-   * Precondition: fresh login + mint a PAT scoped only `run:execute`
+   * Precondition: cached owner identity + mint a PAT scoped only `run:execute`
    * (irrelevant to this bucket) + discover any workspace the caller is a
    * member of.
    */
   test(
     'BK-499: should succeed for any authenticated PAT regardless of scope given identity or notification route',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
 
       const pat = await api.tokens.mintPatWithScopes({ scopes: ['run:execute'] });
       api.setAuthToken(pat.token);

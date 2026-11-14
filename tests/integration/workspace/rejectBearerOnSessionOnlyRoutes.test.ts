@@ -10,23 +10,21 @@
  * Project: integration (depends on api-setup)
  */
 
-import { config, test } from '@TestFixture';
+import { test } from '@TestFixture';
+import { useIdentity } from '@utils/auth';
 
 test.describe('BK-499: Session-only routes reject Bearer PATs', { tag: ['@critical'] }, () => {
   /**
    * ATC: BK-678
    *
-   * Precondition: fresh login + mint a full-scope PAT + discover any
+   * Precondition: cached owner identity + mint a full-scope PAT + discover any
    * workspace the caller is a member of (the channel guard fires before the
    * workspace id is resolved, so membership is irrelevant to the outcome).
    */
   test(
     'BK-499: should reject given full-scope Bearer PAT on the leave-workspace route',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
 
       const pat = await api.tokens.mintPatWithScopes({ scopes: ['atc:read', 'atc:write', 'run:execute'] });
       api.setAuthToken(pat.token);
@@ -43,17 +41,14 @@ test.describe('BK-499: Session-only routes reject Bearer PATs', { tag: ['@critic
   /**
    * ATC: BK-679
    *
-   * Precondition: fresh login + mint a full-scope PAT + discover any
+   * Precondition: cached owner identity + mint a full-scope PAT + discover any
    * workspace. BK-623 (message omitted "Use a browser session.") confirmed
    * fixed live on staging 2026-08-30 — no longer red-by-design.
    */
   test(
     'BK-499: should reject given full-scope Bearer PAT on the switch-active-workspace route',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
 
       const pat = await api.tokens.mintPatWithScopes({ scopes: ['atc:read', 'atc:write', 'run:execute'] });
       api.setAuthToken(pat.token);

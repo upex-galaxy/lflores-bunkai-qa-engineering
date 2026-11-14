@@ -8,22 +8,20 @@
  * Project: integration (depends on api-setup)
  */
 
-import { config, test } from '@TestFixture';
+import { test } from '@TestFixture';
+import { useIdentity } from '@utils/auth';
 
 test.describe('BK-497: Session Token Lifecycle API', { tag: ['@critical'] }, () => {
   /**
    * ATC: BK-545
    *
-   * Precondition: fresh login (session cookie) + Bearer explicitly cleared,
+   * Precondition: cached owner identity (session cookie) + Bearer explicitly cleared,
    * forcing the entire chain onto cookie-only auth.
    */
   test(
     'BK-497: should allow session-authenticated calls to all three token routes given the cookie-only lift',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
       api.tokens.clearAuthToken();
 
       // ACTION + VERIFICATION: ATC embeds issue -> list -> revoke (201/200/204), and its own

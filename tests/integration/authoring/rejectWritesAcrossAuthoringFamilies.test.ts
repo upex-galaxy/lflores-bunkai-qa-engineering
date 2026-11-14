@@ -16,13 +16,14 @@
  */
 
 import { QA_WORKSPACE_ID, QA_WORKSPACE_MODULE_ID, QA_WORKSPACE_PROJECT_ID } from '@data/constants';
-import { config, test } from '@TestFixture';
+import { test } from '@TestFixture';
+import { useIdentity } from '@utils/auth';
 
 test.describe('BK-498: Authoring Sweep — reject writes across families', { tag: ['@critical'] }, () => {
   /**
    * ATC: BK-559
    *
-   * Precondition: fresh login (OWNER session); discover-or-create a real
+   * Precondition: cached owner session (`useIdentity`, ADR-0029); discover-or-create a real
    * user-story id under the module (needed as the Acceptance Criteria row's
    * parent) BEFORE narrowing to the under-scoped PAT; mint an `atc:read`-only
    * PAT bound to the QA workspace.
@@ -30,10 +31,7 @@ test.describe('BK-498: Authoring Sweep — reject writes across families', { tag
   test(
     'BK-498: should reject writes across all authoring families given a PAT scoped exactly atc:read',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
 
       // Precondition (not a BK-559 assertion): discover a real user-story id
       // under the fixture module, creating one under the OWNER session if

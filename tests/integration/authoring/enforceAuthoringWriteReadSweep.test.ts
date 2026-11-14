@@ -27,7 +27,8 @@
  */
 
 import { QA_WORKSPACE_ID, QA_WORKSPACE_MODULE_ID, QA_WORKSPACE_PROJECT_ID } from '@data/constants';
-import { config, expect, test } from '@TestFixture';
+import { expect, test } from '@TestFixture';
+import { useIdentity } from '@utils/auth';
 
 // BK-1170: `POST /imports` returns 409 `jira_not_connected` (before any job
 // exists) when the workspace has no Jira connection of its own. That is an
@@ -42,7 +43,7 @@ test.describe.serial('BK-498: authoring write/read sweep + import lifecycle', { 
    * ATCs: BK-561 -> BK-563 -> BK-566 (chained in one test, same test-level
    * artifact — see automation-plan.md §5, Scenario 12-14).
    *
-   * Precondition: fresh login (OWNER session); discover-or-create a real
+   * Precondition: cached owner session (`useIdentity`, ADR-0029); discover-or-create a real
    * user-story id under the module BEFORE narrowing to any scoped PAT; mint
    * TWO PATs — `atc:write` (used for BK-561 and, again, for BK-566) and a
    * SEPARATE `atc:read` (used for BK-563).
@@ -50,10 +51,7 @@ test.describe.serial('BK-498: authoring write/read sweep + import lifecycle', { 
   test(
     'BK-498: should accept writes and reads across all authoring families given correctly-scoped PATs, and reject reads for a write-only PAT',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
       api.workspace.clearAuthToken(); // cookie-only OWNER session: the default Bearer is not workspace-bound
       const [jiraConnectionResponse, jiraConnection] = await api.workspace.getWorkspaceJiraConnection(QA_WORKSPACE_ID);
       expect(jiraConnectionResponse.ok(), `GET jira-connection returned ${jiraConnectionResponse.status()}: ${jiraConnectionResponse.ok() ? '' : await jiraConnectionResponse.text()}`).toBe(true);
@@ -106,7 +104,7 @@ test.describe.serial('BK-498: authoring write/read sweep + import lifecycle', { 
   /**
    * ATC: BK-568
    *
-   * Precondition: fresh login (OWNER session); mint a dual-scope PAT
+   * Precondition: cached owner session (`useIdentity`, ADR-0029); mint a dual-scope PAT
    * (`atc:write` + `atc:read`) bound to the QA workspace. Runs AFTER
    * the test above in the same serial group — its own Imports row is
    * already terminal by the time this test's `POST /imports` fires.
@@ -114,10 +112,7 @@ test.describe.serial('BK-498: authoring write/read sweep + import lifecycle', { 
   test(
     'BK-498: should complete a full import lifecycle successfully given a PAT scoped both atc:write and atc:read',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
       api.workspace.clearAuthToken(); // cookie-only OWNER session: the default Bearer is not workspace-bound
       const [jiraConnectionResponse, jiraConnection] = await api.workspace.getWorkspaceJiraConnection(QA_WORKSPACE_ID);
       expect(jiraConnectionResponse.ok(), `GET jira-connection returned ${jiraConnectionResponse.status()}: ${jiraConnectionResponse.ok() ? '' : await jiraConnectionResponse.text()}`).toBe(true);

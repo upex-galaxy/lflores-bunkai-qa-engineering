@@ -91,6 +91,7 @@ Who authors: a human QA architect / lead directly, **or** an AI workflow that de
 | [ADR-0026](./ADR-0026-two-auth-rails-in-tests.md) | Two auth rails in tests: browser storage state for UI, per-role API tokens for API | Accepted | — | — |
 | [ADR-0027](./ADR-0027-data-testid-selector-contract.md) | `data-testid` is the UI selector contract | Accepted | — | — |
 | [ADR-0028](./ADR-0028-serial-workspace-scoped-test-data.md) | Serial, workspace-scoped test data on the shared Supabase project | Accepted | — | — |
+| [ADR-0029](./ADR-0029-cached-per-identity-auth-in-tests.md) | Cached per-identity auth: one sign-in per role per run in `api-setup`, tests switch actor locally with `useIdentity` | Accepted | — | — |
 
 > Keep this table in sync whenever an ADR is added or its status changes. It is the fast index every session reads first.
 

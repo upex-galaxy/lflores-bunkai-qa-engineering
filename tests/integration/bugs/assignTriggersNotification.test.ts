@@ -8,22 +8,14 @@
  * Project: integration (depends on api-setup)
  */
 
-import type { LoginPayload } from '@api/AuthApi';
-import type { ApiFixture } from '@ApiFixture';
-
 import { QA_WORKSPACE_ID, QA_WORKSPACE_MEMBER_USER_ID, QA_WORKSPACE_MODULE_ID, QA_WORKSPACE_PROJECT_ID } from '@data/constants';
-import { config, expect, test } from '@TestFixture';
+import { expect, test } from '@TestFixture';
+import { isIdentityProvisioned, useIdentity } from '@utils/auth';
 
 /**
  * Fixed reference workspace — same QA workspace fixture as
  * assignBug.test.ts. See that file's header comment for provenance.
  */
-
-/** Authenticate + propagate the token to every API component. See rejectViewerWrite.test.ts for why. */
-async function authenticateAs(api: ApiFixture, credentials: LoginPayload): Promise<void> {
-  await api.auth.authenticateSuccessfully(credentials);
-  api.setAuthToken(api.auth.authToken!);
-}
 
 test.describe('BK-264: Bug Assignment Notification Contract API', { tag: ['@medium'] }, () => {
   /**
@@ -36,7 +28,9 @@ test.describe('BK-264: Bug Assignment Notification Contract API', { tag: ['@medi
    * the actor, is what makes this a genuine fan-out check.
    */
   test('BK-264: should write a notifications row given a bug is assigned', async ({ api }) => {
-    await authenticateAs(api, { email: config.testUser.email, password: config.testUser.password });
+    test.skip(!isIdentityProvisioned('member'), 'BK-264: config.testMember not provisioned for this environment');
+
+    await useIdentity(api, 'owner');
     const [, filed] = await api.bugs.fileBugSuccessfully({
       project_id: QA_WORKSPACE_PROJECT_ID,
       module_id: QA_WORKSPACE_MODULE_ID,
@@ -47,7 +41,7 @@ test.describe('BK-264: Bug Assignment Notification Contract API', { tag: ['@medi
     await api.bugs.assignBugTriggersNotification(filed.bug.id, { assignee_user_id: QA_WORKSPACE_MEMBER_USER_ID });
 
     // Test-level assertion: the recipient's own inbox carries the fan-out row
-    await authenticateAs(api, { email: config.testMember.email, password: config.testMember.password });
+    await useIdentity(api, 'member');
     const [, page] = await api.notifications.getNotifications(QA_WORKSPACE_ID);
     const row = page.items.find(item => item.entity_id === filed.bug.id && item.event_type === 'bug.assigned');
 
