@@ -10,22 +10,20 @@
  */
 
 import { INVALID_BEARER_TOKEN } from '@data/constants';
-import { config, expect, test } from '@TestFixture';
+import { expect, test } from '@TestFixture';
+import { useIdentity } from '@utils/auth';
 
 test.describe('BK-497: Token Route Cookie-Only Posture API', { tag: ['@critical'] }, () => {
   /**
    * ATC: BK-552
    *
-   * Precondition: fresh login (session cookie) + mint any-scope PAT, set as
+   * Precondition: cached owner identity (session cookie) + mint any-scope PAT, set as
    * the ambient Bearer token for the acting request.
    */
   test(
     'BK-497: should reject a PAT-authenticated POST to the token-issuance route',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
 
       const pat = await api.tokens.mintPatWithScopes({ scopes: ['atc:read'] });
       api.tokens.setAuthToken(pat.token);
@@ -43,16 +41,13 @@ test.describe('BK-497: Token Route Cookie-Only Posture API', { tag: ['@critical'
   /**
    * ATC: BK-553
    *
-   * Precondition: fresh login + mint a target PAT (to attempt revoking) +
+   * Precondition: cached owner identity + mint a target PAT (to attempt revoking) +
    * mint a separate acting PAT (any scope), set as the ambient Bearer token.
    */
   test(
     'BK-497: should reject a PAT-authenticated DELETE to the token-revocation route',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
 
       const targetPat = await api.tokens.mintPatWithScopes({ scopes: ['atc:read'] });
       const actingPat = await api.tokens.mintPatWithScopes({ scopes: ['atc:read'] });
@@ -71,15 +66,12 @@ test.describe('BK-497: Token Route Cookie-Only Posture API', { tag: ['@critical'
   /**
    * ATC: BK-543
    *
-   * Precondition: fresh login + mint any-scope PAT, set as ambient Bearer.
+   * Precondition: cached owner identity + mint any-scope PAT, set as ambient Bearer.
    */
   test(
     'BK-497: should allow a PAT-authenticated GET to the token-listing route',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
 
       const pat = await api.tokens.mintPatWithScopes({ scopes: ['atc:read'] });
       api.tokens.setAuthToken(pat.token);

@@ -8,24 +8,22 @@
  * Project: integration (depends on api-setup)
  */
 
-import { config, expect, test } from '@TestFixture';
+import { expect, test } from '@TestFixture';
+import { useIdentity } from '@utils/auth';
 
 test.describe('BK-499: Workspace Bootstrap API', { tag: ['@critical', '@smoke'] }, () => {
   /**
    * ATC: BK-671
    *
-   * Precondition: fresh login (cookie session) + mint a PAT with any scope
+   * Precondition: cached owner identity (cookie session) + mint a PAT with any scope
    * (mintPatWithScopes defaults to atc:read — the exact scope is irrelevant
    * to AC1, only that at least one exists, which is guaranteed at mint time).
    */
   test(
     'BK-499: should create workspace given PAT holds at least one scope',
     async ({ api }) => {
-      // Precondition: authenticate fresh, mint a PAT with any scope
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      // Precondition: act as the cached owner (useIdentity, ADR-0029), mint a PAT with any scope
+      await useIdentity(api, 'owner', { withSession: true });
       const pat = await api.tokens.mintPatWithScopes();
       api.setAuthToken(pat.token);
 

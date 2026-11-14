@@ -8,14 +8,15 @@
  * Project: integration (depends on api-setup)
  */
 
-import { config, expect, test } from '@TestFixture';
+import { expect, test } from '@TestFixture';
+import { useIdentity } from '@utils/auth';
 import { getOwnedWorkspace } from '@utils/workspace';
 
 test.describe('BK-497: Workspace Invite Capability Scope API', { tag: ['@critical'] }, () => {
   /**
    * ATC: BK-544
    *
-   * Precondition: fresh login + discover a workspace the caller OWNS (invite
+   * Precondition: cached owner identity + discover a workspace the caller OWNS (invite
    * creation is admin/owner-only via RLS — `active_workspace_id` is not
    * guaranteed to be an owned workspace, it can be a plain "member" one) +
    * mint an `atc:read`-only PAT bound to it, set as the ambient Bearer token
@@ -24,10 +25,7 @@ test.describe('BK-497: Workspace Invite Capability Scope API', { tag: ['@critica
   test(
     'BK-497: should reject invite creation when the PAT is scoped only to atc:read',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
       const [, me] = await api.auth.getCurrentUser();
       const ownedWorkspace = getOwnedWorkspace(me);
       test.skip(!ownedWorkspace, 'BK-497: test user needs to own at least one workspace');
@@ -56,7 +54,7 @@ test.describe('BK-497: Workspace Invite Capability Scope API', { tag: ['@critica
   /**
    * ATC: BK-548
    *
-   * Precondition: fresh login + discover a workspace the caller OWNS (same
+   * Precondition: cached owner identity + discover a workspace the caller OWNS (same
    * admin/owner-only rationale as BK-544) + Generate a pending invite (OWNER
    * session) + mint an `atc:write`+`run:execute` PAT bound to the workspace
    * (no `workspace:admin`), set as the ambient Bearer token on `workspace`.
@@ -64,10 +62,7 @@ test.describe('BK-497: Workspace Invite Capability Scope API', { tag: ['@critica
   test(
     'BK-497: should reject pending-invite revocation when the PAT lacks workspace:admin',
     async ({ api }) => {
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
       const [, me] = await api.auth.getCurrentUser();
       const ownedWorkspace = getOwnedWorkspace(me);
       test.skip(!ownedWorkspace, 'BK-497: test user needs to own at least one workspace');

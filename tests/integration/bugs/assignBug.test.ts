@@ -9,7 +9,8 @@
  */
 
 import { QA_WORKSPACE_MEMBER_USER_ID, QA_WORKSPACE_MODULE_ID, QA_WORKSPACE_OWNER_USER_ID, QA_WORKSPACE_PROJECT_ID } from '@data/constants';
-import { config, expect, test } from '@TestFixture';
+import { expect, test } from '@TestFixture';
+import { useIdentity } from '@utils/auth';
 
 /**
  * Fixed reference workspace (owner + member + project + module): the shared
@@ -32,7 +33,7 @@ test.describe('BK-264: Bug Assignment API', { tag: ['@critical'] }, () => {
     /**
      * ATC: BK-477
      *
-     * Precondition: fresh login as the QA workspace owner (Discover
+     * Precondition: cached owner identity (the QA workspace owner, `useIdentity`) (Discover
      * pattern — reuses the seeded workspace) + Generate a fresh open,
      * unassigned bug via POST /bugs (Generate pattern — avoids collisions
      * across runs, unlike reusing a shared fixture bug).
@@ -40,11 +41,8 @@ test.describe('BK-264: Bug Assignment API', { tag: ['@critical'] }, () => {
     test(
       `BK-264: should set assignee when assigning an open bug to an eligible member given the target role is "${role}"`,
       async ({ api }) => {
-        // Precondition: authenticate fresh as the QA workspace owner
-        await api.auth.authenticateSuccessfully({
-          email: config.testUser.email,
-          password: config.testUser.password,
-        });
+        // Precondition: act as the cached QA workspace owner (useIdentity, ADR-0029)
+        await useIdentity(api, 'owner');
 
         // Precondition: Generate a fresh open, unassigned bug in the QA workspace
         const [, filed] = await api.bugs.fileBugSuccessfully({

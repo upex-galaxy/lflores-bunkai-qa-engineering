@@ -65,6 +65,8 @@ test.describe('BK-166: User Session API', { tag: ['@critical'] }, () => {
     const credentials = {
       email: config.testUser.email,
       password: config.testUser.password,
+      // 1-day PAT: a default sign-in PAT never expires (ADR-0029)
+      pat_expires_in_days: 1,
     };
 
     const [response, tokenData] = await api.auth.authenticateSuccessfully(credentials);

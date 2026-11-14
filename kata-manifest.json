@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-11-13T00:37:53.689Z",
+  "generatedAt": "2026-11-14T14:05:22.445Z",
   "components": {
     "api": [
       {
@@ -184,12 +184,12 @@
           {
             "id": "BK-557",
             "method": "createModuleViaSessionRegardlessOfPatScope",
-            "line": 355
+            "line": 356
           },
           {
             "id": "BK-558",
             "method": "rejectRevokedTokenWithInvalidMessage",
-            "line": 387
+            "line": 388
           },
           {
             "id": "BK-560",

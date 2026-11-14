@@ -223,6 +223,8 @@ export const config = {
     // Storage paths for authenticated sessions
     storageStatePath: '.auth/user.json',
     apiStatePath: '.auth/api-state.json',
+    // One cached identity per role, written by api-setup (ADR-0029)
+    identityStatePath: (role: string) => `.auth/identities/${role}.json`,
   },
 
   // Test User (configure in .env)

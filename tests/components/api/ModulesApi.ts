@@ -344,8 +344,9 @@ export class ModulesApi extends ApiBase {
    * 2. Validate the module was created — browser sessions carry the full capability
    *    set and are never narrowed like a PAT can be (fixed assertions)
    *
-   * Precondition contract: caller must have already called `authenticateSuccessfully()`
-   * (establishes the session cookie) and then `clearAuthToken()` (forces cookie-only,
+   * Precondition contract: caller must have already called
+   * `useIdentity(api, role, { withSession: true })` (loads the session cookie,
+   * ADR-0029) and then `clearAuthToken()` (forces cookie-only,
    * no Bearer PAT).
    *
    * @param projectId - Target project id

@@ -9,7 +9,7 @@
  */
 
 import { config, test } from '@TestFixture';
-import { authenticateAs } from '@utils/auth';
+import { isIdentityProvisioned, useIdentity } from '@utils/auth';
 
 test.describe('BK-499: Session-only routes allow cookie sessions', { tag: ['@critical'] }, () => {
   /**
@@ -26,12 +26,9 @@ test.describe('BK-499: Session-only routes allow cookie sessions', { tag: ['@cri
   test(
     'BK-499: should allow cookie session on both session-only routes',
     async ({ api }) => {
-      test.skip(!config.testViewer.email, 'BK-499: config.testViewer not provisioned for this environment');
+      test.skip(!isIdentityProvisioned('viewer'), 'BK-499: config.testViewer not provisioned for this environment');
 
-      await api.auth.authenticateSuccessfully({
-        email: config.testUser.email,
-        password: config.testUser.password,
-      });
+      await useIdentity(api, 'owner', { withSession: true });
 
       const [, wsBody] = await api.workspace.createWorkspace({
         name: api.data.createTestId('Workspace'),
@@ -39,8 +36,8 @@ test.describe('BK-499: Session-only routes allow cookie sessions', { tag: ['@cri
       });
       const workspaceId = wsBody.workspace.id;
 
-      // Invite creation requires `workspace:admin`, which the ambient
-      // auto-issued Bearer PAT from login does not carry (BK-166
+      // Invite creation requires `workspace:admin`, which the cached
+      // identity's Bearer PAT (`useIdentity`) does not carry (BK-166
       // coexistence) — clear it to force the cookie-session channel, which
       // always carries the owner role's full permission set (BR2).
       api.clearAuthToken();
@@ -51,7 +48,7 @@ test.describe('BK-499: Session-only routes allow cookie sessions', { tag: ['@cri
 
       // Switch identity — config.testViewer accepts the invite, then is the
       // caller for both session-only actions below.
-      await authenticateAs(api, { email: config.testViewer.email, password: config.testViewer.password });
+      await useIdentity(api, 'viewer', { withSession: true });
       await api.workspace.acceptInvite({ token: inviteBody.token });
 
       // ACTION: ATC handles fixed assertions — 200 on both session-only routes

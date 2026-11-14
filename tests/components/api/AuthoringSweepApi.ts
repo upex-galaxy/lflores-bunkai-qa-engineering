@@ -432,8 +432,8 @@ export class AuthoringSweepApi extends ApiBase {
     // active-import lock so BK-568 (same project, same serial test file)
     // never collides with a still-active job from this ATC. Polling requires
     // `atc:read`, which this ATC's write-only PAT does not carry — fall back
-    // to the OWNER session's cookie (established by the calling test's
-    // earlier `authenticateSuccessfully()`, never narrowed like a PAT — see
+    // to the OWNER session's cookie (loaded by the calling test's earlier
+    // `useIdentity(api, 'owner', { withSession: true })`, never narrowed like a PAT — see
     // BK-557) for the drain poll only, then restore the write PAT. Same
     // suspend/restore shape as `TokensApi.mintPatWithScopes`.
     const ambientToken = this.authToken;

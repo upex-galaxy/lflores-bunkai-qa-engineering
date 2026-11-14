@@ -9,7 +9,8 @@
  */
 
 import { QA_WORKSPACE_MEMBER_USER_ID, QA_WORKSPACE_MODULE_ID, QA_WORKSPACE_OWNER_USER_ID, QA_WORKSPACE_PROJECT_ID } from '@data/constants';
-import { config, expect, test } from '@TestFixture';
+import { expect, test } from '@TestFixture';
+import { useIdentity } from '@utils/auth';
 
 /**
  * Fixed reference workspace — same QA workspace fixture as
@@ -24,7 +25,7 @@ test.describe('BK-264: Bug Reassign/Unassign API', { tag: ['@high'] }, () => {
    * then reassigned to a different eligible member (the owner).
    */
   test('BK-264: should update the assignee when reassigning to a different eligible member', async ({ api }) => {
-    await api.auth.authenticateSuccessfully({ email: config.testUser.email, password: config.testUser.password });
+    await useIdentity(api, 'owner');
     const [, filed] = await api.bugs.fileBugSuccessfully({
       project_id: QA_WORKSPACE_PROJECT_ID,
       module_id: QA_WORKSPACE_MODULE_ID,
@@ -47,7 +48,7 @@ test.describe('BK-264: Bug Reassign/Unassign API', { tag: ['@high'] }, () => {
    * Precondition: bug already assigned to a member (Generate then assign).
    */
   test('BK-264: should clear the assignee when unassigning', async ({ api }) => {
-    await api.auth.authenticateSuccessfully({ email: config.testUser.email, password: config.testUser.password });
+    await useIdentity(api, 'owner');
     const [, filed] = await api.bugs.fileBugSuccessfully({
       project_id: QA_WORKSPACE_PROJECT_ID,
       module_id: QA_WORKSPACE_MODULE_ID,

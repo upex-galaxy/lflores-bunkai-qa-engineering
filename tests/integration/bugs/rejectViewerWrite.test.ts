@@ -9,28 +9,11 @@
  * Project: integration (depends on api-setup)
  */
 
-import type { LoginPayload } from '@api/AuthApi';
 import type { BugWriteAction } from '@api/BugsApi';
-import type { ApiFixture } from '@ApiFixture';
 
 import { QA_WORKSPACE_MODULE_ID, QA_WORKSPACE_OWNER_USER_ID, QA_WORKSPACE_PROJECT_ID } from '@data/constants';
-import { config, expect, test } from '@TestFixture';
-
-/**
- * Authenticate + propagate the token to every API component.
- *
- * api.auth.authenticateSuccessfully() only sets the token on the AuthApi
- * instance itself (ApiBase.setAuthToken is a plain method, not virally
- * propagated). Sibling components (api.bugs, etc.) keep whichever token
- * api.setAuthToken() last propagated — the owner's, loaded from
- * .auth/api-state.json at fixture setup — unless re-propagated after every
- * actor switch. Needed by any test that authenticates as more than one
- * identity (this file is the first).
- */
-async function authenticateAs(api: ApiFixture, credentials: LoginPayload): Promise<void> {
-  await api.auth.authenticateSuccessfully(credentials);
-  api.setAuthToken(api.auth.authToken!);
-}
+import { expect, test } from '@TestFixture';
+import { isIdentityProvisioned, useIdentity } from '@utils/auth';
 
 /**
  * Fixed reference workspace — same QA workspace fixture as
@@ -47,7 +30,7 @@ test.describe('BK-264: Bug Write Authorization API', { tag: ['@high'] }, () => {
     /**
      * ATC: BK-486
      *
-     * Precondition: fresh login as the QA workspace owner (Discover
+     * Precondition: cached owner identity (the QA workspace owner, `useIdentity`) (Discover
      * pattern) + Generate a fresh open bug via POST /bugs, then switch to
      * the Viewer identity (Discover pattern — provisioned this session,
      * config.testViewer) for the rejected action.
@@ -55,8 +38,10 @@ test.describe('BK-264: Bug Write Authorization API', { tag: ['@high'] }, () => {
     test(
       `BK-264: should reject a write action when the actor is Viewer-role given action is "${label}"`,
       async ({ api }) => {
+        test.skip(!isIdentityProvisioned('viewer'), 'BK-264: config.testViewer not provisioned for this environment');
+
         // Precondition: authenticate as the QA workspace owner to generate the target bug
-        await authenticateAs(api, { email: config.testUser.email, password: config.testUser.password });
+        await useIdentity(api, 'owner');
         const [, filed] = await api.bugs.fileBugSuccessfully({
           project_id: QA_WORKSPACE_PROJECT_ID,
           module_id: QA_WORKSPACE_MODULE_ID,
@@ -65,7 +50,7 @@ test.describe('BK-264: Bug Write Authorization API', { tag: ['@high'] }, () => {
         });
 
         // Precondition: switch to the Viewer-role actor (no write access)
-        await authenticateAs(api, { email: config.testViewer.email, password: config.testViewer.password });
+        await useIdentity(api, 'viewer');
 
         // ACTION + fixed assertions live inside the ATC
         await api.bugs.rejectWriteActionForViewer(filed.bug.id, action());

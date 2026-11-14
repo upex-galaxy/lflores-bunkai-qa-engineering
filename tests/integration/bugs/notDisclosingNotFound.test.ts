@@ -8,7 +8,8 @@
  * Project: integration (depends on api-setup)
  */
 
-import { config, test } from '@TestFixture';
+import { test } from '@TestFixture';
+import { useIdentity } from '@utils/auth';
 
 /**
  * A real bugs row confirmed (read-only DB query, 2026-08-15) to belong to a
@@ -28,7 +29,7 @@ test.describe('BK-264: Bug Non-Disclosing 404 API', { tag: ['@high'] }, () => {
     { label: 'foreign-workspace-id', bugId: FOREIGN_WORKSPACE_BUG_ID },
   ]) {
     test(`BK-264: should return a non-disclosing 404 given the bug does not exist or is outside the caller's workspace ("${label}")`, async ({ api }) => {
-      await api.auth.authenticateSuccessfully({ email: config.testUser.email, password: config.testUser.password });
+      await useIdentity(api, 'owner');
 
       await api.bugs.rejectNonDisclosingNotFound(bugId);
     });

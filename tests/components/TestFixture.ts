@@ -21,7 +21,7 @@
  *
  * Usage in API-only tests:
  *   test('example', async ({ api }) => {
- *     await api.auth.authenticateSuccessfully(credentials);
+ *     await useIdentity(api, 'member'); // cached identity, no sign-in (ADR-0029)
  *   });
  */
 
