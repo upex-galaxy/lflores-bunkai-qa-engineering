@@ -82,11 +82,14 @@ export default defineConfig({
 
   use: {
     baseURL,
-    // `retain-on-failure` on BOTH sides, deliberately. `on-first-retry` was the
-    // local value, and `retries: 0` above means there is never a first retry —
-    // so a local failure produced no trace at all, which is the one artifact
-    // you need for the failure you just got.
-    trace: 'retain-on-failure',
+    // Local: `retain-on-failure`, deliberately. `on-first-retry` was the old
+    // value, and `retries: 0` above means there is never a first retry — so a
+    // local failure produced no trace at all, which is the one artifact you
+    // need for the failure you just got.
+    // CI: off. A trace records typed passwords and raw auth headers, and CI
+    // publishes its reports from a public repo (ADR-0029). Screenshots and
+    // video still cover CI failures.
+    trace: env.isCI ? 'off' : 'retain-on-failure',
     screenshot: config.reporting.screenshotOnFailure ? 'only-on-failure' : 'off',
     video: env.isCI && config.reporting.videoOnFailure ? 'retain-on-failure' : 'off',
     headless: env.isCI || config.browser.headless,
@@ -124,6 +127,8 @@ export default defineConfig({
       testMatch: /api-auth\.setup\.ts/,
       testDir: './tests/setup',
       dependencies: ['global-setup'],
+      // API traces record raw auth headers and ship with the public Allure report.
+      use: { trace: 'off' },
     },
 
     // ============================================
@@ -146,7 +151,8 @@ export default defineConfig({
       name: 'integration',
       testMatch: '**/integration/**/*.test.ts',
       dependencies: ['api-setup'],
-      use: {},
+      // API traces record raw auth headers and ship with the public Allure report.
+      use: { trace: 'off' },
     },
 
     // ============================================
@@ -180,7 +186,8 @@ export default defineConfig({
       grep: /@critical/,
       testMatch: '**/integration/**/*.test.ts',
       dependencies: ['api-setup'],
-      use: {},
+      // API traces record raw auth headers and ship with the public Allure report.
+      use: { trace: 'off' },
     },
 
     // ============================================

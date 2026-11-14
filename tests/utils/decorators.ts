@@ -11,6 +11,7 @@ import { appendFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
 import { test } from '@playwright/test';
+import { isSecretKey, redactSecretString } from '@utils/allure';
 import { config } from '@variables';
 import * as allure from 'allure-js-commons';
 
@@ -158,7 +159,7 @@ export function atc(testId: string, options: AtcOptions = {}) {
       }
       catch (error: unknown) {
         result.status = 'FAIL';
-        result.error = error instanceof Error ? error.message : String(error);
+        result.error = redactSecretString(error instanceof Error ? error.message : String(error));
         result.duration = Date.now() - startTime;
         storeResult(testId, result);
 
@@ -227,12 +228,12 @@ export function step<T extends (...args: any[]) => Promise<any>>(
 // Parameter Formatting (for step titles)
 // ============================================
 
-const SENSITIVE_KEYS = new Set(['password', 'token', 'secret', 'authorization', 'access_token']);
 const MAX_STRING_LEN = 80;
 const MAX_OBJECT_LEN = 120;
 
 function formatValue(value: unknown, key?: string): string {
-  if (key && SENSITIVE_KEYS.has(key.toLowerCase())) {
+  // Same secret-key set and string masking as the Allure attachments.
+  if (key && isSecretKey(key)) {
     return '"***"';
   }
   if (value === null) {
@@ -246,9 +247,10 @@ function formatValue(value: unknown, key?: string): string {
   }
 
   if (typeof value === 'string') {
-    return value.length > MAX_STRING_LEN
-      ? `"${value.slice(0, MAX_STRING_LEN)}..."`
-      : `"${value}"`;
+    const masked = redactSecretString(value);
+    return masked.length > MAX_STRING_LEN
+      ? `"${masked.slice(0, MAX_STRING_LEN)}..."`
+      : `"${masked}"`;
   }
 
   if (typeof value === 'number' || typeof value === 'boolean') {
