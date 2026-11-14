@@ -1,0 +1,4 @@
+✅ [BK-682] rejectOwnerRoleMissingCapability - PASS (328ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/tokens
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/activity
