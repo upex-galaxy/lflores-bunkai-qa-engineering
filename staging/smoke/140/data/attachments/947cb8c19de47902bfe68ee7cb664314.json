@@ -1,0 +1,535 @@
+{
+  "items": [
+    {
+      "id": "e85611ab-18aa-4d35-b2f0-e9138fd2c013",
+      "payload": {
+        "title": "BK-479 automated fixture bug - 1794732901994",
+        "run_id": null,
+        "status": "resolved",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "in_progress",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "f8a93f6b-1b0b-4898-808b-f8a4e3259884",
+      "created_at": "2026-11-15T08:55:02.813667+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "8fc0e23b-c435-40e2-a512-e362a2a5e431",
+      "payload": {
+        "title": "BK-479 automated fixture bug - 1794732901994",
+        "run_id": null,
+        "status": "in_progress",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "f8a93f6b-1b0b-4898-808b-f8a4e3259884",
+      "created_at": "2026-11-15T08:55:02.638951+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "6dc7dc1c-8bf9-4304-b562-399edf09a89a",
+      "payload": {
+        "title": "BK-487 automated fixture bug (status) - 1794732900939",
+        "run_id": null,
+        "status": "in_progress",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "40fb6e26-b9c1-48bb-8c81-914cb5874943",
+      "created_at": "2026-11-15T08:55:01.702194+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "c7f61f06-3a68-4c88-9644-01f76c1ca819",
+      "payload": {
+        "title": "BK-477 automated fixture bug (owner) - 1794732899187",
+        "run_id": null,
+        "project_slug": "qa-defect-triage",
+        "assignee_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "previous_assignee_user_id": null
+      },
+      "read_at": null,
+      "entity_id": "3aa23d61-f409-40ef-85ca-092bb08a667b",
+      "created_at": "2026-11-15T08:54:59.683914+00:00",
+      "event_type": "bug.assigned",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "699e7fa1-e789-4777-a26a-d30d48580e1d",
+      "payload": {
+        "title": "BK-479 automated fixture bug - 1794717637622",
+        "run_id": null,
+        "status": "resolved",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "in_progress",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "8de28e46-b2ae-4a74-9939-d7527a6b1037",
+      "created_at": "2026-11-15T04:40:38.589372+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "1c8e9384-5f6a-4834-9a36-e96e21d3b55e",
+      "payload": {
+        "title": "BK-479 automated fixture bug - 1794717637622",
+        "run_id": null,
+        "status": "in_progress",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "8de28e46-b2ae-4a74-9939-d7527a6b1037",
+      "created_at": "2026-11-15T04:40:38.389665+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "83c1c0b4-17d5-4880-ab6c-54e56c43a4b5",
+      "payload": {
+        "title": "BK-483 automated fixture bug - 1794717633382",
+        "run_id": null,
+        "project_slug": "qa-defect-triage",
+        "assignee_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "previous_assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "ac75488f-eb29-4c0f-976d-38d11a44be0e",
+      "created_at": "2026-11-15T04:40:34.256233+00:00",
+      "event_type": "bug.reassigned",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "bc56e1cd-665c-477c-826b-bae773cbb209",
+      "payload": {
+        "title": "BK-484 automated fixture bug (reassign) - 1794717629734",
+        "run_id": null,
+        "project_slug": "qa-defect-triage",
+        "assignee_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "previous_assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "d4eeb755-8d42-4893-85db-67868deb50ca",
+      "created_at": "2026-11-15T04:40:31.17261+00:00",
+      "event_type": "bug.reassigned",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "aa7fe454-f335-4159-b3d6-69c283f06055",
+      "payload": {
+        "title": "BK-487 automated fixture bug (status) - 1794717628426",
+        "run_id": null,
+        "status": "in_progress",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "37452220-8dd1-41ce-b728-d4dc1f2d4ee2",
+      "created_at": "2026-11-15T04:40:29.339075+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "fdc58e1c-5dff-434c-871a-aae5dbe464f5",
+      "payload": {
+        "title": "BK-477 automated fixture bug (owner) - 1794717623348",
+        "run_id": null,
+        "project_slug": "qa-defect-triage",
+        "assignee_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "previous_assignee_user_id": null
+      },
+      "read_at": null,
+      "entity_id": "81a62b9d-8a27-4c5f-abcb-f87a52dec79e",
+      "created_at": "2026-11-15T04:40:24.06257+00:00",
+      "event_type": "bug.assigned",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "77c6f788-f3d3-49da-b849-c965dce5f810",
+      "payload": {
+        "title": "BK-479 automated fixture bug - 1794689233723",
+        "run_id": null,
+        "status": "resolved",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "in_progress",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "4e09c67f-5d23-47dd-984f-03555028a2ed",
+      "created_at": "2026-11-14T20:47:15.45262+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "cfc77d9b-609b-4ee0-bee6-ad8b22705370",
+      "payload": {
+        "title": "BK-479 automated fixture bug - 1794689233723",
+        "run_id": null,
+        "status": "in_progress",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "4e09c67f-5d23-47dd-984f-03555028a2ed",
+      "created_at": "2026-11-14T20:47:15.033978+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "11bae723-b757-49ae-a256-2e04d3186bc1",
+      "payload": {
+        "title": "BK-479 automated fixture bug - 1794667307493",
+        "run_id": null,
+        "status": "resolved",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "in_progress",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "4e3f35c3-b644-4e16-83f7-97b744360bb3",
+      "created_at": "2026-11-14T14:41:48.655752+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "871ab46a-ad56-40e7-b678-b0e5f5c8fbb2",
+      "payload": {
+        "title": "BK-479 automated fixture bug - 1794667307493",
+        "run_id": null,
+        "status": "in_progress",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "4e3f35c3-b644-4e16-83f7-97b744360bb3",
+      "created_at": "2026-11-14T14:41:48.397808+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "1e27ad5e-8b1e-49d9-ab7c-74e4930dd238",
+      "payload": {
+        "title": "BK-487 automated fixture bug (status) - 1794667306117",
+        "run_id": null,
+        "status": "in_progress",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "f2dce85e-cdff-4f98-8aa9-96f39a97f6c1",
+      "created_at": "2026-11-14T14:41:47.039699+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "8b66fab4-89c8-4e27-825b-4d3cc343ba0f",
+      "payload": {
+        "title": "BK-477 automated fixture bug (owner) - 1794667303423",
+        "run_id": null,
+        "project_slug": "qa-defect-triage",
+        "assignee_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "previous_assignee_user_id": null
+      },
+      "read_at": null,
+      "entity_id": "1360b944-e5eb-453c-90d7-d04fa33b3d40",
+      "created_at": "2026-11-14T14:41:44.071368+00:00",
+      "event_type": "bug.assigned",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "bc3f383d-f847-43db-8b88-17499941176d",
+      "payload": {
+        "title": "BK-479 automated fixture bug - 1794666950030",
+        "run_id": null,
+        "status": "resolved",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "in_progress",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "1a172c33-38a5-4d64-94d6-07bdc35cdc26",
+      "created_at": "2026-11-14T14:35:51.369896+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "9932d7b9-df96-4b02-b019-43d7e28b830c",
+      "payload": {
+        "title": "BK-479 automated fixture bug - 1794666950030",
+        "run_id": null,
+        "status": "in_progress",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "1a172c33-38a5-4d64-94d6-07bdc35cdc26",
+      "created_at": "2026-11-14T14:35:51.097902+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "6ec0c770-2388-4953-af6f-42e00fb2471d",
+      "payload": {
+        "title": "BK-487 automated fixture bug (status) - 1794666948850",
+        "run_id": null,
+        "status": "in_progress",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "b9290749-47d6-4510-ac48-b6bfa586a260",
+      "created_at": "2026-11-14T14:35:49.660333+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "9060e70c-f967-4d36-b54d-1e6a0b17f366",
+      "payload": {
+        "title": "BK-477 automated fixture bug (owner) - 1794666946932",
+        "run_id": null,
+        "project_slug": "qa-defect-triage",
+        "assignee_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "previous_assignee_user_id": null
+      },
+      "read_at": null,
+      "entity_id": "7043880a-f445-4837-96c9-b5b8b3793c97",
+      "created_at": "2026-11-14T14:35:47.499461+00:00",
+      "event_type": "bug.assigned",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "6ba34dc2-c55b-484b-b74f-42c239825c5c",
+      "payload": {
+        "title": "BK-479 automated fixture bug - 1794665430099",
+        "run_id": null,
+        "status": "resolved",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "in_progress",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "74d669a4-3097-402c-a26f-e904f210a297",
+      "created_at": "2026-11-14T14:10:32.051985+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "cdae058c-c5ed-4fd1-a277-2b9c0a324c48",
+      "payload": {
+        "title": "BK-479 automated fixture bug - 1794665430099",
+        "run_id": null,
+        "status": "in_progress",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "74d669a4-3097-402c-a26f-e904f210a297",
+      "created_at": "2026-11-14T14:10:31.649061+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "8dbd0e75-f7f5-4d65-8bf5-64c06a1056de",
+      "payload": {
+        "title": "BK-483 automated fixture bug - 1794665423853",
+        "run_id": null,
+        "project_slug": "qa-defect-triage",
+        "assignee_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "previous_assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "2f59f5c3-d259-4460-8b3c-d09614d7e1c1",
+      "created_at": "2026-11-14T14:10:25.224393+00:00",
+      "event_type": "bug.reassigned",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "d9918b30-d17f-4e7f-8555-b8fa2caee7c1",
+      "payload": {
+        "title": "BK-484 automated fixture bug (reassign) - 1794665416224",
+        "run_id": null,
+        "project_slug": "qa-defect-triage",
+        "assignee_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "previous_assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "f0381699-c6e2-46bd-8b00-5b5b10811a28",
+      "created_at": "2026-11-14T14:10:20.606258+00:00",
+      "event_type": "bug.reassigned",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "53d0bbe1-0648-4bc2-8995-bcda8ba6db46",
+      "payload": {
+        "title": "BK-487 automated fixture bug (status) - 1794665414398",
+        "run_id": null,
+        "status": "in_progress",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "c5935d80-8372-43f0-9c10-60381cebb86c",
+      "created_at": "2026-11-14T14:10:16.734181+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "b4f46adf-dbc7-4f95-93ae-ee3ba0ff185c",
+      "payload": {
+        "title": "BK-477 automated fixture bug (owner) - 1794665407279",
+        "run_id": null,
+        "project_slug": "qa-defect-triage",
+        "assignee_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "previous_assignee_user_id": null
+      },
+      "read_at": null,
+      "entity_id": "29fe0ff7-ec90-4891-993b-0667950c0a12",
+      "created_at": "2026-11-14T14:10:08.969969+00:00",
+      "event_type": "bug.assigned",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "d5a86f19-7cf0-4f90-8f68-f457719d2016",
+      "payload": {
+        "title": "BK-479 automated fixture bug - 1794664640053",
+        "run_id": null,
+        "status": "resolved",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "in_progress",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "399bb200-0a08-49fd-8090-1d20f4554de5",
+      "created_at": "2026-11-14T13:57:22.490857+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "b1015aa9-b93a-4d1b-bfc0-cfe1fd839e91",
+      "payload": {
+        "title": "BK-479 automated fixture bug - 1794664640053",
+        "run_id": null,
+        "status": "in_progress",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "399bb200-0a08-49fd-8090-1d20f4554de5",
+      "created_at": "2026-11-14T13:57:22.065624+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "6cc5257d-cdd4-4525-9fd9-a399fcbc73ec",
+      "payload": {
+        "title": "BK-483 automated fixture bug - 1794664633813",
+        "run_id": null,
+        "project_slug": "qa-defect-triage",
+        "assignee_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "previous_assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "6d8857a1-95cd-48f6-b491-ea480e7456a5",
+      "created_at": "2026-11-14T13:57:15.594254+00:00",
+      "event_type": "bug.reassigned",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "23830918-edc5-428a-b7a3-302228ccda40",
+      "payload": {
+        "title": "BK-484 automated fixture bug (reassign) - 1794664627937",
+        "run_id": null,
+        "project_slug": "qa-defect-triage",
+        "assignee_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "previous_assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "fc49d076-2434-421f-a6ab-8af70455e566",
+      "created_at": "2026-11-14T13:57:10.869824+00:00",
+      "event_type": "bug.reassigned",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    }
+  ],
+  "unread_count": 80,
+  "next_cursor": "MjAyNi0xMS0xNFQxMzo1NzoxMC44Njk4MjQrMDA6MDB8MjM4MzA5MTgtZWRjNS00MjhhLWI3YTMtMzAyMjI4Y2NkYTQw"
+}

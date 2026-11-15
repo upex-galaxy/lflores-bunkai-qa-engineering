@@ -1,0 +1,12 @@
+{
+  "invite": {
+    "id": "253dc7b6-8831-4a85-87a1-2bebfcd68d60",
+    "email": "test.enos.icgxfs@example.com",
+    "role": "member",
+    "expires_at": "2026-11-22T08:55:34.982152+00:00",
+    "created_at": "2026-11-15T08:55:34.982152+00:00"
+  },
+  "token": "***",
+  "accept_url": "https://staging-upexbunkai.vercel.app/invites/accept?token=***",
+  "warning": "Copy this URL now — the token cannot be retrieved later."
+}
