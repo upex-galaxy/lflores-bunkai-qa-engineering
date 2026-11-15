@@ -18,7 +18,7 @@ import type { TestContextOptions } from '@TestContext';
 
 import { ApiBase } from '@api/ApiBase';
 import { expect } from '@playwright/test';
-import { atc } from '@utils/decorators';
+import { atc, step } from '@utils/decorators';
 
 // Re-export types for consumers that import from CoverageApi
 export type { ErrorEnvelope, WorkspaceCoverage } from '@schemas/workspace.types';
@@ -53,6 +53,24 @@ export interface CoverageScopeResult {
 export class CoverageApi extends ApiBase {
   constructor(options: TestContextOptions) {
     super(options);
+  }
+
+  // ============================================
+  // Helpers (no fixed assertions, callers own theirs)
+  // ============================================
+
+  /**
+   * Helper: Raw GET /workspaces/{id}/coverage wrapper - reads the workspace
+   * rollup the Home "Coverage" card is built from. Only prepares data (a
+   * baseline, or the oracle a UI reading is compared with), so it is not an
+   * ATC: the response is not the business outcome under test.
+   *
+   * @param workspaceId - Workspace the caller can read
+   * @returns Tuple with response and the coverage body
+   */
+  @step
+  async getWorkspaceCoverage(workspaceId: string): Promise<[APIResponse, WorkspaceCoverage]> {
+    return this.apiGET<WorkspaceCoverage>(`/workspaces/${workspaceId}/coverage`);
   }
 
   // ============================================

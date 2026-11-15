@@ -140,6 +140,16 @@ export class AuthoringSweepApi extends ApiBase {
   }
 
   /**
+   * Helper: Raw DELETE /user-stories/{id} wrapper - soft-deletes (archives) the
+   * story together with its acceptance criteria and ATCs in one transaction.
+   * Used as cleanup by suites that seed their own stories.
+   */
+  @step
+  async deleteUserStory(id: string): Promise<[APIResponse, UserStoryResponse]> {
+    return this.apiDELETE<UserStoryResponse>(`/user-stories/${id}`);
+  }
+
+  /**
    * Helper: Raw POST /user-stories/{id}/acceptance-criteria wrapper — `{id}` here is a
    * USER STORY id, not a module id.
    */

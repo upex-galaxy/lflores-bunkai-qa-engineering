@@ -25,6 +25,7 @@ import { CoverageApi } from '@api/CoverageApi';
 import { ModulesApi } from '@api/ModulesApi';
 import { NotificationsApi } from '@api/NotificationsApi';
 import { ProjectsApi } from '@api/ProjectsApi';
+import { RunsApi } from '@api/RunsApi';
 import { TokensApi } from '@api/TokensApi';
 import { WorkspaceApi } from '@api/WorkspaceApi';
 
@@ -66,6 +67,9 @@ export class ApiFixture extends ApiBase {
   /** Coverage component - workspace-wide test-coverage summary reads */
   readonly coverage: CoverageApi;
 
+  /** Runs component - finished-run submission (precondition for "executed" coverage) */
+  readonly runs: RunsApi;
+
   constructor(options: TestContextOptions) {
     super(options);
 
@@ -80,6 +84,7 @@ export class ApiFixture extends ApiBase {
     this.capabilityGate = new CapabilityGateApi(options);
     this.projects = new ProjectsApi(options);
     this.coverage = new CoverageApi(options);
+    this.runs = new RunsApi(options);
   }
 
   // ============================================
@@ -102,6 +107,7 @@ export class ApiFixture extends ApiBase {
     this.capabilityGate.setAuthToken(token);
     this.projects.setAuthToken(token);
     this.coverage.setAuthToken(token);
+    this.runs.setAuthToken(token);
   }
 
   /**
@@ -119,5 +125,6 @@ export class ApiFixture extends ApiBase {
     this.capabilityGate.clearAuthToken();
     this.projects.clearAuthToken();
     this.coverage.clearAuthToken();
+    this.runs.clearAuthToken();
   }
 }
