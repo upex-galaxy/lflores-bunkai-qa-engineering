@@ -32,7 +32,7 @@ testing:
   tms_cli: bun xray # Test management CLI command (e.g. bun xray). Set to acli (== issue_tracker_cli) -> Modality jira-native, no Xray on Jira.
   tc_creation_stage: auto # When to create Test issues (see .agents/project.schema.yaml). Unset or unrecognized is treated as auto.
   browser:
-    pair_mode: null # added 2026-11-07 from upstream 6b939c7 (default); see .agents/project.schema.yaml
+    pair_mode: false # added 2026-11-07 from upstream 6b939c7; set false 2026-11-15 per user decision (dedicated sessions by default); see .agents/project.schema.yaml
 
 harnesses: [claude]
 
