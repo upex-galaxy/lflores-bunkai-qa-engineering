@@ -1,0 +1,15 @@
+{
+  "title": "gate-fixture-atc-1794717657248-Zwbmap",
+  "module_id": "589e386c-4220-4dbd-9519-66cf19f40c75",
+  "user_story_id": "6ad1eee8-de22-407b-9a4f-856f2b18d485",
+  "acceptance_criterion_ids": [
+    "04e5b9e4-e8eb-4494-a30d-f258e3da3ab5"
+  ],
+  "layer": "API",
+  "steps": [
+    {
+      "position": 1,
+      "content": "Verify the capability gate sampling fixture."
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/workspaces/18a65b3b-6f03-478a-93b3-b7a3ae518d40/jira-connection
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/tokens
+---- API OK: 202 - https://staging-upexbunkai.vercel.app/api/v1/imports
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/imports/5f81b3c2-6849-4d6e-bd81-0e79d094fd2c
+✅ [BK-568] completeImportLifecycleDualScope - PASS (824ms)
