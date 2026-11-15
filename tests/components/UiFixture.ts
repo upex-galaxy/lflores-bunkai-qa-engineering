@@ -16,6 +16,7 @@
 
 import type { TestContextOptions } from '@TestContext';
 
+import { HomePage } from '@ui/HomePage';
 import { LoginPage } from '@ui/LoginPage';
 import { UiBase } from '@ui/UiBase';
 
@@ -27,10 +28,14 @@ export class UiFixture extends UiBase {
   /** Login page component - handles authentication flows */
   readonly login: LoginPage;
 
+  /** Home page component - the /home dashboard and its Coverage card */
+  readonly home: HomePage;
+
   constructor(options: TestContextOptions) {
     super(options);
 
     // All components receive the same options (same page context)
     this.login = new LoginPage(options);
+    this.home = new HomePage(options);
   }
 }

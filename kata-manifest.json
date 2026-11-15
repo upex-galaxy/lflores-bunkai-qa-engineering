@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-11-15T15:49:38.155Z",
+  "generatedAt": "2026-11-15T23:48:11.011Z",
   "components": {
     "api": [
       {
@@ -28,27 +28,27 @@
           {
             "id": "BK-559",
             "method": "rejectWritesAcrossFamilies",
-            "line": 331
+            "line": 341
           },
           {
             "id": "BK-561",
             "method": "acceptWritesAcrossFamilies",
-            "line": 390
+            "line": 400
           },
           {
             "id": "BK-563",
             "method": "acceptReadsAcrossFamilies",
-            "line": 467
+            "line": 477
           },
           {
             "id": "BK-566",
             "method": "rejectReadsAcrossFamilies",
-            "line": 501
+            "line": 511
           },
           {
             "id": "BK-568",
             "method": "completeImportLifecycleDualScope",
-            "line": 537
+            "line": 547
           }
         ]
       },
@@ -179,12 +179,12 @@
           {
             "id": "BK-872",
             "method": "withholdCoverageFromForeignWorkspace",
-            "line": 83
+            "line": 101
           },
           {
             "id": "BK-873",
             "method": "gateCoverageByPatScope",
-            "line": 130
+            "line": 148
           }
         ]
       },
@@ -267,6 +267,12 @@
             "line": 116
           }
         ]
+      },
+      {
+        "name": "RunsApi",
+        "file": "RunsApi.ts",
+        "relativePath": "tests/components/api/RunsApi.ts",
+        "atcs": []
       },
       {
         "name": "TokensApi",
@@ -370,6 +376,18 @@
     ],
     "ui": [
       {
+        "name": "HomePage",
+        "file": "HomePage.ts",
+        "relativePath": "tests/components/ui/HomePage.ts",
+        "atcs": [
+          {
+            "id": "BK-864",
+            "method": "showWorkspaceCoverage",
+            "line": 71
+          }
+        ]
+      },
+      {
         "name": "LoginPage",
         "file": "LoginPage.ts",
         "relativePath": "tests/components/ui/LoginPage.ts",
@@ -388,12 +406,22 @@
       }
     ]
   },
-  "steps": [],
+  "steps": [
+    {
+      "name": "CoverageSeedSteps",
+      "file": "CoverageSeedSteps.ts",
+      "relativePath": "tests/components/steps/CoverageSeedSteps.ts",
+      "methods": [
+        "cleanup",
+        "seedAcStates"
+      ]
+    }
+  ],
   "summary": {
-    "totalComponents": 11,
-    "totalATCs": 61,
-    "apiComponents": 10,
-    "uiComponents": 1,
-    "stepsModules": 0
+    "totalComponents": 13,
+    "totalATCs": 62,
+    "apiComponents": 11,
+    "uiComponents": 2,
+    "stepsModules": 1
   }
 }
