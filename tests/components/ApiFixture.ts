@@ -21,6 +21,7 @@ import { AuthApi } from '@api/AuthApi';
 import { AuthoringSweepApi } from '@api/AuthoringSweepApi';
 import { BugsApi } from '@api/BugsApi';
 import { CapabilityGateApi } from '@api/CapabilityGateApi';
+import { CoverageApi } from '@api/CoverageApi';
 import { ModulesApi } from '@api/ModulesApi';
 import { NotificationsApi } from '@api/NotificationsApi';
 import { ProjectsApi } from '@api/ProjectsApi';
@@ -62,6 +63,9 @@ export class ApiFixture extends ApiBase {
   /** Projects component - project creation under a workspace */
   readonly projects: ProjectsApi;
 
+  /** Coverage component - workspace-wide test-coverage summary reads */
+  readonly coverage: CoverageApi;
+
   constructor(options: TestContextOptions) {
     super(options);
 
@@ -75,6 +79,7 @@ export class ApiFixture extends ApiBase {
     this.authoringSweep = new AuthoringSweepApi(options);
     this.capabilityGate = new CapabilityGateApi(options);
     this.projects = new ProjectsApi(options);
+    this.coverage = new CoverageApi(options);
   }
 
   // ============================================
@@ -96,6 +101,7 @@ export class ApiFixture extends ApiBase {
     this.authoringSweep.setAuthToken(token);
     this.capabilityGate.setAuthToken(token);
     this.projects.setAuthToken(token);
+    this.coverage.setAuthToken(token);
   }
 
   /**
@@ -112,5 +118,6 @@ export class ApiFixture extends ApiBase {
     this.authoringSweep.clearAuthToken();
     this.capabilityGate.clearAuthToken();
     this.projects.clearAuthToken();
+    this.coverage.clearAuthToken();
   }
 }

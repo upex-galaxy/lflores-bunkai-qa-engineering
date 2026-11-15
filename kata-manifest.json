@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-11-14T14:05:22.445Z",
+  "generatedAt": "2026-11-15T15:49:38.155Z",
   "components": {
     "api": [
       {
@@ -168,6 +168,23 @@
             "id": "BK-683",
             "method": "allowViewerRoleWithCapability",
             "line": 180
+          }
+        ]
+      },
+      {
+        "name": "CoverageApi",
+        "file": "CoverageApi.ts",
+        "relativePath": "tests/components/api/CoverageApi.ts",
+        "atcs": [
+          {
+            "id": "BK-872",
+            "method": "withholdCoverageFromForeignWorkspace",
+            "line": 83
+          },
+          {
+            "id": "BK-873",
+            "method": "gateCoverageByPatScope",
+            "line": 130
           }
         ]
       },
@@ -373,9 +390,9 @@
   },
   "steps": [],
   "summary": {
-    "totalComponents": 10,
-    "totalATCs": 59,
-    "apiComponents": 9,
+    "totalComponents": 11,
+    "totalATCs": 61,
+    "apiComponents": 10,
     "uiComponents": 1,
     "stepsModules": 0
   }
