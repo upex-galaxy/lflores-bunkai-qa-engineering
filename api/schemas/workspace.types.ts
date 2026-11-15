@@ -81,6 +81,13 @@ export type InviteAcceptBody = components['schemas']['InviteAcceptBody'];
 export type InviteAcceptResponse = components['schemas']['InviteAcceptResponse'];
 
 // ============================================================================
+// Endpoint Types - GET /api/v1/workspaces/{id}/coverage (BK-259)
+// ============================================================================
+
+/** Workspace-wide AC coverage rollup: counts plus two nullable percentages (null when `ac_total` is 0). */
+export type WorkspaceCoverage = components['schemas']['WorkspaceCoverage'];
+
+// ============================================================================
 // Shared
 // ============================================================================
 
