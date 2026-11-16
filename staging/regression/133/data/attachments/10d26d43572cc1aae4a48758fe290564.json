@@ -1,0 +1,15 @@
+{
+  "title": "ATC executed cov-1794803891732-zJu4xP",
+  "module_id": "589e386c-4220-4dbd-9519-66cf19f40c75",
+  "user_story_id": "0f93e723-270f-47b3-8ed8-0f01c69b2d22",
+  "acceptance_criterion_ids": [
+    "c03da3c8-c0fd-4684-9df2-fb1dd4cdb9bc"
+  ],
+  "layer": "API",
+  "steps": [
+    {
+      "position": 1,
+      "content": "Seeded by BK-864 to fix the AC in a known coverage state"
+    }
+  ]
+}
