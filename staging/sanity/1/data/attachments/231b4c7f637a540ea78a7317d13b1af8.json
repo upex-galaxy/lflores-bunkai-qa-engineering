@@ -1,0 +1,32 @@
+{
+  "atc": {
+    "id": "433de624-1b39-4591-8cb7-f60f9392a56b",
+    "slug": "defect-triage/atc-def7d7fd",
+    "tags": [],
+    "layer": "API",
+    "steps": [
+      {
+        "id": "0ab8e446-ab65-45a5-8e63-d5375b4979f5",
+        "content": "Seeded by BK-864 to fix the AC in a known coverage state",
+        "expected": null,
+        "position": 1,
+        "input_data": null
+      }
+    ],
+    "title": "ATC awaiting cov-1794787228430-GLIEdo",
+    "status": "unrun",
+    "version": 1,
+    "priority": null,
+    "module_id": "589e386c-4220-4dbd-9519-66cf19f40c75",
+    "technique": null,
+    "assertions": [],
+    "created_at": "2026-11-16T00:00:31.858266+00:00",
+    "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+    "updated_at": "2026-11-16T00:00:31.858266+00:00",
+    "archived_at": null,
+    "user_story_id": "b8b79602-6490-456a-a90f-b41ad782fe60",
+    "acceptance_criterion_ids": [
+      "c6563060-7e3b-449e-a482-2125c2dbf1f5"
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "acceptance_criterion": {
+    "id": "6dae405f-4420-446d-8de2-81e3ef2bfe8d",
+    "title": "AC uncovered cov-1794787228430-GLIEdo",
+    "position": 3,
+    "created_at": "2026-11-16T00:00:30.7556+00:00",
+    "archived_at": null,
+    "description": null,
+    "user_story_id": "b8b79602-6490-456a-a90f-b41ad782fe60",
+    "archive_batch_id": null
+  }
+}

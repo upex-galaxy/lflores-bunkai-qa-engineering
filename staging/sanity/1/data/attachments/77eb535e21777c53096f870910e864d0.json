@@ -1,0 +1,15 @@
+{
+  "title": "ATC executed cov-1794787228430-GLIEdo",
+  "module_id": "589e386c-4220-4dbd-9519-66cf19f40c75",
+  "user_story_id": "b8b79602-6490-456a-a90f-b41ad782fe60",
+  "acceptance_criterion_ids": [
+    "6100dd4e-5b3d-49ad-992e-c018a2210638"
+  ],
+  "layer": "API",
+  "steps": [
+    {
+      "position": 1,
+      "content": "Seeded by BK-864 to fix the AC in a known coverage state"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "acceptance_criterion": {
+    "id": "c6563060-7e3b-449e-a482-2125c2dbf1f5",
+    "title": "AC awaiting cov-1794787228430-GLIEdo",
+    "position": 2,
+    "created_at": "2026-11-16T00:00:30.30329+00:00",
+    "archived_at": null,
+    "description": null,
+    "user_story_id": "b8b79602-6490-456a-a90f-b41ad782fe60",
+    "archive_batch_id": null
+  }
+}
