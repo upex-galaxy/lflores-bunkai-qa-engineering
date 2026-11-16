@@ -1,0 +1,12 @@
+{
+  "id": "533672c0-d4a2-4cee-b0a6-b0819cc76b9a",
+  "token": "***",
+  "name": "pat-1794820025587-vlzDir",
+  "scopes": [
+    "atc:read"
+  ],
+  "workspace_id": null,
+  "expires_at": null,
+  "created_at": "2026-11-16T09:07:05.735265+00:00",
+  "warning": "Store this token now — it cannot be retrieved later."
+}

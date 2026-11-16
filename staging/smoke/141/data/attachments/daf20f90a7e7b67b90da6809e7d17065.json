@@ -1,0 +1,8 @@
+{
+  "name": "pat-1794820048301-SYlR5i",
+  "scopes": [
+    "atc:read",
+    "atc:write",
+    "run:execute"
+  ]
+}
