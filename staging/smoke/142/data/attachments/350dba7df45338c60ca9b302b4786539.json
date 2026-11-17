@@ -1,0 +1,8 @@
+{
+  "name": "pat-1794910786428-JSeWLg",
+  "scopes": [
+    "atc:read",
+    "atc:write",
+    "run:execute"
+  ]
+}
