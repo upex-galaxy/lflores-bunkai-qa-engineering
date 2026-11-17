@@ -1,0 +1,12 @@
+{
+  "id": "d96080e9-aeeb-49c6-8d0b-6b28348f4c2f",
+  "token": "***",
+  "name": "pat-1794896653255-MiiDB3",
+  "scopes": [
+    "atc:read"
+  ],
+  "workspace_id": null,
+  "expires_at": "2026-11-18T06:24:13.417+00:00",
+  "created_at": "2026-11-17T06:24:13.426643+00:00",
+  "warning": "Store this token now — it cannot be retrieved later."
+}

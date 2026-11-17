@@ -1,0 +1,8 @@
+{
+  "name": "pat-1794896672597-gMzPpU",
+  "scopes": [
+    "atc:read",
+    "atc:write",
+    "run:execute"
+  ]
+}

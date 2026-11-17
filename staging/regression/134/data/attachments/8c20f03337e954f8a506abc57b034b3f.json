@@ -1,0 +1,17 @@
+{
+  "user": {
+    "id": "b3a09a86-3381-4925-936f-988b2b53dc60",
+    "email": "bk569-nonmember@ambuusteln.resend.app"
+  },
+  "workspaces": [],
+  "active_workspace_id": null,
+  "active_workspace_role": null,
+  "auth": {
+    "source": "bearer",
+    "scopes": [
+      "atc:read",
+      "atc:write",
+      "run:execute"
+    ]
+  }
+}
