@@ -1,0 +1,4 @@
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/bugs
+---- API NOK: 422 - https://staging-upexbunkai.vercel.app/api/v1/bugs/a668a3d2-ecd0-4eaa-8c05-1587391e6415/assign
+✅ [BK-480] rejectAssignToNonMember - PASS (133ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/a668a3d2-ecd0-4eaa-8c05-1587391e6415

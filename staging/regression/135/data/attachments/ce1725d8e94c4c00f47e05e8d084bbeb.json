@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "forbidden",
+    "message": "You are not a member of that workspace.",
+    "request_id": "df11785c-dd96-4232-83b6-47e839f99a1d"
+  }
+}

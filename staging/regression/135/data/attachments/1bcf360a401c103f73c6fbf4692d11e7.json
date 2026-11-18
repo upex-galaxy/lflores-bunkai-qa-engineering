@@ -1,0 +1,13 @@
+{
+  "id": "5105e5ce-633c-4758-9a10-ab13abab8c81",
+  "token": "***",
+  "name": "pat-1794980865253-UkpyfX",
+  "scopes": [
+    "atc:read",
+    "run:execute"
+  ],
+  "workspace_id": null,
+  "expires_at": null,
+  "created_at": "2026-11-18T05:47:45.40408+00:00",
+  "warning": "Store this token now — it cannot be retrieved later."
+}

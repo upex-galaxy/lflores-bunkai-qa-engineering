@@ -1,0 +1,4 @@
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/bugs
+---- API NOK: 422 - https://staging-upexbunkai.vercel.app/api/v1/bugs/10f4be9a-92ab-491d-b1f3-299d2df31e3c/assign
+✅ [BK-481] rejectAssignToViewer - PASS (190ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/10f4be9a-92ab-491d-b1f3-299d2df31e3c

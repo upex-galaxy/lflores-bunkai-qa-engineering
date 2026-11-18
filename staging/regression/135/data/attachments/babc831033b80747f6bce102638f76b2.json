@@ -1,0 +1,12 @@
+{
+  "ac_total": 65,
+  "ac_bound": 42,
+  "ac_executed": 0,
+  "ac_not_run": 42,
+  "ac_uncovered": 23,
+  "ac_coverage_percent": 65,
+  "executed_coverage_percent": 0,
+  "modules_total": 85,
+  "modules_fully_covered": 0,
+  "project_count": 1
+}
