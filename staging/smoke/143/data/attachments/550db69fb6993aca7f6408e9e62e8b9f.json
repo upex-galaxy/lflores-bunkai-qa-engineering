@@ -1,0 +1,12 @@
+{
+  "id": "87764503-ec5d-43f8-835e-0c83bb76f688",
+  "token": "***",
+  "name": "pat-1794995463025-BtCSv6",
+  "scopes": [
+    "run:execute"
+  ],
+  "workspace_id": null,
+  "expires_at": null,
+  "created_at": "2026-11-18T09:51:03.25724+00:00",
+  "warning": "Store this token now — it cannot be retrieved later."
+}

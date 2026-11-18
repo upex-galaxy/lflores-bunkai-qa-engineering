@@ -1,0 +1,14 @@
+{
+  "items": [],
+  "totals": {
+    "failed": 0,
+    "passed": 0,
+    "aborted": 0
+  },
+  "flakiness": {
+    "flips": 0,
+    "sample": 0,
+    "aborted_skipped": 0
+  },
+  "next_cursor": null
+}
