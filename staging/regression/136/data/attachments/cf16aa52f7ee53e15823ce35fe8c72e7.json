@@ -1,0 +1,8 @@
+{
+  "name": "pat-1795067456977-Gtq6Ki",
+  "scopes": [
+    "atc:read",
+    "atc:write",
+    "run:execute"
+  ]
+}

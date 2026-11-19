@@ -1,0 +1,24 @@
+{
+  "user": {
+    "id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+    "email": "luis-flores-qa@ambuusteln.resend.app"
+  },
+  "session": {
+    "access_token": "***",
+    "refresh_token": "***",
+    "expires_at": 1795070972,
+    "token_type": "bearer"
+  },
+  "pat": {
+    "token": "***",
+    "id": "e65052cc-ade4-4827-840a-905e96b0da36",
+    "name": "cli-signin",
+    "scopes": [
+      "atc:read",
+      "atc:write",
+      "run:execute"
+    ],
+    "expires_at": "2026-11-20T05:49:32.635+00:00"
+  },
+  "warning": "Store the PAT token now — it cannot be retrieved later."
+}

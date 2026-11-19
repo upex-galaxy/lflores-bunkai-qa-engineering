@@ -1,0 +1,12 @@
+{
+  "id": "9f34a117-e80e-4b6f-ad18-049febdea0a8",
+  "token": "***",
+  "name": "pat-1795067449073-iXPsbo",
+  "scopes": [
+    "atc:read"
+  ],
+  "workspace_id": null,
+  "expires_at": null,
+  "created_at": "2026-11-19T05:50:49.393342+00:00",
+  "warning": "Store this token now — it cannot be retrieved later."
+}

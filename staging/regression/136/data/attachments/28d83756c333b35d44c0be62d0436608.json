@@ -1,0 +1,12 @@
+{
+  "acceptance_criterion": {
+    "id": "63add9d5-0da9-4a08-9a3b-90e74453c455",
+    "title": "AC executed cov-1795067847172-aIgKjd",
+    "position": 1,
+    "created_at": "2026-11-19T05:57:28.556121+00:00",
+    "archived_at": null,
+    "description": null,
+    "user_story_id": "fbd981e9-05df-45a5-a935-c9c623429a70",
+    "archive_batch_id": null
+  }
+}
