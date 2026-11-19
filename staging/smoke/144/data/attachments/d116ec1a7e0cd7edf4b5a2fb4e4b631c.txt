@@ -1,0 +1,11 @@
+✅ [BK-683] allowViewerRoleWithCapability - PASS (396ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/modules/589e386c-4220-4dbd-9519-66cf19f40c75/user-stories
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/user-stories/077a5d5c-4801-4db4-98ab-d440163e86ce/acceptance-criteria
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/atcs
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/tests
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/tokens
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/activity
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/projects/0fe6b7ba-20ef-4486-a7e4-16c7572adee3/traceability
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/tests/8f4ed876-7d1e-4b4e-9fae-c65d7681e596/runs
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/workspaces/18a65b3b-6f03-478a-93b3-b7a3ae518d40
+✅ [BK-673] allowReadScopedPatOnGatedRoute - PASS (781ms)

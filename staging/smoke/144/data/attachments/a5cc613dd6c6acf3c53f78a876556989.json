@@ -1,0 +1,17 @@
+{
+  "import_job": {
+    "id": "2a756e71-d1fe-4c3a-829c-5cdea21015b0",
+    "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+    "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+    "jql": "project = ZZZNOTREAL",
+    "status": "completed",
+    "imported_count": 0,
+    "created_count": 0,
+    "updated_count": 0,
+    "skipped_count": 0,
+    "errors": [],
+    "started_at": "2026-11-19T09:58:53.681+00:00",
+    "completed_at": "2026-11-19T09:58:54.019+00:00",
+    "created_at": "2026-11-19T09:58:53.67415+00:00"
+  }
+}

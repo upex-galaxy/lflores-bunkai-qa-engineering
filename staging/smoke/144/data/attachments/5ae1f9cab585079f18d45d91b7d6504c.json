@@ -1,0 +1,12 @@
+{
+  "acceptance_criterion": {
+    "id": "9c9087f3-a269-4ffe-afc9-a6ce08849481",
+    "title": "gate-fixture-ac-1795082348533-HboKlz",
+    "position": 1,
+    "created_at": "2026-11-19T09:59:08.710988+00:00",
+    "archived_at": null,
+    "description": null,
+    "user_story_id": "077a5d5c-4801-4db4-98ab-d440163e86ce",
+    "archive_batch_id": null
+  }
+}

@@ -1,0 +1,17 @@
+[API Setup] Target: https://staging-upexbunkai.vercel.app/api/v1/auth/signin
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/auth/signin
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
+✅ [BK-311] authenticateSuccessfully - PASS (983ms)
+[API Setup] owner: signed in (PAT scopes: atc:read, atc:write, run:execute, 1 cookies)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/auth/signin
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
+✅ [BK-311] authenticateSuccessfully - PASS (633ms)
+[API Setup] member: signed in (PAT scopes: atc:read, atc:write, run:execute, 1 cookies)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/auth/signin
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
+✅ [BK-311] authenticateSuccessfully - PASS (560ms)
+[API Setup] viewer: signed in (PAT scopes: atc:read, atc:write, run:execute, 1 cookies)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/auth/signin
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
+✅ [BK-311] authenticateSuccessfully - PASS (654ms)
+[API Setup] nonMember: signed in (PAT scopes: atc:read, atc:write, run:execute, 1 cookies)
