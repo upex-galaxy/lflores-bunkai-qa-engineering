@@ -1,0 +1,5 @@
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/tokens
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/tokens
+---- API NOK: 403 - https://staging-upexbunkai.vercel.app/api/v1/tokens/172ebced-cfee-4087-b24e-40ea8807dd01
+✅ [BK-553] rejectPatDeleteTokenRevocation - PASS (257ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/tokens
