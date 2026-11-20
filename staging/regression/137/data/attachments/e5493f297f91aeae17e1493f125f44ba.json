@@ -1,0 +1,50 @@
+{
+  "run": {
+    "id": "069015d1-f655-4bd2-9055-04a0ff947624",
+    "atcs": [
+      {
+        "id": "80cc7791-701f-45af-80a2-f97612566789",
+        "steps": [
+          {
+            "id": "f9b73515-af72-4596-bc2e-4394acb6783a",
+            "note": null,
+            "status": "passed",
+            "content": "Seeded by BK-864 to fix the AC in a known coverage state",
+            "expected": null,
+            "position": 1,
+            "input_data": null,
+            "atc_step_id": "0ae56200-7964-4530-b3ae-aa8d7f1887d9",
+            "executed_at": "2026-11-20T05:38:10.804247+00:00",
+            "evidence_url": null
+          }
+        ],
+        "atc_id": "86924ac2-9544-4338-95fd-7cc6a7dfe664",
+        "status": "passed",
+        "position": 1,
+        "atc_title": "ATC executed cov-1795153088354-IXlxOT"
+      }
+    ],
+    "status": "passed",
+    "test_id": "a68b0335-158f-4e31-91b6-6770e92b1bb2",
+    "version": 1,
+    "replayed": false,
+    "atc_count": 1,
+    "module_id": "589e386c-4220-4dbd-9519-66cf19f40c75",
+    "created_at": "2026-11-20T05:38:10.804247+00:00",
+    "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+    "started_at": "2026-11-20T05:38:09.804247+00:00",
+    "step_count": 1,
+    "test_title": "Test executed cov-1795153088354-IXlxOT",
+    "updated_at": "2026-11-20T05:38:10.804247+00:00",
+    "finished_at": "2026-11-20T05:38:10.804247+00:00",
+    "module_name": "Defect Triage",
+    "abort_reason": null,
+    "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+    "evidence_urls": [],
+    "executor_mode": "agent",
+    "executor_name": "pat-1795153090448-hR94E3",
+    "environment_id": "f47e2fa0-e830-4218-8c79-9113b262934d",
+    "environment_name": "sweep-env-1794482677515-r23t4K",
+    "executor_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5"
+  }
+}
