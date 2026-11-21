@@ -1,0 +1,24 @@
+{
+  "user": {
+    "id": "b3a09a86-3381-4925-936f-988b2b53dc60",
+    "email": "bk569-nonmember@ambuusteln.resend.app"
+  },
+  "session": {
+    "access_token": "***",
+    "refresh_token": "***",
+    "expires_at": 1795242578,
+    "token_type": "bearer"
+  },
+  "pat": {
+    "token": "***",
+    "id": "e6955e65-3ef8-4e05-ac2c-ee79c69e90bb",
+    "name": "cli-signin",
+    "scopes": [
+      "atc:read",
+      "atc:write",
+      "run:execute"
+    ],
+    "expires_at": "2026-11-22T05:29:38.118+00:00"
+  },
+  "warning": "Store the PAT token now — it cannot be retrieved later."
+}

@@ -1,0 +1,14 @@
+{
+  "id": "17fc82e1-e542-4f55-b2c2-facda2793e72",
+  "token": "***",
+  "name": "pat-1795239037200-Bsyipi",
+  "scopes": [
+    "atc:read",
+    "atc:write",
+    "run:execute"
+  ],
+  "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+  "expires_at": null,
+  "created_at": "2026-11-21T05:30:37.451501+00:00",
+  "warning": "Store this token now — it cannot be retrieved later."
+}

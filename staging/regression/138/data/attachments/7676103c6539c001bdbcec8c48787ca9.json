@@ -1,0 +1,12 @@
+{
+  "acceptance_criterion": {
+    "id": "edb2f19d-d281-4975-b25c-83406691cebd",
+    "title": "AC executed cov-1795239112609-KPPDQq",
+    "position": 1,
+    "created_at": "2026-11-21T05:31:53.515658+00:00",
+    "archived_at": null,
+    "description": null,
+    "user_story_id": "68b71850-9f1c-4617-9ebd-251227536e44",
+    "archive_batch_id": null
+  }
+}
