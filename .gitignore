@@ -214,3 +214,8 @@ env.d.ts
 !.pi/skills/
 !.pi/prompts/
 !.pi/themes/
+
+# ----- Project-level user skills (installed by hand with `bunx skills add`, same treatment as playwright-cli) -----
+.agents/skills/grilling/
+.agents/skills/domain-modeling/
+.agents/skills/to-questionnaire/
