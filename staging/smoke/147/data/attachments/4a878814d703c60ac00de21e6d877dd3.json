@@ -1,0 +1,537 @@
+{
+  "user": {
+    "id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+    "email": "luis-flores-qa@ambuusteln.resend.app",
+    "display_name": null
+  },
+  "workspaces": [
+    {
+      "id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "slug": "luisflores",
+      "name": "luisflores",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-12T10:53:13.446574+00:00"
+    },
+    {
+      "id": "b7f6a305-b885-447e-aacb-f9205b2e7036",
+      "slug": "ws-1794717650843-zdzydi",
+      "name": "Workspace-1794717650843-ovHvhF",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-15T04:40:51.158377+00:00"
+    },
+    {
+      "id": "e964631a-f6da-4805-a4ba-a49a3b94d22b",
+      "slug": "ws-1794717666899-prqs9e",
+      "name": "Workspace-1794717666899-T0HoMo",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-15T04:41:07.157115+00:00"
+    },
+    {
+      "id": "38396292-e3c9-426a-a604-3cc72bbb6ab2",
+      "slug": "ws-1794717673535-zt9lnx",
+      "name": "Workspace-1794717673535-ifR7zT",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-15T04:41:13.907329+00:00"
+    },
+    {
+      "id": "a66bde82-86a1-43be-b888-c2ca1ca02165",
+      "slug": "ws-1794717675770-zzwrta",
+      "name": "Workspace-1794717675770-esOmFl",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-15T04:41:16.070278+00:00"
+    },
+    {
+      "id": "8616f0c5-2d2f-43c8-9954-fe2f25d97bc4",
+      "slug": "ws-1794732912636-vzibdh",
+      "name": "Workspace-1794732912636-qbqPR4",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-15T08:55:12.89199+00:00"
+    },
+    {
+      "id": "7f9248a5-7e0c-42be-a9b1-68d12e9fe92e",
+      "slug": "ws-1794732925540-dxccuv",
+      "name": "Workspace-1794732925540-FljXDt",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-15T08:55:25.730177+00:00"
+    },
+    {
+      "id": "31d281a9-b0b1-4d01-9863-9d0b0c53092b",
+      "slug": "ws-1794732930925-gv7z0t",
+      "name": "Workspace-1794732930925-Io4B8t",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-15T08:55:31.226805+00:00"
+    },
+    {
+      "id": "8f34249a-d258-4be9-848f-716a1c07950e",
+      "slug": "ws-1794732932734-qpfia3",
+      "name": "Workspace-1794732932734-13mOJN",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-15T08:55:32.952198+00:00"
+    },
+    {
+      "id": "8cc7a35d-a9f0-4d81-ad46-1336da48ff05",
+      "slug": "ws-1794758785005-1xeobh",
+      "name": "Workspace-1794758785005-McNw4f",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-15T16:06:25.22215+00:00"
+    },
+    {
+      "id": "55a7637f-bf3d-418c-9dd1-8781026884c0",
+      "slug": "ws-1794758797595-jpnfgj",
+      "name": "Workspace-1794758797595-vHf4Ds",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-15T16:06:37.826411+00:00"
+    },
+    {
+      "id": "34927143-5e7b-43c9-b774-456e16d6c8c7",
+      "slug": "ws-1794758801500-ohkjuo",
+      "name": "Workspace-1794758801500-p889Tc",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-15T16:06:41.718291+00:00"
+    },
+    {
+      "id": "9aa72c77-f6f0-4487-9e93-3a499a516493",
+      "slug": "ws-1794758802942-xsm5pd",
+      "name": "Workspace-1794758802942-bZYYD4",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-15T16:06:43.130056+00:00"
+    },
+    {
+      "id": "59652ee4-4c30-44b0-9c70-f1dde9174226",
+      "slug": "ws-1794803825323-jpirr3",
+      "name": "Workspace-1794803825323-Xsg0T2",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-16T04:37:05.541089+00:00"
+    },
+    {
+      "id": "e0fdebf5-4337-422b-b2c9-cf8d0b3d7968",
+      "slug": "ws-1794803837456-7d3jgi",
+      "name": "Workspace-1794803837456-RaeyIb",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-16T04:37:17.684701+00:00"
+    },
+    {
+      "id": "09e0dd69-3d6e-4d35-a220-35bda02ad77b",
+      "slug": "ws-1794803841716-hjehpn",
+      "name": "Workspace-1794803841716-wJg9I8",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-16T04:37:22.008958+00:00"
+    },
+    {
+      "id": "750c98af-3d9f-41c4-8aa4-9e466c784f76",
+      "slug": "ws-1794803843187-gujdea",
+      "name": "Workspace-1794803843187-vOTwAo",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-16T04:37:23.387755+00:00"
+    },
+    {
+      "id": "1c4320bd-29a7-4330-8962-731f127783cb",
+      "slug": "ws-1794820025791-cgnawe",
+      "name": "Workspace-1794820025791-bSzXuM",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-16T09:07:06.082174+00:00"
+    },
+    {
+      "id": "66aa2800-cdc5-46fd-98c5-06e2fc0f4869",
+      "slug": "ws-1794820038644-zcncqy",
+      "name": "Workspace-1794820038644-EOzzOv",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-16T09:07:18.937438+00:00"
+    },
+    {
+      "id": "b16c436a-46f1-4cf4-820c-1873391cdb47",
+      "slug": "ws-1794820042878-druusu",
+      "name": "Workspace-1794820042878-sLRmQn",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-16T09:07:23.117193+00:00"
+    },
+    {
+      "id": "5144051f-7512-4543-be04-441484616fb7",
+      "slug": "ws-1794820044431-ulyhiq",
+      "name": "Workspace-1794820044431-eyN3cv",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-16T09:07:24.605153+00:00"
+    },
+    {
+      "id": "a8f16144-2425-4b18-ba63-be7b541a80d8",
+      "slug": "ws-1794896644789-qnezbc",
+      "name": "Workspace-1794896644789-AtkVxT",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-17T06:24:05.03406+00:00"
+    },
+    {
+      "id": "f4ad6049-6ba7-4bb0-8690-1da86d1f0467",
+      "slug": "ws-1794896660164-2rnv25",
+      "name": "Workspace-1794896660164-XA4ifY",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-17T06:24:20.372012+00:00"
+    },
+    {
+      "id": "3c295f4a-3a30-4258-905f-0b8c90b83bcf",
+      "slug": "ws-1794896665330-eyanjp",
+      "name": "Workspace-1794896665330-h0yZFr",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-17T06:24:25.607317+00:00"
+    },
+    {
+      "id": "fe8f5574-d504-4223-a06b-00034debe296",
+      "slug": "ws-1794896667135-dnk3yg",
+      "name": "Workspace-1794896667135-9KI24d",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-17T06:24:27.324619+00:00"
+    },
+    {
+      "id": "a1b09efc-1a8b-4468-a8ac-b4a9a6570bb2",
+      "slug": "ws-1794910757915-yit7ss",
+      "name": "Workspace-1794910757915-Vo9MTy",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-17T10:19:18.13608+00:00"
+    },
+    {
+      "id": "0cb65be1-d52c-487b-b6b0-d2bbbd06f2ff",
+      "slug": "ws-1794910773134-k7gsyh",
+      "name": "Workspace-1794910773134-Ziv1s4",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-17T10:19:33.39509+00:00"
+    },
+    {
+      "id": "46d26ed2-916d-40c6-b8bc-13001fa52792",
+      "slug": "ws-1794910778911-r1vvd2",
+      "name": "Workspace-1794910778911-b4C5NH",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-17T10:19:39.226164+00:00"
+    },
+    {
+      "id": "3707a61a-f102-46f6-8974-e615bf89fbf9",
+      "slug": "ws-1794910780697-4bo00f",
+      "name": "Workspace-1794910780697-5r78EY",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-17T10:19:40.917147+00:00"
+    },
+    {
+      "id": "62b98e91-76cf-44aa-9731-fef2f5e4a352",
+      "slug": "ws-1794980866461-clvumw",
+      "name": "Workspace-1794980866461-etdsaH",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-18T05:47:46.648466+00:00"
+    },
+    {
+      "id": "107fcf36-30fc-4a86-b2da-ebf10f722203",
+      "slug": "ws-1794980877298-zmdjzz",
+      "name": "Workspace-1794980877298-bta7Yd",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-18T05:47:57.45243+00:00"
+    },
+    {
+      "id": "d37c037d-4f4a-491f-9bf0-bcd020e2bbe8",
+      "slug": "ws-1794980880934-aw9cjr",
+      "name": "Workspace-1794980880934-4SF00e",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-18T05:48:01.13039+00:00"
+    },
+    {
+      "id": "60d14989-1102-4fd3-9537-a81b8d9c19da",
+      "slug": "ws-1794980882417-yyl9bl",
+      "name": "Workspace-1794980882417-IkryUh",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-18T05:48:02.613557+00:00"
+    },
+    {
+      "id": "7191a270-ee3a-4db4-b573-3930fe526ecc",
+      "slug": "ws-1794995457844-6u8icg",
+      "name": "Workspace-1794995457844-bCO78i",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-18T09:50:58.029605+00:00"
+    },
+    {
+      "id": "e2b3f679-7b15-4d60-bb34-72695e4726d9",
+      "slug": "ws-1794995469870-xe0rzq",
+      "name": "Workspace-1794995469870-PUCknO",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-18T09:51:10.077034+00:00"
+    },
+    {
+      "id": "2d21f4b2-89e8-4429-b3fa-4a67f3ddd4ce",
+      "slug": "ws-1794995474796-nuwkjm",
+      "name": "Workspace-1794995474796-5IG3wQ",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-18T09:51:15.042878+00:00"
+    },
+    {
+      "id": "6854fe65-5550-4807-931d-f3f69bed435e",
+      "slug": "ws-1794995476405-bvbz08",
+      "name": "Workspace-1794995476405-rlfvpc",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-18T09:51:16.611971+00:00"
+    },
+    {
+      "id": "eccd0ec6-d437-45b9-a127-8999a47a3c26",
+      "slug": "ws-1795067414406-q5fgeu",
+      "name": "Workspace-1795067414406-Oz3zQ1",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-19T05:50:14.776084+00:00"
+    },
+    {
+      "id": "dafa78dd-49a8-4c70-858c-886504524a7f",
+      "slug": "ws-1795067439644-mxmxl3",
+      "name": "Workspace-1795067439644-IZiqwP",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-19T05:50:39.950798+00:00"
+    },
+    {
+      "id": "7f01000d-3580-4da8-88b5-164b3c2cb716",
+      "slug": "ws-1795067447083-9nbsfk",
+      "name": "Workspace-1795067447083-URc1SO",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-19T05:50:47.46285+00:00"
+    },
+    {
+      "id": "e4041ef8-20ee-4213-bd8a-8b04f142c315",
+      "slug": "ws-1795067449480-fmktej",
+      "name": "Workspace-1795067449479-1xpVyY",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-19T05:50:49.767635+00:00"
+    },
+    {
+      "id": "fc3aba63-527a-4df7-b5bb-9371a70a3e59",
+      "slug": "ws-1795082346632-cwdfax",
+      "name": "Workspace-1795082346632-MbkdTC",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-19T09:59:06.908016+00:00"
+    },
+    {
+      "id": "9cedc76f-2efd-418a-a7d9-c66f39d8ad6d",
+      "slug": "ws-1795082357954-yjfpn8",
+      "name": "Workspace-1795082357954-GDqs1x",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-19T09:59:18.141551+00:00"
+    },
+    {
+      "id": "730b0292-edfb-4b27-845c-88fd545767ef",
+      "slug": "ws-1795082361650-lyc6dw",
+      "name": "Workspace-1795082361650-oK390u",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-19T09:59:21.901166+00:00"
+    },
+    {
+      "id": "a2d3be60-9268-444c-96e5-de66ad326db5",
+      "slug": "ws-1795082363208-n8vcte",
+      "name": "Workspace-1795082363208-pDCzzA",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-19T09:59:23.38376+00:00"
+    },
+    {
+      "id": "fc904e26-08c0-4f6f-90e8-93d4a1540ca1",
+      "slug": "ws-1795153016200-zsft0k",
+      "name": "Workspace-1795153016200-eFg45a",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-20T05:36:56.413212+00:00"
+    },
+    {
+      "id": "76eb5e5d-58a1-4c8a-be90-d6689834e1c5",
+      "slug": "ws-1795153031080-uifjib",
+      "name": "Workspace-1795153031080-jZPFe1",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-20T05:37:11.288253+00:00"
+    },
+    {
+      "id": "5937d56a-d797-4241-849a-89136467f3c9",
+      "slug": "ws-1795153037627-51w3ml",
+      "name": "Workspace-1795153037627-5lyvMn",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-20T05:37:17.938208+00:00"
+    },
+    {
+      "id": "ecdd35ff-0ae8-44bb-b17d-da382da390ff",
+      "slug": "ws-1795153039610-xkrbuz",
+      "name": "Workspace-1795153039610-MNZCB5",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-20T05:37:19.854237+00:00"
+    },
+    {
+      "id": "84ae371f-cc1d-4134-8600-02e6024a0d3c",
+      "slug": "ws-1795168020141-kcbhqm",
+      "name": "Workspace-1795168020141-gRYzou",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-20T09:47:00.468868+00:00"
+    },
+    {
+      "id": "980381cb-cb4b-42bb-a510-01c2de23feab",
+      "slug": "ws-1795168040653-i2l7w8",
+      "name": "Workspace-1795168040653-uXqsBx",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-20T09:47:21.054424+00:00"
+    },
+    {
+      "id": "efd398df-6008-499d-82c3-f448728707d4",
+      "slug": "ws-1795168047876-hj0kg5",
+      "name": "Workspace-1795168047876-kZ5KfX",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-20T09:47:28.257001+00:00"
+    },
+    {
+      "id": "a9f89535-52e6-49c8-8ff9-df33d5392634",
+      "slug": "ws-1795168050243-o4elbt",
+      "name": "Workspace-1795168050243-CDEbdO",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-20T09:47:30.502622+00:00"
+    },
+    {
+      "id": "35fbf991-c382-46df-8b9f-b647ca068951",
+      "slug": "ws-1795239020214-scvznx",
+      "name": "Workspace-1795239020214-iUtSAF",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-21T05:30:20.595901+00:00"
+    },
+    {
+      "id": "fdd0c390-0470-405d-93b6-4ed4b2795de8",
+      "slug": "ws-1795239039719-mjio72",
+      "name": "Workspace-1795239039719-HBdHW6",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-21T05:30:40.033092+00:00"
+    },
+    {
+      "id": "32af4a12-af91-44ec-ac6a-48e922e8253b",
+      "slug": "ws-1795239046506-fefepr",
+      "name": "Workspace-1795239046506-YNdrwK",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-21T05:30:46.823872+00:00"
+    },
+    {
+      "id": "8d4a1b8e-8623-4edd-956a-f2b351a4009d",
+      "slug": "ws-1795239049161-5tndgz",
+      "name": "Workspace-1795239049161-C0JC1c",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-21T05:30:49.433906+00:00"
+    },
+    {
+      "id": "227453a4-4bbb-410b-a9df-a08a76ff0fed",
+      "slug": "ws-1795252718083-jjkxjz",
+      "name": "Workspace-1795252718083-EntoHl",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-21T09:18:38.283035+00:00"
+    },
+    {
+      "id": "0417c096-02f1-43b1-a91b-06cf11cbffd5",
+      "slug": "ws-1795252728138-orxvqa",
+      "name": "Workspace-1795252728138-VL98hZ",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-21T09:18:48.357043+00:00"
+    },
+    {
+      "id": "81585588-5c74-4e61-a6d5-8fbfc8538137",
+      "slug": "ws-1795252731793-3n0m4b",
+      "name": "Workspace-1795252731793-IaQuHl",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-21T09:18:52.096504+00:00"
+    },
+    {
+      "id": "65640b11-6c9e-4972-80d6-8e41dd3c0123",
+      "slug": "ws-1795252733138-5xtb89",
+      "name": "Workspace-1795252733138-EKlBzM",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-21T09:18:53.317213+00:00"
+    },
+    {
+      "id": "f102a3bf-c2fa-4d6f-8e0f-39aa5d1a066d",
+      "slug": "ws-1795323365229-t57vbk",
+      "name": "Workspace-1795323365229-krKN67",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-22T04:56:05.422127+00:00"
+    },
+    {
+      "id": "46441460-6297-44f2-b769-54b0015e57bb",
+      "slug": "ws-1795323375660-m6tlim",
+      "name": "Workspace-1795323375660-vUSuSr",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-22T04:56:15.814677+00:00"
+    },
+    {
+      "id": "489996e2-a2cf-4b8e-95c6-7521abeea0b2",
+      "slug": "ws-1795323379001-vp4jb3",
+      "name": "Workspace-1795323379001-yH5NHw",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-22T04:56:19.175283+00:00"
+    },
+    {
+      "id": "718f81ad-09fb-439b-8794-0c41d94ef7d7",
+      "slug": "ws-1795323380223-ewozb6",
+      "name": "Workspace-1795323380223-YBEKXb",
+      "plan": "community",
+      "owner_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+      "created_at": "2026-11-22T04:56:20.405121+00:00"
+    }
+  ],
+  "active_workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+  "active_workspace_role": "owner",
+  "auth": {
+    "source": "bearer",
+    "scopes": [
+      "atc:write"
+    ]
+  }
+}
