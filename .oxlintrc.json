@@ -1,4 +1,12 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "extends": ["./.oxlintrc.base.json"]
+  "extends": ["./.oxlintrc.base.json"],
+  "overrides": [
+    {
+      "files": ["tests/**/*.ts"],
+      "rules": {
+        "playwright/no-skipped-test": ["error", { "allowConditional": true }]
+      }
+    }
+  ]
 }
