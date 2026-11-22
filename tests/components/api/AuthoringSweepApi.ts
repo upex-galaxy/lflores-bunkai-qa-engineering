@@ -105,6 +105,12 @@ export interface AuthoringFamilyRow {
   id: string
 }
 
+export interface AuthoringSweepTargets {
+  moduleId: string
+  projectId: string
+  userStoryId: string
+}
+
 /**
  * JQL deliberately matching no real Jira issues, so the import job completes
  * fast with a zero-row result instead of mutating shared staging data.
@@ -326,23 +332,17 @@ export class AuthoringSweepApi extends ApiBase {
    * decision, positive control lives in BK-568), not a defect — asserted the
    * same as every other row, no special-casing.
    *
-   * Max-2-positional-params exception (documented, same class as
-   * `ModulesApi.defaultScopeSucceedsOnWriteAndRead`): needs 3 - a module id
-   * (User Stories row), a project id (Environments/Milestones/Imports rows),
-   * and a user-story id (Acceptance Criteria row's required parent).
-   *
-   * @param moduleId - Target module id (User Stories row)
-   * @param projectId - Target project id (Environments/Milestones/Imports rows)
-   * @param userStoryId - Parent user-story id, pre-discovered/created under the
+   * @param targets - Ids the 5 writes target
+   * @param targets.moduleId - Target module id (User Stories row)
+   * @param targets.projectId - Target project id (Environments/Milestones/Imports rows)
+   * @param targets.userStoryId - Parent user-story id, pre-discovered/created under the
    *   OWNER session before this ATC's under-scoped PAT is set (Acceptance
    *   Criteria row's required parent)
    * @returns Per-family write results (family + response)
    */
   @atc('BK-559')
   async rejectWritesAcrossFamilies(
-    moduleId: string,
-    projectId: string,
-    userStoryId: string,
+    { moduleId, projectId, userStoryId }: AuthoringSweepTargets,
   ): Promise<AuthoringFamilyReadResult[]> {
     const results: AuthoringFamilyReadResult[] = [];
 
@@ -389,19 +389,16 @@ export class AuthoringSweepApi extends ApiBase {
    * them as a parameter in the same test (no ATC-calls-ATC — they receive
    * the refs, they don't create them).
    *
-   * Max-2-positional-params exception — see BK-559's docstring, same class.
-   *
-   * @param moduleId - Target module id (User Stories row)
-   * @param projectId - Target project id (Environments/Milestones/Imports rows)
-   * @param userStoryId - Parent user-story id (Acceptance Criteria row's required parent)
+   * @param targets - Ids the 5 writes target
+   * @param targets.moduleId - Target module id (User Stories row)
+   * @param targets.projectId - Target project id (Environments/Milestones/Imports rows)
+   * @param targets.userStoryId - Parent user-story id (Acceptance Criteria row's required parent)
    * @returns Per-family write results (family + read-key id + response) — see
    *   `AuthoringFamilyWriteResult` doc for what `id` means per family
    */
   @atc('BK-561')
   async acceptWritesAcrossFamilies(
-    moduleId: string,
-    projectId: string,
-    userStoryId: string,
+    { moduleId, projectId, userStoryId }: AuthoringSweepTargets,
   ): Promise<AuthoringFamilyWriteResult[]> {
     const results: AuthoringFamilyWriteResult[] = [];
 

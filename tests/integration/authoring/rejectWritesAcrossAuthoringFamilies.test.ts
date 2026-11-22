@@ -53,11 +53,11 @@ test.describe('BK-498: Authoring Sweep — reject writes across families', { tag
 
       // ACTION: attempt a minimal-valid write on all 5 families — ATC
       // handles fixed assertions (403 on every row, Imports row included)
-      await api.authoringSweep.rejectWritesAcrossFamilies(
-        QA_WORKSPACE_MODULE_ID,
-        QA_WORKSPACE_PROJECT_ID,
+      await api.authoringSweep.rejectWritesAcrossFamilies({
+        moduleId: QA_WORKSPACE_MODULE_ID,
+        projectId: QA_WORKSPACE_PROJECT_ID,
         userStoryId,
-      );
+      });
     },
   );
 });

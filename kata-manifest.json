@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-11-15T23:48:11.011Z",
+  "generatedAt": "2026-11-22T13:52:14.554Z",
   "components": {
     "api": [
       {
@@ -28,27 +28,27 @@
           {
             "id": "BK-559",
             "method": "rejectWritesAcrossFamilies",
-            "line": 341
+            "line": 343
           },
           {
             "id": "BK-561",
             "method": "acceptWritesAcrossFamilies",
-            "line": 400
+            "line": 399
           },
           {
             "id": "BK-563",
             "method": "acceptReadsAcrossFamilies",
-            "line": 477
+            "line": 474
           },
           {
             "id": "BK-566",
             "method": "rejectReadsAcrossFamilies",
-            "line": 511
+            "line": 508
           },
           {
             "id": "BK-568",
             "method": "completeImportLifecycleDualScope",
-            "line": 547
+            "line": 544
           }
         ]
       },
@@ -196,52 +196,52 @@
           {
             "id": "BK-556",
             "method": "createModuleSuccessfully",
-            "line": 92
+            "line": 98
           },
           {
             "id": "BK-557",
             "method": "createModuleViaSessionRegardlessOfPatScope",
-            "line": 356
+            "line": 361
           },
           {
             "id": "BK-558",
             "method": "rejectRevokedTokenWithInvalidMessage",
-            "line": 388
+            "line": 393
           },
           {
             "id": "BK-560",
             "method": "rejectModuleCreationReadOnlyPat",
-            "line": 122
+            "line": 128
           },
           {
             "id": "BK-562",
             "method": "createModuleWithUnboundPat",
-            "line": 152
+            "line": 158
           },
           {
             "id": "BK-564",
             "method": "listUserStoriesSuccessfully",
-            "line": 176
+            "line": 182
           },
           {
             "id": "BK-565",
             "method": "rejectReadWithWriteOnlyPat",
-            "line": 200
+            "line": 206
           },
           {
             "id": "BK-567",
             "method": "rejectUnauthenticatedModuleCreation",
-            "line": 235
+            "line": 241
           },
           {
             "id": "BK-569",
             "method": "rejectModuleCreationNonMember",
-            "line": 280
+            "line": 286
           },
           {
             "id": "BK-570",
             "method": "defaultScopeSucceedsOnWriteAndRead",
-            "line": 318
+            "line": 325
           }
         ]
       },

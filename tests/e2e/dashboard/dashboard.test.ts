@@ -21,6 +21,7 @@ test.describe('Session Bootstrap: Dashboard Access', { tag: ['@critical'] }, () 
    * This test verifies that the authenticated session from e2e-setup
    * is correctly loaded and allows access to protected pages.
    */
+  // eslint-disable-next-line kata/no-raw-page-in-spec -- infrastructure check: the saved storage state loads; no Page component exists for it
   test('should load dashboard with authenticated session', async ({ page }) => {
     // Navigate to home/dashboard - should work because we're authenticated
     await page.goto('/');
