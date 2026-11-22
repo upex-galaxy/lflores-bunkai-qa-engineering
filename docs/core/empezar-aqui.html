@@ -274,16 +274,17 @@ bun setup</code></pre>
             <code>harnesses:</code> (<code>.agents/project.yaml</code>) y te ofrece borrar los
             archivos de los que dejaste fuera (por defecto los conserva). Aquí eliges también los
             skills de nivel usuario, una casilla por skill: el que desmarcas queda registrado como
-            rechazado y no se vuelve a ofrecer. También pregunta si conectar el plugin de Engram.
+            rechazado y no se vuelve a ofrecer. También pregunta si conectar el plugin de Engram y,
+            solo en Claude Code, si instalar RTK.
           </p>
         </li>
         <li>
           <strong>Instalación en segundo plano</strong>
           <p>
             Arranca en cuanto respondes Tu equipo: dependencias, los navegadores de Playwright,
-            Engram con <code>engram setup</code> en cada agente elegido, los skills de la comunidad
-            y la reparación de compatibilidad. No pregunta nada; las fases siguientes se responden
-            mientras descarga.
+            Engram con <code>engram setup</code> en cada agente elegido, RTK (solo Claude Code, si
+            dijiste que sí en Tu equipo), los skills de la comunidad y la reparación de
+            compatibilidad. No pregunta nada; las fases siguientes se responden mientras descarga.
           </p>
         </li>
         <li>
@@ -849,8 +850,9 @@ subagente (contexto limpio)
       </p>
       <p>
         Existe un segundo ejecutor opcional, el worker supervisado: una sesión persistente con la
-        que sigues hablando, coordinada por <code>/orca-orchestration</code>. Solo aparece si el
-        binario <code>orca</code> está instalado y su runtime responde.
+        que sigues hablando, coordinada por <code>/agent-orchestration</code> (una skill de usuario
+        que instala <code>bun setup</code>). Solo aparece si el binario <code>orca</code> está
+        instalado y su runtime responde.
       </p>
 
       <h3 id="circuito-cli">Circuito 3: auto-carga de skills por CLI</h3>
@@ -943,6 +945,13 @@ subagente (contexto limpio)
         </table>
       </div>
       <p>Si saltas Engram, todo sigue funcionando, pero cada sesión empieza sin memoria.</p>
+      <p>
+        En Claude Code, <code>bun setup</code> también ofrece RTK, un compresor de la salida de
+        comandos como <code>git status</code> que ahorra tokens (<code>rtk gain</code> muestra el
+        ahorro). Se instala una vez por máquina, a nivel de usuario, solo si respondes que sí en una
+        corrida interactiva, y si ya está instalado no toca nada. En una corrida no interactiva
+        imprime el comando manual. Para quitarlo: <code>rtk init --global --uninstall</code>.
+      </p>
 
       <h2 id="chuleta">Chuleta: quiero X, ejecuto Y</h2>
       <p>
@@ -1143,7 +1152,7 @@ subagente (contexto limpio)
             </tr>
             <tr>
               <td>Paralelizar el sprint en varias sesiones</td>
-              <td><code>/orca-orchestration</code></td>
+              <td><code>/agent-orchestration</code></td>
             </tr>
             <tr>
               <td>Preparar un worktree nuevo (o revisar uno antes de borrarlo)</td>
@@ -1401,12 +1410,12 @@ subagente (contexto limpio)
         </a>
         <a
           class="card"
-          href="https://upex-galaxy.github.io/agentic-qa-boilerplate/decks/orca-orchestration/how-it-works.es.html"
+          href="https://upex-galaxy.github.io/agentic-qa-boilerplate/decks/user-level-skills/agent-orchestration/how-it-works.es.html"
           target="_blank"
           rel="noopener"
         >
           <span class="badge">Orquestación</span>
-          <h3>orca-orchestration</h3>
+          <h3>agent-orchestration</h3>
           <p>Un conductor y una flota de workers supervisados.</p>
         </a>
         <a

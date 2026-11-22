@@ -34,6 +34,7 @@ Requires `agentic-qa-core`. Loads on demand:
 
 **Test-design doctrine (binding, full canon: `agentic-qa-core/references/test-design-doctrine.md`):**
 
+- Critical Rule #18, no comments in code by default: new and edited code carries no comments except a toolchain directive (`eslint-disable-next-line <rule> -- <reason>`, `@ts-expect-error`, `LINT.IfChange`/`LINT.ThenChange`) or one line of WHY the code cannot express and a reader would otherwise get wrong. No JSDoc blocks, section banners, narrated steps or example TODOs; teaching goes to docs and decks. Put this rule in component 7 of every briefing that writes tests or components.
 - "All ACs covered" is the floor, not the success bar. The ATC set also covers risk beyond the AC: invalid and boundary inputs, auth and error paths, state transitions, and anomalies the AC is silent on.
 - 1:N is the default: one AC maps to several ATCs. EP-merge collapses same-behavior inputs inside one partition into a parameterized ATC; it never collapses across distinct partitions, boundaries or states. BVA cases are required wherever a range, limit, length or date window exists, because EP alone misses off-by-one.
 - Apply techniques by trigger: EP always; BVA on ranges and limits; State-Transition for stateful flows; Decision Table when 2+ conditions interact; Pairwise when 3+ combinable factors (log the reduction).
@@ -180,7 +181,7 @@ Stop and report, routing the scope (Story key, coverage Tech Story key or gap id
 
 ## Batch mode (fleet), an optional second executor
 
-A batch (module-driven, or several ticket-driven scopes queued together) runs sequentially in one session by default: one Work Package at a time, Plan, Code and Review each. A batch fleet, several persistent sessions working different Work Packages at once under a conductor, is opt-in: enter it only when the user asks, or when the batch holds 3+ Work Packages that touch disjoint modules. Below is scoping only; the launch and lifecycle transport lives in `orca-orchestration/SKILL.md` (`[ORCHESTRATION_TOOL]`).
+A batch (module-driven, or several ticket-driven scopes queued together) runs sequentially in one session by default: one Work Package at a time, Plan, Code and Review each. A batch fleet, several persistent sessions working different Work Packages at once under a conductor, is opt-in: enter it only when the user asks, or when the batch holds 3+ Work Packages that touch disjoint modules. Below is scoping only; the launch and lifecycle transport lives in `/agent-orchestration` (`[ORCHESTRATION_TOOL]`).
 
 - A Work Package (WP) is one delivery unit, one `test-specs/<ID>/` spec (`spec.md` + `automation-plan.md` + `atc/*.md`). Sprint origin: the `Candidate` TCs of one Story. Discovery origin: the signed Candidates of a coverage Tech Story. The conductor runs the TC source gate before partitioning, and a batch is a list of WPs, never of files.
 - Partition by module, not by ticket. One worker owns every WP that touches a module's components, and WPs sharing a module run sequentially inside that worker. Two workers on one module would collide in the Pages, Apis and fixtures they share, the files with the least merge tolerance.
@@ -370,7 +371,7 @@ The fixture decides whether a browser opens. A wrong fixture gives slow API test
 7. **Fixed assertions go inside ATCs.** Status code, required fields and URL redirect checks live in the ATC. Test-level assertions (flow outcomes) go in the test file.
 8. **Max 2 positional parameters.** 3+ take an object parameter (`fn(args: Args)`).
 9. **Import aliases are mandatory.** `@api/`, `@ui/`, `@utils/`, `@variables`, `@TestContext`, `@schemas/`. Lint rejects relative imports (`../../../`).
-10. **No hardcoded waits.** No `page.waitForTimeout(3000)`. Wait for a specific condition: `waitForSelector`, `waitForResponse`, `waitForLoadState('networkidle')` or `data-loaded="true"` attributes.
+10. **No hardcoded waits.** No `page.waitForTimeout(3000)`. Wait for a specific condition: `waitForResponse`, `waitForURL` or a web-first assertion such as `expect(locator).toBeVisible()` on `[data-loaded="true"]`. Lint flags `waitForTimeout`, `waitForSelector` and `networkidle` (`playwright/no-wait-for-timeout`, `no-wait-for-selector`, `no-networkidle`) attributes.
 11. **No retries by default.** `retries: 0` in `playwright.config.ts`. A test that passes on retry is flaky, not passing, so investigate it.
 12. **Credentials from `.env`, never hardcoded.** `LOCAL_USER_EMAIL` / `STAGING_USER_EMAIL` and their passwords, read via `config.testUser` from `@variables`; no password, token or API key inline in a spec, fixture or data file.
 13. **Each test generates its own data.** No shared state between tests. Use `TestContext.generateUserData()` or faker helpers for unique values.

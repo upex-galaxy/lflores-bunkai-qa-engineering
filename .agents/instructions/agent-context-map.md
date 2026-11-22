@@ -2,7 +2,7 @@
 id: context-map
 title: 'Context loading map: task to skill to context'
 load_when: 'any workflow task (onboard, discover, adapt, shift-left, sprint testing, documentation, automation, regression, maps, defects, decisions, handoff, browser, Jira) or "which skill / what to read for X"'
-triggers: ['\bonboard', '\bshift.?left', '\bsprint', '\bregres', '\b(?:re)?test(?:ing)? (?:this|the|a) (?:story|ticket|bug)\b', '\bretest', '\b(?:write|draft|create) (?:the |an? )?AT[PR]\b', '\bbusiness (?:data|feature|api|domain|e2e|infra) map\b', '\bautomat', '\bdocument (the )?tests?\b', '\bROI\b', '\bADR\b', '\bhandoff\b', '\bscreenshot', '\bmaster test plan\b', '\bcoverage\b', '\bexplorat', '\bconductor\b', '\bexplor\w* (?:the )?(?:\w+ )?(?:module|flow)\b', '\bwhich skill\b', '\bhow does .+ work\b']
+triggers: ['\bonboard', '\bshift.?left', '\bsprint', '\bregres', '\b(?:re)?test(?:ing)? (?:this|the|a) (?:story|ticket|bug)\b', '\bretest', '\b(?:write|draft|create) (?:the |an? )?AT[PR]\b', '\bbusiness (?:data|feature|api|domain|e2e|infra) map\b', '\bautomat', '\bdocument (the )?tests?\b', '\bROI\b', '\bADR\b', '\bhandoff\b', '\bscreenshot', '\bmaster test plan\b', '\bcoverage\b', '\bexplorat', '\bconductor\b', '\bexplor\w* (?:the )?(?:\w+ )?(?:module|flow)\b', '\bwhich skill\b', '\bhow does .+ work\b', '\bdisk space\b', '\bfree (?:up )?(?:disk|space)\b', '\bclean ?up\b', '\bclean (?:the )?(?:repo|generated|reports?|artifacts?|junk)\b', '\bgenerated (?:files?|artifacts?|junk)\b', '\bjunk\b', '\bbun (?:run )?clean\b']
 paths: []
 ---
 
@@ -25,7 +25,7 @@ When the request is a goal and not yet a skill name, pick by intent. The skill's
 | Test a Story or bug that is in the sprint | `/sprint-testing` |
 | Poke at a module or flow with no ticket | `/exploratory-testing` |
 | Run the whole sprint as a fleet | `/sprint-conductor` |
-| Fan work out to several sessions | `/orca-orchestration` |
+| Fan work out to several sessions | `/agent-orchestration` (user level) |
 | Put test cases and ROI in the TMS | `/test-documentation` |
 | Write or review automated tests | `/test-automation` |
 | Run a suite, classify failures, decide GO or NO-GO | `/regression-testing` |
@@ -35,6 +35,7 @@ When the request is a goal and not yet a skill name, pick by intent. The skill's
 | Branch, commit, push or open a PR | `/git-flow-master` |
 | Review someone's PR | `/pr-review-lead` |
 | Change the boilerplate or the agent instructions | `/framework-development` |
+| Free disk space, or clear generated files (test output, reports, playwright-cli logs, scratch, builds) | `bun run clean` (dry run first; its registry in `cli/lib/clean.ts` is the list of what is safe to delete) |
 | Continue in a fresh session | `/session-handoff` |
 
 Two requests cut across the list. Deriving coverage from ACs loads `agentic-qa-core/references/test-design-doctrine.md` inside whichever testing skill is active. Filing a defect loads `agentic-qa-core/references/defect-management-doctrine.md` the same way.
@@ -68,7 +69,7 @@ Two requests cut across the list. Deriving coverage from ACs loads `agentic-qa-c
 | Understand the SUT (data, API, journeys, vocabulary, stack) | "how does X work", "which endpoint", "what does a user do", "entity lifecycle", "what does <term> mean", "how is it deployed" | the matching context map skill (loads by meaning, kind `context`: the business maps, `business-domain-context` for vocabulary, `infra-context` for stack and environments) | `bun run context:map <slug> [--section <id>]`, never the raw HTML | - *knowledge plus a proposal path: a contradicted section is proposed and applied on approval* |
 | Sync AI repository context (docs follow-through) | "sync AI context", "sync AI memory", "update the docs after this change" | `/framework-development` (boilerplate change) or `/test-framework-adaptation` Phase 9.3 (project-owned docs) | `README.md`, this file, `package.json`; `bun run docs:check` proves the router and the quoted scripts | Edit |
 | Edit the agent instructions (L0, a section, the ROUTER, triggers) | "edit AGENTS.md", "add a rule", "where does this rule go", "tune the triggers", "new instruction section", "measure route recall" | `/framework-development` mode `instructions` | `framework-development/references/instructions-doctrine.md` (where each sentence goes), `.agents/instructions/README.md`; `bun run instructions:check` (locks and router eval), `bun run instructions:audit` (recall from transcripts) | Edit |
-| Orchestrate several sessions (fleet of workers) | "orchestrate", "fleet", "workers", "one session per story", "resume the run", "automation routine" | `/orca-orchestration` | `.agents/project.yaml` `orchestration:` block (defaults); the skill loads its own references | `[ORCHESTRATION_TOOL]` (gate: binary plus reachable runtime; silent when absent) |
+| Orchestrate several sessions (fleet of workers) | "orchestrate", "fleet", "workers", "one session per story", "resume the run", "automation routine" | `/agent-orchestration` (user level) | `.agents/project.yaml` `orchestration:` block (defaults); `agentic-qa-core/references/fleet-project-profile.md`, `fleet-launch-seam.md`, `fleet-provisioning.md` (this repo's parts) | `[ORCHESTRATION_TOOL]` (gate: binary plus reachable runtime; silent when absent) |
 | Hand this session to a fresh one (context window filling up) | "handoff", "pass the context to another session", "continue this in another session", "hand this session over", "write a handoff" | `/session-handoff` | `<<PRIMARY_ROOT>>/.session/handoffs/` (the lineage so far, in the primary checkout even from a worktree); the skill loads its own capture contract | terminal of the SAME harness in the SAME worktree (runtime optional: without it the owner pastes the line) |
 | Git / PR work | any git intent | `/git-flow-master` (loads by meaning) | `git status`, `git log` | `git` + `gh` |
 | Browser action | "screenshot", "trace", "record", "log in as <role>", "pair testing", "use my browser" | `/playwright-cli` | `agentic-qa-core/references/browser-sessions.md`, read before the first `open`: whose login, which browser, `testing.browser.pair_mode` | Playwright CLI |
