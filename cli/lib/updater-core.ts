@@ -36,6 +36,7 @@ import type {
   GitVersion,
   IgnoreDelta,
   IgnoreLineOption,
+  KeptDeletion,
   LocalEditOverwritten,
   PackageJsonDelta,
   PackageJsonKeptKey,
@@ -58,6 +59,7 @@ import * as path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { CONTEXT_MAP_SKILLS } from './context-maps';
+import { harvestSecretValues, holdsEnvValues, redactAll } from './ui/redaction.ts';
 import { testSiblingsToHoldBack } from './updater-drift';
 import { applyIgnoreAppend, computeBlobSha, detectIgnoreDelta } from './updater-ignore';
 import { applyPackageJsonAppend, applyPackageJsonOverride, detectPackageJsonDelta } from './updater-package';
@@ -656,6 +658,7 @@ export function computeDelta(
   localRepoRoot: string,
   agentsBootstrapFiles: readonly string[],
   logger: CoreLogger = silentLogger,
+  computed?: Set<string>,
 ): DeltaEntry[] {
   const delta: DeltaEntry[] = [];
 
@@ -692,20 +695,21 @@ export function computeDelta(
     try {
       nameStatusOutput = execSync(
         `git -C "${templateDir}" log ${componentSha}..HEAD --name-status --no-renames --diff-filter=ADM -- ${pathArgs}`,
-        { stdio: ['pipe', 'pipe', 'pipe'] },
+        { stdio: ['pipe', 'pipe', 'pipe'], maxBuffer: 256 * 1024 * 1024 },
       ).toString();
     }
     catch {
       logger.warning(`No se pudo computar el delta del componente '${component.name}'. Saltando.`);
       continue;
     }
+    computed?.add(component.name);
 
     // --- numstat (for line counts + binary detection) ---
     let numstatOutput: string;
     try {
       numstatOutput = execSync(
         `git -C "${templateDir}" diff --numstat ${componentSha}..HEAD -- ${pathArgs}`,
-        { stdio: ['pipe', 'pipe', 'pipe'] },
+        { stdio: ['pipe', 'pipe', 'pipe'], maxBuffer: 256 * 1024 * 1024 },
       ).toString();
     }
     catch {
@@ -1421,6 +1425,26 @@ export function splitByLastApply(
 // ============================================================================
 
 /**
+ * Every blob each path had upstream in `range` (`<cursor>..HEAD`, or `HEAD` for
+ * the whole history), from one `git log --raw` over `pathspecs`. Trees only:
+ * a `blob:none` partial clone fetches nothing. Null when git cannot say.
+ */
+export function upstreamBlobHistory(templateDir: string, range: string, pathspecs: readonly string[]): Map<string, Set<string>> | null {
+  if (pathspecs.length === 0) { return new Map(); }
+  const r = spawnSync('git', ['-C', templateDir, 'log', '--format=', '--raw', '--no-abbrev', '--no-renames', range, '--', ...pathspecs], { stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 256 * 1024 * 1024, encoding: 'utf8' });
+  if (r.status !== 0) { return null; }
+  const history = new Map<string, Set<string>>();
+  for (const line of r.stdout.split('\n')) {
+    const m = /^:\d+ \d+ ([0-9a-f]{40}) ([0-9a-f]{40}) \w+\t(.+)$/.exec(line);
+    if (!m) { continue; }
+    const blobs = history.get(m[3]) ?? new Set<string>();
+    for (const blob of [m[1], m[2]]) { if (!/^0+$/.test(blob)) { blobs.add(blob); } }
+    history.set(m[3], blobs);
+  }
+  return history;
+}
+
+/**
  * Among the reconciled entries (every synced file whose local bytes differ
  * from upstream HEAD), the ones the PROJECT edited: local also differs from
  * the upstream copy at the component's lock cursor. A file that merely lags
@@ -1430,7 +1454,10 @@ export function splitByLastApply(
  * says which paths upstream changed since the lock:
  *   - not changed upstream: local != HEAD == old upstream, so the project edited it;
  *   - changed upstream: `computeDelta` already byte-compared local against the
- *     old blob (`classifyFile`), so its verdict is reused.
+ *     old blob (`classifyFile`), so its verdict is reused, except that a local
+ *     copy equal to ANY upstream release of the path since the cursor is a lag,
+ *     not an edit (a held-back component's cursor stays put while its other
+ *     files are written).
  * A component whose cursor git cannot diff (unreachable sha) yields nothing,
  * and so does a path upstream ADDED after the cursor (no base copy): unknown
  * is never reported as an edit.
@@ -1451,12 +1478,15 @@ export function detectLocalEdits(
     let changedUpstream: Set<string>;
     try {
       const pathArgs = component.paths.map(p => `"${p}"`).join(' ');
-      const out = execSync(`git -C "${templateDir}" diff --name-only ${cursor} HEAD -- ${pathArgs}`, { stdio: ['pipe', 'pipe', 'pipe'] }).toString();
+      const out = execSync(`git -C "${templateDir}" diff --name-only ${cursor} HEAD -- ${pathArgs}`, { stdio: ['pipe', 'pipe', 'pipe'], maxBuffer: 256 * 1024 * 1024 }).toString();
       changedUpstream = new Set(out.split('\n').map(l => l.trim()).filter(l => l !== ''));
     }
     catch {
       continue;
     }
+    // Changed on both sides by `classifyFile`'s verdict; settled below against
+    // every upstream release since the cursor, in one batch per component.
+    const bothSides: string[] = [];
     for (const entry of reconciled) {
       if (entry.component !== component.name || entry.classification !== 'locally-diverged') { continue; }
       if (!fs.existsSync(path.join(localRepoRoot, entry.path))) { continue; }
@@ -1468,7 +1498,17 @@ export function detectLocalEdits(
       // state, moved from `.claude/skills/` by the preflight). Unknown is
       // never reported as an edit.
       if (!d || d.status === 'A' || d.templateOldSha === null) { continue; }
-      if (d.classification === 'locally-diverged') { edited.add(entry.path); }
+      if (d.classification === 'locally-diverged') { bothSides.push(entry.path); }
+    }
+    if (bothSides.length === 0) { continue; }
+    // An earlier upstream release of the file is not an edit: a run that held
+    // the component back (a deletion left unconfirmed) still wrote its other
+    // files, so the project holds a copy newer than the stale cursor.
+    const history = upstreamBlobHistory(templateDir, `${cursor}..HEAD`, bothSides) ?? new Map<string, Set<string>>();
+    const local = batchLocalShas(localRepoRoot, bothSides);
+    for (const rel of bothSides) {
+      const sha = local.get(rel);
+      if (sha === undefined || !history.get(rel)?.has(sha)) { edited.add(rel); }
     }
   }
   return edited;
@@ -1714,6 +1754,21 @@ export async function applyResolution(
 // DIFF RENDERERS
 // ============================================================================
 
+function colorDiff(diff: string): string {
+  return diff.split('\n').map((line) => {
+    if (line.startsWith('+') && !line.startsWith('+++')) { return `\x1B[32m${line}\x1B[0m`; }
+    if (line.startsWith('-') && !line.startsWith('---')) { return `\x1B[31m${line}\x1B[0m`; }
+    if (line.startsWith('@@')) { return `\x1B[36m${line}\x1B[0m`; }
+    return line;
+  }).join('\n');
+}
+
+function safeDiff(diff: string, entryPath: string, sides: string[]): string {
+  const envFile = holdsEnvValues(entryPath);
+  const values = envFile ? sides.flatMap(text => harvestSecretValues(text, entryPath)).sort((a, b) => b.length - a.length) : [];
+  return colorDiff(redactAll(diff, values, { envKeys: envFile }));
+}
+
 /**
  * Render a colorized unified diff of template changes: template-old → template-new.
  * For status=A (no old blob), uses the empty-tree SHA as the old side.
@@ -1725,10 +1780,11 @@ export function renderTemplateDiff(entry: DeltaEntry, repoDir: string): string {
   // directly — which is what the user actually wants for new files.
   if (!entry.templateOldSha && entry.templateNewSha) {
     try {
-      return execSync(
+      const content = execSync(
         `git -C "${repoDir}" show ${entry.templateNewSha}`,
         { stdio: ['pipe', 'pipe', 'pipe'] },
       ).toString();
+      return safeDiff(content, entry.path, [content]);
     }
     catch {
       return `(could not read upstream content for ${entry.path})\n`;
@@ -1740,10 +1796,10 @@ export function renderTemplateDiff(entry: DeltaEntry, repoDir: string): string {
   const newRef = entry.templateNewSha || EMPTY_TREE;
 
   try {
-    return execSync(
-      `git -C "${repoDir}" diff --color=always ${oldRef} ${newRef}`,
+    return safeDiff(execSync(
+      `git -C "${repoDir}" diff --no-color ${oldRef} ${newRef}`,
       { stdio: ['pipe', 'pipe', 'pipe'] },
-    ).toString();
+    ).toString(), entry.path, []);
   }
   catch {
     return `(could not render template diff for ${entry.path})\n`;
@@ -1774,18 +1830,19 @@ export function renderLocalDiff(entry: DeltaEntry, repoDir: string, localRepoRoo
       { stdio: ['pipe', 'pipe', 'pipe'] },
     );
     fs.writeFileSync(tmpPath, blobBytes);
+    const sides = [blobBytes.toString(), fs.readFileSync(localPath, 'utf8')];
 
     try {
-      return execSync(
-        `git diff --no-index --color=always "${tmpPath}" "${localPath}"`,
+      return safeDiff(execSync(
+        `git diff --no-index --no-color "${tmpPath}" "${localPath}"`,
         { stdio: ['pipe', 'pipe', 'pipe'] },
-      ).toString();
+      ).toString(), entry.path, sides);
     }
     catch (diffErr) {
       // git diff --no-index exits non-zero when files differ — expected
       const err = diffErr as { stdout?: Buffer | string };
       if (err.stdout) {
-        return err.stdout.toString();
+        return safeDiff(err.stdout.toString(), entry.path, sides);
       }
       return `(could not render local diff for ${entry.path})\n`;
     }
@@ -1861,44 +1918,20 @@ export function planAuto(
 }
 
 /**
- * Compute componentsAdvanced / componentsHeldBack from an in-flight summary.
- * A component "advances" only when none of its entries were skipped or failed.
- *
- * `deferredEntries` (deleted-upstream files held back in auto-mode) also block advancement
- * because the delete hasn't been confirmed yet.
- *
- * `settledComponents` are the components that advance WITHOUT an entry of
- * their own: the ones this run bootstrapped (no lock cursor yet) that had
- * nothing to deliver, e.g. a bootstrap-only file the project already owns
- * (`.claude/settings.json`, `.codex/config.toml`), and the self-update
- * component the parent process refreshed to this very sha before re-exec'ing
- * (`selfUpdatedComponents`). Either way the lock must learn the sha, or every
- * later run repeats "bootstrap parcial" / keeps `cli` at the scaffold release.
+ * The upstream deletions whose local copy matches no release of the path in
+ * upstream's history: the project's own content, which no sync deletes or
+ * keeps offering. Unknown (git cannot say, file unreadable) is never own content.
  */
-export function computeComponentAdvancement(
-  summary: {
-    applied: AppliedFile[]
-    skipped: DeltaEntry[]
-    failed: FailedFile[]
-  },
-  deferredEntries: DeltaEntry[] = [],
-  settledComponents: readonly string[] = [],
-): { componentsAdvanced: string[], componentsHeldBack: string[] } {
-  const allEntryComponents = new Set([
-    ...summary.applied.map(a => a.entry.component),
-    ...summary.skipped.map(s => s.component),
-    ...summary.failed.map(f => f.entry.component),
-    ...deferredEntries.map(d => d.component),
-  ]);
-  const blockedComponents = new Set([
-    ...summary.skipped.map(s => s.component),
-    ...summary.failed.map(f => f.entry.component),
-  ]);
-  const settled = settledComponents.filter(c => !allEntryComponents.has(c));
-  return {
-    componentsAdvanced: [...allEntryComponents, ...settled].filter(c => !blockedComponents.has(c)),
-    componentsHeldBack: [...blockedComponents],
-  };
+export function projectOwnedDeletions(templateDir: string, repoRoot: string, deletions: readonly DeltaEntry[]): Set<string> {
+  const paths = deletions.map(d => d.path);
+  const history = upstreamBlobHistory(templateDir, 'HEAD', paths);
+  if (history === null) { return new Set(); }
+  const local = batchLocalShas(repoRoot, paths);
+  return new Set(paths.filter((rel) => {
+    const sha = local.get(rel);
+    const releases = history.get(rel);
+    return sha !== undefined && releases !== undefined && releases.size > 0 && !releases.has(sha);
+  }));
 }
 
 /**
@@ -1912,7 +1945,8 @@ export function computeComponentAdvancement(
  * at the old cursor, so the top-level `templateCommit`, which advances only when
  * EVERY component sits at the new head, stayed releases behind forever. A
  * component with a visible entry is never listed here, whatever happens to it
- * (a deselected scope, a skipped file): its delta is still pending.
+ * (a deselected scope, a skipped file): its delta is still pending. Pass only
+ * `componentsWalked`: a component whose deletions are unknown must never settle.
  */
 export function componentsWithoutDelta(
   components: readonly Component[],
@@ -1927,6 +1961,70 @@ export function componentsWithoutDelta(
       return cursor !== undefined && cursor !== newHeadSha && !withDelta.has(c.name);
     })
     .map(c => c.name);
+}
+
+/**
+ * The components whose upstream deletions this run knows: `computeDelta`
+ * walked them (`computed`; a failed `git log` reports no deletion) and their
+ * cursor is an ancestor of HEAD (not a shallow clone's missing commit, not a
+ * rewritten history). Settling any other one would lose its deletions for good.
+ */
+export function componentsWalked(
+  templateDir: string,
+  components: readonly Component[],
+  perComponentCommit: Readonly<Record<string, string>>,
+  computed: ReadonlySet<string>,
+): Component[] {
+  return components.filter((c) => {
+    const cursor = perComponentCommit[c.name];
+    if (!cursor || !computed.has(c.name) || !/^[0-9a-f]{7,40}$/.test(cursor)) { return false; }
+    return spawnSync('git', ['-C', templateDir, 'merge-base', '--is-ancestor', cursor, 'HEAD'], { stdio: 'ignore' }).status === 0;
+  });
+}
+
+/**
+ * Compute componentsAdvanced / componentsHeldBack from an in-flight summary.
+ * A component "advances" only when none of its entries were skipped or failed.
+ *
+ * `deferredEntries` (deleted-upstream files held back in auto-mode) also block advancement
+ * because the delete hasn't been confirmed yet.
+ *
+ * `settledComponents` are the components that advance WITHOUT an entry of
+ * their own: the ones this run bootstrapped (no lock cursor yet) that had
+ * nothing to deliver, e.g. a bootstrap-only file the project already owns
+ * (`.claude/settings.json`, `.codex/config.toml`), and the self-update
+ * component the parent process refreshed to this very sha before re-exec'ing
+ * (`selfUpdatedComponents`). Either way the lock must learn the sha, or every
+ * later run repeats "bootstrap parcial" / keeps `cli` at the scaffold release.
+ * A delta component already identical to HEAD settles the same way
+ * (`componentsWithoutDelta`).
+ */
+export function computeComponentAdvancement(
+  summary: {
+    applied: AppliedFile[]
+    skipped: DeltaEntry[]
+    failed: FailedFile[]
+    kept?: readonly { component: string }[]
+  },
+  deferredEntries: DeltaEntry[] = [],
+  settledComponents: readonly string[] = [],
+): { componentsAdvanced: string[], componentsHeldBack: string[] } {
+  const allEntryComponents = new Set([
+    ...summary.applied.map(a => a.entry.component),
+    ...(summary.kept ?? []).map(k => k.component),
+    ...summary.skipped.map(s => s.component),
+    ...summary.failed.map(f => f.entry.component),
+    ...deferredEntries.map(d => d.component),
+  ]);
+  const blockedComponents = new Set([
+    ...summary.skipped.map(s => s.component),
+    ...summary.failed.map(f => f.entry.component),
+  ]);
+  const settled = settledComponents.filter(c => !allEntryComponents.has(c));
+  return {
+    componentsAdvanced: [...allEntryComponents, ...settled].filter(c => !blockedComponents.has(c)),
+    componentsHeldBack: [...blockedComponents],
+  };
 }
 
 // ============================================================================
@@ -3216,6 +3314,8 @@ export async function runUpdate(
   let entries: DeltaEntry[] = [];
   let bootstrapMode = false;
   let bootstrapComponents: Component[] = [];
+  let deltaComponentsSeen: Component[] = [];
+  const deltaComputed = new Set<string>();
   // Synced files the PROJECT edited (3-way, see detectLocalEdits): an
   // overwrite of one of these gets a parity row, with its backup path.
   let localEdits = new Set<string>();
@@ -3255,6 +3355,7 @@ export async function runUpdate(
     const knownSha = new Set(Object.keys(v7State!.perComponentCommit));
     const newComponents = cfg.components.filter(c => !knownSha.has(c.name));
     const deltaComponents = cfg.components.filter(c => knownSha.has(c.name));
+    deltaComponentsSeen = deltaComponents;
 
     if (newComponents.length > 0) {
       bootstrapMode = true;
@@ -3300,6 +3401,7 @@ export async function runUpdate(
         repoRoot,
         bootstrapOnlyPaths,
         makeCoreLoggerFromSink(sink),
+        deltaComputed,
       );
       const deletes = deltaEntries.filter(e => e.classification === 'deleted-upstream');
       localEdits = detectLocalEdits(templateDir, deltaComponents, v6Shape.perComponentCommit, deltaEntries, reconciled, repoRoot);
@@ -3423,7 +3525,8 @@ export async function runUpdate(
   // its cursor moves too, so `templateCommit` can reach the head (see
   // componentsWithoutDelta). Listed before the no-op exit below, so a re-run
   // at the same head also heals a lock a partial-delta sync left behind.
-  const settledNoDelta = componentsWithoutDelta(cfg.components, visible, v7State?.perComponentCommit ?? {}, newHeadSha);
+  const cursors = v7State?.perComponentCommit ?? {};
+  const settledNoDelta = componentsWithoutDelta(componentsWalked(templateDir, deltaComponentsSeen, cursors, deltaComputed), visible, cursors, newHeadSha);
   const settledBootstrap = [...new Set([
     ...bootstrapComponents.filter(c => !entries.some(e => e.component === c.name)).map(c => c.name),
     ...settledSelfUpdate,
@@ -3520,6 +3623,7 @@ export async function runUpdate(
   const skipped: DeltaEntry[] = [];
   const failed: FailedFile[] = [];
   const localEditsOverwritten: LocalEditOverwritten[] = [];
+  const keptDeletions: KeptDeletion[] = [];
   let backupDir: string | null = null;
   const ensureBackup = (): string => {
     if (backupDir === null) {
@@ -3553,8 +3657,14 @@ export async function runUpdate(
       // --force (opts.force) flips planAuto to overwrite diverged + delete
       // upstream-removed files; --auto keeps the CI-safe policy.
       const { plan, deferred } = planAuto(scopeFiles, opts.force === true);
-      // Deferred (deleted-upstream) is held back; mark as skipped
-      for (const d of deferred) { skipped.push(d); }
+      // A deferred deletion of the project's own content (no upstream release
+      // ever had these bytes) is kept and settled; an unedited copy waits for
+      // a person to confirm its deletion, holding the component back.
+      const ownContent = projectOwnedDeletions(templateDir, repoRoot, deferred);
+      for (const d of deferred) {
+        if (ownContent.has(d.path)) { keptDeletions.push({ path: d.path, component: d.component, reason: 'edited' }); }
+        else { skipped.push(d); }
+      }
       // Plan items that resolve to 'skip' are skipped; others apply
       for (const item of plan) {
         if (item.resolution === 'skip') {
@@ -3630,7 +3740,7 @@ export async function runUpdate(
       if (entry.classification === 'deleted-upstream') {
         const wantsDelete = await sink.confirmDelete(entry);
         if (!wantsDelete) {
-          skipped.push(entry);
+          keptDeletions.push({ path: entry.path, component: entry.component, reason: 'answered' });
           continue;
         }
         queue({ entry, resolution: 'delete' }, false);
@@ -3963,7 +4073,7 @@ export async function runUpdate(
 
   // Compute advancement
   const advancement = computeComponentAdvancement(
-    { applied, skipped, failed },
+    { applied, skipped, failed, kept: keptDeletions },
     // Deferred-deletes are already represented in `skipped`, so no separate
     // deferred list is passed (the old `bootstrapMode ? [] : []` was a no-op).
     [],
@@ -3982,6 +4092,7 @@ export async function runUpdate(
     componentsHeldBack: advancement.componentsHeldBack,
     backupDir,
     localEditsOverwritten,
+    ...(keptDeletions.length > 0 ? { keptDeletions } : {}),
     packageJsonKept,
     packageJsonAppended,
     testSiblingsHeldBack,

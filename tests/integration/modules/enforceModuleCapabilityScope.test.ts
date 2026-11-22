@@ -214,11 +214,11 @@ test.describe('BK-498: Module Capability Scope API', { tag: ['@critical'] }, () 
 
       // ACTION: create then read back — ATC handles fixed assertions
       // (201 on create, 200 on the subsequent read)
-      await api.modules.defaultScopeSucceedsOnWriteAndRead(
-        QA_WORKSPACE_PROJECT_ID,
-        QA_WORKSPACE_MODULE_ID,
-        { name: api.data.createTestId('module') },
-      );
+      await api.modules.defaultScopeSucceedsOnWriteAndRead({
+        projectId: QA_WORKSPACE_PROJECT_ID,
+        moduleId: QA_WORKSPACE_MODULE_ID,
+        payload: { name: api.data.createTestId('module') },
+      });
     },
   );
 

@@ -1,5 +1,5 @@
 import antfu from '@antfu/eslint-config';
-import { CLI_IMPORT_CLOSURE, KATA_IMPORT_ALIASES } from './eslint.config.base.js';
+import { CLI_IMPORT_CLOSURE, KATA_ENFORCEMENT_LEVEL, KATA_IMPORT_ALIASES, KATA_PLAYWRIGHT, KATA_RULES, KATA_SHAPE } from './eslint.config.base.js';
 
 export default antfu({
   // TypeScript configuration
@@ -90,4 +90,10 @@ export default antfu({
     // (ESLint plugin wants {x}, Prettier wants { x }; Prettier wins via pre-commit)
     'yaml/flow-mapping-curly-spacing': 'off',
   },
-}, KATA_IMPORT_ALIASES, CLI_IMPORT_CLOSURE);
+}, KATA_IMPORT_ALIASES, CLI_IMPORT_CLOSURE, KATA_RULES, KATA_SHAPE, KATA_PLAYWRIGHT, {
+  // Conditional test.skip(cond, reason) guards missing environment data; only an unconditional skip is a forgotten test.
+  files: ['tests/**/*.ts'],
+  rules: {
+    'playwright/no-skipped-test': [KATA_ENFORCEMENT_LEVEL, { allowConditional: true }],
+  },
+});

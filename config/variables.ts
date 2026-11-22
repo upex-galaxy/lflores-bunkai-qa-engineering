@@ -89,6 +89,7 @@ const {
   // no API call can parent afterwards. Read only when TMS_PROVIDER=xray.
   // See tests/utils/jiraSync.ts.
   STP_EXECUTION_KEY = '', // Used: config.tms.stpExecutionKey (jiraSync)
+  RTP_KEY = '',
 
   // === Xray Cloud (required only if TMS_PROVIDER=xray AND AUTO_SYNC=true) ===
   XRAY_CLIENT_ID = '', // Required if AUTO_SYNC=true (jiraSync)
@@ -242,6 +243,7 @@ export const config = {
     provider: TMS_PROVIDER as 'xray' | 'jira' | 'none',
     autoSync: AUTO_SYNC === 'true',
     stpExecutionKey: STP_EXECUTION_KEY,
+    rtpKey: RTP_KEY,
     xray: {
       clientId: XRAY_CLIENT_ID,
       clientSecret: XRAY_CLIENT_SECRET,

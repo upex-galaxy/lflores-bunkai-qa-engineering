@@ -1,13 +1,3 @@
-/**
- * KATA Architecture - Custom Reporter
- *
- * Rich terminal output for test execution with colorful status indicators.
- * Provides detailed step-by-step logging, error snippets, and summary reports.
- *
- * Usage in playwright.config.ts:
- *   reporter: [['./tests/utils/KataReporter.ts'], ...otherReporters]
- */
-
 import type {
   FullConfig,
   FullResult,
@@ -19,13 +9,26 @@ import type {
   TestStep,
 } from '@playwright/test/reporter';
 import type { AtcResult } from '@utils/decorators';
+import type { OutcomeAnnotation, OutcomeInput, OutcomeRecord, OutcomesDocument } from '@utils/testOutcomes';
 
-import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { randomUUID } from 'node:crypto';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
+import { dirname, relative } from 'node:path';
 
 import { ATC_PARTIAL_PATH } from '@utils/decorators';
+import {
+  actionItemLines,
+  buildOutcomeRecords,
+  buildOutcomesDocument,
+  isListOnlyRun,
+  listedHeadline,
+  outcomeCountsLine,
+  outcomeHeadline,
+  OUTCOMES_PATH,
+  stepSummaryMarkdown,
+} from '@utils/testOutcomes';
+import { env, config as testConfig } from '@variables';
 
-// ANSI Color Codes
 const colors = {
   reset: '\x1B[0m',
   bold: '\x1B[1m',
@@ -50,6 +53,11 @@ class KataReporter implements Reporter {
   private runningTests: TestCase[];
   private parallelTests: boolean;
   private totalTests: number;
+  private rootSuite: Suite | undefined;
+  private listOnly = false;
+  /** Stamped on both reports/atc_results.json and reports/test-outcomes.json, so a reader can tell a stale pair. */
+  private readonly runId = randomUUID();
+  private fullConfig: FullConfig | undefined;
 
   constructor() {
     this.startTime = 0;
@@ -68,6 +76,8 @@ class KataReporter implements Reporter {
     }
 
     this.startTime = Date.now();
+    this.rootSuite = suite;
+    this.fullConfig = config;
     this.totalTests = suite.allTests().length;
     this.parallelTests = config.workers > 1;
     this.runningTests = suite.allTests();
@@ -212,14 +222,12 @@ class KataReporter implements Reporter {
 
     console.groupEnd();
 
-    // Update test data
     const index = this.testResults.indexOf(testRun);
     this.testResults[index].testStatus = result.status;
     this.testResults[index].testDuration = result.duration;
   }
 
   onStdOut(chunk: string | Buffer, _test: void | TestCase, result: void | TestResult) {
-    // Always show stdout from tests (console.log, etc.)
     const output = chunk.toString().trim();
     if (output) {
       console.log(output);
@@ -230,7 +238,6 @@ class KataReporter implements Reporter {
   }
 
   onStdErr(chunk: string | Buffer, _test: void | TestCase, result: void | TestResult) {
-    // Always show stderr from tests
     const output = chunk.toString().trim();
     if (output) {
       console.error(output);
@@ -240,10 +247,6 @@ class KataReporter implements Reporter {
     }
   }
 
-  /**
-   * Indicates this reporter prints to stdout.
-   * When true, Playwright knows not to add its own supplementary output.
-   */
   printsToStdio(): boolean {
     return true;
   }
@@ -266,7 +269,10 @@ class KataReporter implements Reporter {
   }
 
   onEnd(result: FullResult) {
+    // Outcomes first: they decide `listOnly`, which the ATC report reads.
+    const outcomes = this.generateOutcomesReport(result);
     this.generateAtcReport();
+    const classOf = new Map(outcomes?.records.map(r => [r.id, r]) ?? []);
 
     this.endTime = Date.now();
     const duration = (this.endTime - this.startTime) / 1000;
@@ -278,14 +284,12 @@ class KataReporter implements Reporter {
       interrupted: ' INTERRUPTED - execution was interrupted ',
     };
 
-    // Summary header
     console.log(
       `\n${colors.bgYellow}${colors.bgBlack}%s${colors.reset}`,
       '📊 TEST REPORT SUMMARY:',
       '\n',
     );
 
-    // Individual test results (sorted by execution order)
     const sorted = [...this.testResults].sort((a, b) => a.testNumber - b.testNumber);
     console.group();
     for (const test of sorted) {
@@ -294,22 +298,33 @@ class KataReporter implements Reporter {
       }
 
       const durationSec = (test.testDuration / 1000).toFixed(3);
-      const icon = this.getStatusIcon(test.testStatus);
-      const color = test.testStatus === 'passed' ? colors.green : colors.red;
+      const record = classOf.get(test.testID);
+      const label = record ? this.getOutcomeLabel(record) : test.testStatus;
+      const icon = record ? this.getOutcomeIcon(record) : this.getStatusIcon(test.testStatus);
+      const color = this.getOutcomeColor(record, test.testStatus);
 
       console.log(
         `${color}%s${colors.reset}`,
-        `${test.testStatus} ${icon} ${test.testNumber} 🧪 ${test.testName} ${durationSec}s`,
+        `${label} ${icon} ${test.testNumber} 🧪 ${test.testName} ${durationSec}s`,
       );
     }
     console.groupEnd();
 
-    // Overall result
     console.log('\n', `⏰ Test Execution Ended in ${duration.toFixed(2)} seconds.`);
 
-    const message = resultMessages[result.status];
+    // Headline comes from outcome records, not Playwright ok(): a setup cascade is ok() there, a known defect is not a pass.
+    const headline = outcomes ? outcomeHeadline(outcomes.summary, result.status) : undefined;
+    const message = headline ? ` ${headline.text} ` : resultMessages[result.status];
+    const green = headline ? headline.ok : result.status === 'passed';
 
-    if (result.status === 'passed') {
+    if (this.listOnly) {
+      console.log(
+        `${colors.bold}${colors.white}%s${colors.reset}${colors.bgYellow}${colors.bgBlack}%s${colors.reset}`,
+        '🚀 Overall Output: 📋 ',
+        ` ${listedHeadline(this.totalTests)} `,
+      );
+    }
+    else if (green) {
       console.log(
         `${colors.bold}${colors.white}%s${colors.reset}${colors.bgGreen}${colors.bgBlack}%s${colors.reset}`,
         '🚀 Overall Output: ✅ ',
@@ -324,18 +339,123 @@ class KataReporter implements Reporter {
       );
     }
 
+    if (outcomes) {
+      console.log(`${colors.dim}%s${colors.reset}`, `   ${outcomeCountsLine(outcomes.summary)}`);
+      for (const line of actionItemLines(outcomes.records)) {
+        console.log(`${colors.yellow}%s${colors.reset}`, `   ⚑ ${line}`);
+      }
+    }
+
     console.log(colors.reset);
   }
 
-  // Helper Methods
+  private generateOutcomesReport(result: FullResult): OutcomesDocument | undefined {
+    if (this.rootSuite === undefined || this.fullConfig === undefined) {
+      return undefined;
+    }
 
-  /**
-   * Aggregate NDJSON partial results into the final JSON report.
-   * Runs in the coordinator process (not a worker), so the file is
-   * guaranteed to be complete by the time onEnd() fires.
-   */
+    const inputs: OutcomeInput[] = this.rootSuite.allTests().map((test) => {
+      const project = test.parent.project()?.name ?? '';
+      const lastResult = test.results.at(-1);
+      const annotations: OutcomeAnnotation[] = [];
+      for (const a of [...test.annotations, ...(lastResult?.annotations ?? [])]) {
+        if (!annotations.some(b => b.type === a.type && b.description === a.description)) {
+          annotations.push({ type: a.type, description: a.description });
+        }
+      }
+      return {
+        id: test.id,
+        title: test.title,
+        titlePath: test.titlePath(),
+        file: relative(process.cwd(), test.location.file),
+        line: test.location.line,
+        project,
+        parentKey: [project, ...test.parent.titlePath()].join(' > '),
+        expectedStatus: test.expectedStatus,
+        annotations,
+        tags: test.tags,
+        attempts: test.results.map(r => ({ status: r.status, durationMs: r.duration, error: r.error?.message })),
+      };
+    });
+
+    const dependencies: Record<string, string[]> = {};
+    for (const project of this.fullConfig.projects) {
+      dependencies[project.name] = project.dependencies;
+    }
+
+    // `--list` reaches onEnd with no attempt: nothing ran, so there is no outcome to record.
+    if (isListOnlyRun(result.status, inputs)) {
+      this.listOnly = true;
+      return undefined;
+    }
+
+    const records: OutcomeRecord[] = buildOutcomeRecords(inputs, dependencies);
+    const runUrl = process.env.GITHUB_SERVER_URL && process.env.GITHUB_REPOSITORY && process.env.GITHUB_RUN_ID
+      ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
+      : null;
+    const built = buildOutcomesDocument(records, {
+      status: result.status,
+      environment: env.current,
+      baseUrl: testConfig.baseUrl,
+      ci: runUrl ? { runUrl, sha: process.env.GITHUB_SHA ?? null } : null,
+      playwright: this.fullConfig.version,
+    });
+    const document = { ...built, runId: this.runId };
+
+    mkdirSync(dirname(OUTCOMES_PATH), { recursive: true });
+    writeFileSync(OUTCOMES_PATH, `${JSON.stringify(document, null, 2)}\n`);
+    console.log(`📊 Test outcomes generated: ${OUTCOMES_PATH}`);
+
+    const stepSummary = process.env.GITHUB_STEP_SUMMARY;
+    if (stepSummary) {
+      try {
+        appendFileSync(stepSummary, `\n${stepSummaryMarkdown(document.summary, records, result.status)}`);
+      }
+      catch {
+        // The step summary is a convenience; the records file is the contract
+      }
+    }
+
+    return document;
+  }
+
+  private getOutcomeLabel(record: OutcomeRecord): string {
+    if (record.class === 'failed' && record.testStatus === 'BLOCKED') {
+      return 'setup failed';
+    }
+    return record.class.replace('-', ' ');
+  }
+
+  private getOutcomeIcon(record: OutcomeRecord): string {
+    const icons: Record<OutcomeRecord['class'], string> = {
+      'passed': '✅',
+      'failed': record.testStatus === 'BLOCKED' ? '⛔' : '❌',
+      'known-defect': '🐞',
+      'unexpected-pass': '❗',
+      'skipped': '⏭️',
+    };
+    return icons[record.class];
+  }
+
+  private getOutcomeColor(record: OutcomeRecord | undefined, status?: string): string {
+    if (record === undefined) {
+      return status === 'passed' ? colors.green : colors.red;
+    }
+    if (record.class === 'passed') {
+      return colors.green;
+    }
+    if (record.class === 'known-defect' || record.class === 'skipped') {
+      return colors.yellow;
+    }
+    return colors.red;
+  }
+
   private generateAtcReport(outputPath = 'reports/atc_results.json') {
     if (!existsSync(ATC_PARTIAL_PATH)) {
+      // No ATC ran: drop a stale report so a later write-back does not import it; `--list` leaves it alone.
+      if (!this.listOnly && existsSync(outputPath)) {
+        unlinkSync(outputPath);
+      }
       return;
     }
 
@@ -352,8 +472,6 @@ class KataReporter implements Reporter {
       }
     }
 
-    // Count unique ATCs with conservative status:
-    // ALL executions passed → PASS, ANY failed → FAIL
     let passed = 0;
     let failed = 0;
     let skipped = 0;
@@ -381,6 +499,7 @@ class KataReporter implements Reporter {
     const total = testIds.length;
 
     const report = {
+      runId: this.runId,
       generatedAt: new Date().toISOString(),
       summary: { total, passed, failed, skipped, executions, testIds },
       results,
@@ -390,7 +509,6 @@ class KataReporter implements Reporter {
     writeFileSync(outputPath, JSON.stringify(report, null, 2));
     console.log(`📊 ATC Report generated: ${outputPath}`);
 
-    // Clean up partial NDJSON
     unlinkSync(ATC_PARTIAL_PATH);
   }
 
@@ -406,7 +524,6 @@ class KataReporter implements Reporter {
       `---- 🔎 Test Output: ${statusIcons[result.status]}${testName}`,
     );
 
-    // Guard: no error object, nothing to log
     if (result.error === undefined) {
       return;
     }
@@ -435,7 +552,6 @@ class KataReporter implements Reporter {
       timedOut: '⌛',
       interrupted: '⚠️',
     };
-    // Guard: no status provided
     if (status === undefined || status === '') {
       return '❓';
     }
@@ -445,7 +561,6 @@ class KataReporter implements Reporter {
 
 export default KataReporter;
 
-// Type declaration at end (matches working pattern)
 interface TestAttr {
   testID: string
   testNumber: number

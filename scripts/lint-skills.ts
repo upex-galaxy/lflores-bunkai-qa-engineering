@@ -173,6 +173,7 @@ import type { VolatileKind } from './lib/volatile-facts';
 import { existsSync, lstatSync, readdirSync, readFileSync, statSync } from 'node:fs';
 
 import { dirname, join } from 'node:path';
+import { isBoilerplateOnlyPath } from '../cli/lib/boilerplate-only';
 import { contractsEnforced } from './lib/doc-contracts';
 import { skillRouterSource } from './lib/instructions';
 import { relativePosix } from './lib/posix-path';
@@ -909,11 +910,23 @@ function isExampleArtifact(path: string): boolean {
  * such a cite is correct and simply has no file to resolve to: left to the
  * existence check, every commit of a scaffolded project was refused by its own
  * pre-commit hook. In the boilerplate the cite must still resolve.
+ *
+ * Two more `.context/ADR/` files are maintainer-only the same way, but are not
+ * numbered ADRs so `BOILERPLATE_ADR` misses them: `README.md` (the ADR index)
+ * and `ADR-NNNN-template.md` (the literal placeholder filename for a new ADR).
+ * Both are pruned by the scaffolder alongside the numbered ADRs, so they get
+ * the identical exemption instead of widening the regex to all of
+ * `.context/ADR/*`.
  */
 const BOILERPLATE_ADR = /^\.context\/ADR\/ADR-\d+-/;
+const BOILERPLATE_ADR_EXTRAS = new Set([
+  '.context/ADR/README.md',
+  '.context/ADR/ADR-NNNN-template.md',
+]);
 
 function isPrunedBoilerplateAdr(path: string, repoRoot: string): boolean {
-  return BOILERPLATE_ADR.test(path) && !contractsEnforced(repoRoot);
+  if (contractsEnforced(repoRoot)) { return false; }
+  return BOILERPLATE_ADR.test(path) || BOILERPLATE_ADR_EXTRAS.has(path);
 }
 
 /**
@@ -943,6 +956,12 @@ function checkStalePaths(
     if (isExampleArtifact(path)) { continue; } // shipped here, deleted once adapted
     if (path.startsWith('.context/') && isGeneratedContextPath(path, strictContext)) { continue; } // written per project by a generator
     if (isPrunedBoilerplateAdr(path, repoRoot)) { continue; } // pruned by the scaffolder, cited as the why
+    if (isBoilerplateOnlyPath(path)) {
+      if (contractsEnforced(repoRoot)) {
+        result.push({ severity: 'ERROR', scope: skillSlug, msg: `STALE-PATH: \`${path}\` in ${sourceFile} is boilerplate-only (cli/lib/boilerplate-only.ts) and never reaches a project, so the cite is stale in every project: name it without the path` });
+      }
+      continue;
+    }
     // Skill-dir-first resolution: shorthand like `scripts/foo.ts` inside a skill
     // body should resolve against the skill's own directory; fall back to repo
     // root for paths that are genuinely repo-rooted (e.g. `.agents/skills/...`).

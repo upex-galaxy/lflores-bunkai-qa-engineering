@@ -151,7 +151,7 @@ const GATE_TIMEOUT_MS = 120_000;
  */
 export const GATE_SCRIPTS = ['types:check', 'lint:check', 'kata:manifest:check', 'skills:check'] as const;
 
-const TOOLING_FILES = ['.editorconfig', '.prettierrc', '.gitattributes', 'tsconfig.base.json', 'eslint.config.base.js', 'bunfig.toml'];
+const TOOLING_FILES = ['.editorconfig', '.prettierrc', '.gitattributes', 'tsconfig.base.json', 'eslint.config.base.js', 'kata-eslint-plugin.js', '.oxlintrc.base.json', 'bunfig.toml'];
 // The SYNCED half of the variables module. A file-list, not a directory:
 // `config/variables.ts` (watchlisted) and `config/validateTestEnv.ts` are
 // project-owned - the whole point of the split is that they are NOT synced.
@@ -166,6 +166,9 @@ const ENV_TEMPLATE_FILES = ['.env.example'];
 const WORKTREE_INCLUDE_FILES = ['.worktreeinclude'];
 // Orca's committed repo hooks: provision a new worktree, audit it before removal.
 const ORCA_CONFIG_FILES = ['orca.yaml'];
+// Project-owned Oxlint overrides (`extends` the synced `.oxlintrc.base.json`): delivered once when
+// missing, so a project that syncs into Oxlint receives a config that `agents:compat:check` accepts.
+const OXLINT_CONFIG_FILES = ['.oxlintrc.json'];
 // The playwright-cli launch defaults (in memory, headless; ADR-0008). Delivered
 // ONCE when missing, then project-owned: a project may tune the viewport,
 // timeouts or test-id attribute. A copy that still carries the old shared
@@ -274,6 +277,7 @@ export const RETIRED_COMMAND_WRAPPERS: DeprecatedFile[] = [
 // also removes the folders it empties, because a skill folder with no SKILL.md
 // fails skills:check.
 const RENAMED_SKILL_REASON = 'skill renamed to test-framework-adaptation (same workflow, new name)';
+const RETIRED_ORCHESTRATION_REASON = 'skill renamed to the user-level agent-orchestration (bun setup installs it); orca-orchestration keeps only its SKILL.md stub, and the repo parts live in agentic-qa-core/references/fleet-*.md';
 const RETIRED_SYNC_REASON = 'skill retired: bun run docs:check gates the skill router and quoted scripts; framework-development and test-framework-adaptation close the docs';
 export const RETIRED_SKILL_FILES: DeprecatedFile[] = [
   ...[
@@ -286,11 +290,35 @@ export const RETIRED_SKILL_FILES: DeprecatedFile[] = [
   ].map(path => ({ path, component: 'skills', reason: RETIRED_SYNC_REASON, deprecatedSince: '8.5' })),
 ];
 
+// Backed up first: `cleanupDeprecated` deletes a retired file even when the project edited it.
+export const RETIRED_ORCHESTRATION_FILES: DeprecatedFile[] = [
+  'evals/evals.json',
+  'references/automations.md',
+  'references/brief-template.md',
+  'references/channel-discipline.md',
+  'references/claims-protocol.md',
+  'references/coordinator-playbook.md',
+  'references/gotchas.md',
+  'references/html-surfaces.md',
+  'references/launch-seam.md',
+  'references/orca-machine-setup.md',
+  'references/provisioning.md',
+  'references/session-identity.md',
+  'references/standby-report-contract.md',
+  'references/topologies.md',
+  'references/worker-contract.md',
+  'templates/COMMON.md',
+  'templates/launch.txt',
+  'templates/roster.md',
+  'templates/run.md',
+  'templates/W-brief.md',
+].map(rel => ({ path: `.agents/skills/orca-orchestration/${rel}`, component: 'skills', reason: RETIRED_ORCHESTRATION_REASON, deprecatedSince: '2026-11-18', backup: true }));
+
 // The instruction sections once carried a number (`80-git.md`): the renamed
 // files arrive through the `instructions` component, the numbered copies leave
 // here, each saved to `.backups/` first because a project may have kept a merge
 // in one (`updater.protected_paths`).
-export const DEPRECATED_FILES: DeprecatedFile[] = [...RETIRED_COMMAND_WRAPPERS, ...RETIRED_SKILL_FILES, ...RETIRED_SECTION_FILES];
+export const DEPRECATED_FILES: DeprecatedFile[] = [...RETIRED_COMMAND_WRAPPERS, ...RETIRED_SKILL_FILES, ...RETIRED_ORCHESTRATION_FILES, ...RETIRED_SECTION_FILES];
 
 export const COMPONENTS: Component[] = [
   // `skills` stays its own component (not folded into `agent-compatibility` as
@@ -346,6 +374,7 @@ export const COMPONENTS: Component[] = [
   // `.codex/config.toml` with it.
   { name: 'worktree-include', type: 'file-list', paths: ['.'], files: WORKTREE_INCLUDE_FILES, bootstrapOnly: true },
   { name: 'orca-config', type: 'file-list', paths: ['.'], files: ORCA_CONFIG_FILES, bootstrapOnly: true },
+  { name: 'oxlint-config', type: 'file-list', paths: ['.'], files: OXLINT_CONFIG_FILES, bootstrapOnly: true },
   { name: 'playwright-cli-config', type: 'file-list', paths: ['.playwright'], files: PLAYWRIGHT_CLI_CONFIG_FILES, bootstrapOnly: true },
 ];
 
@@ -1416,6 +1445,7 @@ const PROTECTED_WATCHLIST: ProtectedWatchEntry[] = [
   { path: '.agents/project.yaml', reason: 'per-project identity + env map, but upstream keeps ADDING structural blocks (e.g. git_strategy). A project scaffolded before a block existed never learns it should have one.', structural: true },
   { path: 'tsconfig.json', reason: 'project-owned `include` / `exclude`: which directories this repo type-checks. The path aliases every synced file imports through moved to the synced `tsconfig.base.json` this file extends, so a new upstream alias now arrives on its own.' },
   { path: 'eslint.config.js', reason: 'project-owned overrides; .husky/pre-commit runs eslint against this local config. The shared rules and the cli/ import-closure block that guards the updater live in the synced `eslint.config.base.js` this file spreads.' },
+  { path: '.oxlintrc.json', reason: 'project-owned Oxlint overrides; lint-staged runs oxlint against this local config. The shared rules (KATA plugin, import blocks, Playwright rules) live in the synced `.oxlintrc.base.json` it extends.' },
   // The MCP registries are project-owned since 8.2 (they used to sync
   // through `agent-root-config`): a consumer adds its own servers there.
   { path: '.mcp.json', reason: 'MCP registry with project-specific servers/vars' },
@@ -1700,10 +1730,16 @@ function makeParityHook(sink: ReportSink, priorLockSha: string, dryRun: boolean,
     }
 
     const lock = readLock(cwd);
-    const heldBack: HeldBackComponent[] = summary.componentsHeldBack.map(component => ({
-      component,
-      lockCommit: lock.perComponentCommit[component] ?? null,
-    }));
+    const heldBack: HeldBackComponent[] = summary.componentsHeldBack.map((component) => {
+      const skippedHere = summary.skipped.filter(e => e.component === component);
+      return {
+        component,
+        lockCommit: lock.perComponentCommit[component] ?? null,
+        deletions: skippedHere.filter(e => e.classification === 'deleted-upstream').map(e => e.path),
+        skipped: skippedHere.filter(e => e.classification !== 'deleted-upstream').map(e => e.path),
+        failed: summary.failed.filter(f => f.entry.component === component).map(f => f.entry.path),
+      };
+    });
     // Archived skills nudge once too: this run's (the migration result, also
     // handed to the re-exec child) plus any archive entry never reported.
     const archivedSkillsDir = path.join(cwd, MIGRATION_BACKUP_DIR, 'skills');
@@ -1755,6 +1791,7 @@ function makeParityHook(sink: ReportSink, priorLockSha: string, dryRun: boolean,
       doctrineDebt: runFacts.doctrineDebt,
       doctrineFile: DOCTRINE_FILE,
       instructionRows: runFacts.instructionRows,
+      keptDeletions: (summary.keptDeletions ?? []).map(k => ({ path: k.path, reason: k.reason })),
       localEdits: (summary.localEditsOverwritten ?? []).map(edit => ({
         ...edit,
         backupPath: summary.backupDir ? path.join(summary.backupDir, edit.path) : null,

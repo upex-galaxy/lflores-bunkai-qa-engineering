@@ -26,6 +26,12 @@ import { atc, step } from '@utils/decorators';
 // Re-export types for consumers that import from ModulesApi
 export type { ErrorEnvelope, ModulePayload, ModuleResponse, UserStoriesListResponse } from '@schemas/modules.types';
 
+export interface DefaultScopeChainInput {
+  projectId: string
+  moduleId: string
+  payload: ModulePayload
+}
+
 // ============================================
 // Modules API Component
 // ============================================
@@ -310,16 +316,15 @@ export class ModulesApi extends ApiBase {
    * set `this.authToken` to a PAT minted with the framework's default scope set
    * (`['atc:read', 'atc:write', 'run:execute']`) before invoking this ATC.
    *
-   * @param projectId - Target project id
-   * @param moduleId - Target module id (read back after creation)
-   * @param payload - Module payload
+   * @param input - Module creation and read-back targets
+   * @param input.projectId - Target project id
+   * @param input.moduleId - Target module id (read back after creation)
+   * @param input.payload - Module payload
    * @returns Tuple with the create and list responses
    */
   @atc('BK-570')
   async defaultScopeSucceedsOnWriteAndRead(
-    projectId: string,
-    moduleId: string,
-    payload: ModulePayload,
+    { projectId, moduleId, payload }: DefaultScopeChainInput,
   ): Promise<[APIResponse, APIResponse]> {
     // ACTION 1: create
     const [createResponse, createBody] = await this.createModule(projectId, payload);

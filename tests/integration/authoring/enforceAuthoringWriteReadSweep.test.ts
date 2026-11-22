@@ -82,11 +82,11 @@ test.describe.serial('BK-498: authoring write/read sweep + import lifecycle', { 
       // ATC handles fixed assertions (2xx + side-effect id per row) and
       // drains the Imports row before returning.
       api.authoringSweep.setAuthToken(writePat.token);
-      const createdRows = await api.authoringSweep.acceptWritesAcrossFamilies(
-        QA_WORKSPACE_MODULE_ID,
-        QA_WORKSPACE_PROJECT_ID,
+      const createdRows = await api.authoringSweep.acceptWritesAcrossFamilies({
+        moduleId: QA_WORKSPACE_MODULE_ID,
+        projectId: QA_WORKSPACE_PROJECT_ID,
         userStoryId,
-      );
+      });
 
       // ACTION 2 (BK-563): read the same 5 rows back with a SEPARATE read
       // PAT — ATC handles fixed assertions (200 per row).

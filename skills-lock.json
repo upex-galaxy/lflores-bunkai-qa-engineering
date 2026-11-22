@@ -5,8 +5,22 @@
       "source": "cathrynlavery/diagram-design",
       "sourceType": "github",
       "skillPath": "skills/diagram-design/SKILL.md",
-      "computedHash": "131d0484db90409d4663ba9c7236a7ffd8708cf66abf33a53c746e4e3170abc3",
-      "commit": "f6db0decea96de66b901331a0f79a8d4b147ebae"
+      "computedHash": "09dc4e3efaa22dea09470c0e51d44e98667bd2c3595c1efc2bde8ff5dc43071b",
+      "commit": "d7b0176d7e60c6f2ff54067991491ac7622c81fb"
+    },
+    "domain-modeling": {
+      "source": "upex-galaxy/agentic-user-skills",
+      "commit": "4787a9ff3c53fef6d19f8712a0cab13a8314f794",
+      "sourceType": "github",
+      "skillPath": "skills/domain-modeling/SKILL.md",
+      "computedHash": "23fc2c692284442b27b6c10cc11d93ebaf0a99278b89aed7d60e44dde90cdbda"
+    },
+    "grilling": {
+      "source": "upex-galaxy/agentic-user-skills",
+      "commit": "4787a9ff3c53fef6d19f8712a0cab13a8314f794",
+      "sourceType": "github",
+      "skillPath": "skills/grilling/SKILL.md",
+      "computedHash": "6dadb8cb7d1f20a3bf752097dfd3d8b577e781ec9e59e4ee099eafa5f85ab21c"
     },
     "playwright-best-practices": {
       "source": "currents-dev/playwright-best-practices-skill",
@@ -25,6 +39,13 @@
       "sourceType": "github",
       "skillPath": "skills/resend-cli/SKILL.md",
       "computedHash": ""
+    },
+    "to-questionnaire": {
+      "source": "upex-galaxy/agentic-user-skills",
+      "commit": "4787a9ff3c53fef6d19f8712a0cab13a8314f794",
+      "sourceType": "github",
+      "skillPath": "skills/to-questionnaire/SKILL.md",
+      "computedHash": "a7e478cd8b71c1202d0b87775d18c538682bada49760437335ec0fc01d86ebba"
     }
   }
 }

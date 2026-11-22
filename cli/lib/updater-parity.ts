@@ -49,6 +49,7 @@ import { hasDeepWalk, SCHEMA_SOURCE, schemaExemptions, walkGovernedFile } from '
 import { contextMapAdvice, contextMapStatuses, mapRelPath } from './context-maps.ts';
 import { HARNESS_LEVEL_MCPS } from './harness-level-mcps.ts';
 import { declaredHarnesses } from './harness-selection.ts';
+import { harvestSecretValues, holdsEnvValues, readSecretValues, redactAll, redactSecretText } from './ui/redaction.ts';
 import { CLAUDE_SETTINGS_FILE, DECLINED_DENIES_KEY, DECLINED_HOOKS_KEY, OPENCODE_SETTINGS_FILE, opencodeDenyGap } from './updater-settings';
 
 // ============================================================================
@@ -150,6 +151,35 @@ export interface ParityDriftInput {
 export interface HeldBackComponent {
   component: string
   lockCommit: string | null
+  /** Upstream deletions of unedited copies left unconfirmed (`--auto`, a skipped scope or an unselected file). */
+  deletions?: string[]
+  /** Other entries skipped this run (an unselected file, a declined two-sided change). */
+  skipped?: string[]
+  /** Entries whose write failed. */
+  failed?: string[]
+}
+
+/** An upstream deletion settled by keeping the file (`RunSummary.keptDeletions`). */
+export interface KeptDeletionInput {
+  path: string
+  reason: 'answered' | 'edited'
+}
+
+function listPaths(label: string, paths: readonly string[] | undefined): string | null {
+  if (!paths || paths.length === 0) { return null; }
+  const shown = paths.slice(0, 3).join(', ');
+  return `${paths.length} ${label}: ${shown}${paths.length > 3 ? ` +${paths.length - 3} more` : ''}`;
+}
+
+/** `agent-compatibility@d6da55a (1 upstream deletion awaiting confirmation: <path>)`. */
+function describeHeldBack(h: HeldBackComponent): string {
+  const at = `${h.component}@${h.lockCommit ? h.lockCommit.slice(0, 7) : 'no lock'}`;
+  const why = [
+    listPaths('upstream deletion(s) awaiting confirmation', h.deletions),
+    listPaths('skipped', h.skipped),
+    listPaths('failed', h.failed),
+  ].filter((p): p is string => p !== null);
+  return why.length > 0 ? `${at} (${why.join('; ')})` : at;
 }
 
 export interface ParityInput {
@@ -192,6 +222,8 @@ export interface ParityInput {
   instructionRows?: InstructionRowInput[]
   /** Project-edited synced files this run overwrote. */
   localEdits?: LocalEditInput[]
+  /** Upstream deletions settled this run by keeping the file. */
+  keptDeletions?: KeptDeletionInput[]
   /** `package.json` keys kept at the project's value while upstream differs. */
   packageJsonKept?: PackageJsonKeptInput[]
   /** `package.json` keys appended this run (planned, on a dry-run): a script whose target file is absent becomes a row. */
@@ -277,6 +309,15 @@ const MCP_HOST_FILE: Record<string, string> = {
 };
 
 /** Order of the surfaces in every table. */
+/** Every task command under the project's `lint-staged` key, or none when absent or unreadable. */
+function readLintStagedCommands(root: string): string[] {
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')) as { 'lint-staged'?: Record<string, unknown> };
+    return Object.values(pkg['lint-staged'] ?? {}).flatMap(v => (Array.isArray(v) ? v : [v])).filter((c): c is string => typeof c === 'string');
+  }
+  catch { return []; }
+}
+
 export const SURFACE_ORDER: ParitySurface[] = ['instructions', 'skills', 'hooks', 'mcp', 'env', 'components', 'package', 'git', 'gates'];
 
 /** English labels for the prompt (the AI reads it). */
@@ -415,8 +456,8 @@ export const CONFIG_BLOCK_READERS: Record<string, Record<string, ConfigBlockRead
       requiredBy: 'the branching strategy, the protected-branch list and `policy.direct_push_to_protected`, which Critical Rule #5 resolves before every push. Without the block the skill cannot tell an authorized direct push from a forbidden one, and `bun run git:policy verify` has no declared side to compare the host ruleset against',
     },
     orchestration: {
-      skill: '/orca-orchestration',
-      requiredBy: 'the fleet defaults (worktree provisioning, run mailbox, claims) the skill reads before launching a single worker',
+      skill: '/sprint-conductor',
+      requiredBy: 'the fleet defaults (worker cap, agent, model and effort per tier, permission modes) the sprint conductor and the user-level /agent-orchestration read before launching a single worker (agentic-qa-core/references/fleet-project-profile.md)',
     },
     board: {
       skill: '/sprint-conductor',
@@ -676,7 +717,21 @@ export function diffNoIndex(a: string, b: string, labels: { a: string, b: string
   };
   relabel(a, labels.a);
   relabel(b, labels.b);
-  return out;
+  const envFile = holdsEnvValues(a) || holdsEnvValues(b);
+  const values = envFile ? [a, b].flatMap(file => (fs.existsSync(file) && fs.statSync(file).isFile() ? harvestSecretValues(fs.readFileSync(file, 'utf8'), file) : [])) : [];
+  return redactAll(out, values.sort((x, y) => y.length - x.length), { envKeys: envFile });
+}
+
+function redactFindings<T extends Omit<ParityFinding, 'id'>>(findings: T[], root: string): T[] {
+  const values = readSecretValues(root);
+  const clean = (text: string | undefined): string | undefined => (text === undefined ? undefined : redactAll(text, values));
+  return findings.map(f => ({
+    ...f,
+    evidence: clean(f.evidence) ?? '',
+    ...(f.note === undefined ? {} : { note: clean(f.note) }),
+    ...(f.detail === undefined ? {} : { detail: clean(f.detail) }),
+    ...(f.diff === undefined ? {} : { diff: clean(f.diff) }),
+  }));
 }
 
 function formatStats(stats: DiffStats): string {
@@ -1760,13 +1815,26 @@ export function collectParityFindings(input: ParityInput): ParityFinding[] {
     });
   }
 
-  // 5. Components held back this run, with the lock cursor each one stays at.
+  // 5. Components held back this run, with the lock cursor each one stays at
+  //    and the entries that keep it there.
   if (input.heldBack.length > 0) {
+    const anyDeletion = input.heldBack.some(h => (h.deletions ?? []).length > 0);
     findings.push({
       surface: 'components',
       path: '.template/boilerplate.lock.json',
-      evidence: `held back: ${input.heldBack.map(h => `${h.component}@${h.lockCommit ? h.lockCommit.slice(0, 7) : 'no lock'}`).join(', ')}`,
+      evidence: `held back: ${input.heldBack.map(describeHeldBack).join('; ')}; their other files still sync, and the lock's templateCommit waits for every component${anyDeletion ? '; a deletion is settled by answering it in an interactive `bun sync` (delete or keep, either releases it) or by deleting the file' : ''}`,
       suggested: 'decide',
+      blocking: false,
+    });
+  }
+
+  // 5a. Upstream deletions settled by keeping the file: the project's now.
+  for (const kept of input.keptDeletions ?? []) {
+    findings.push({
+      surface: kept.path.startsWith('.agents/skills/') ? 'skills' : 'components',
+      path: kept.path,
+      evidence: `informational: upstream deleted this file and the project keeps it (${kept.reason === 'edited' ? 'its copy matches no upstream release: project content' : 'kept by your answer'}); later syncs no longer offer its deletion, delete it yourself if it is obsolete`,
+      suggested: 'keep project',
       blocking: false,
     });
   }
@@ -1982,6 +2050,37 @@ export function collectParityFindings(input: ParityInput): ParityFinding[] {
     });
   }
 
+  // 8b2. Dependencies appended this run exist only in package.json: the sync
+  //      never installs. Until `bun install` runs, the binary a new script or
+  //      hook calls (oxlint, say) is not on disk.
+  const addedDeps = (input.packageJsonAppended ?? []).filter(a => a.section === 'dependencies' || a.section === 'devDependencies');
+  if (addedDeps.length > 0) {
+    findings.push({
+      surface: 'package',
+      path: addedDeps[0].file,
+      evidence: `informational: this run added ${addedDeps.length} package(s) to package.json (${addedDeps.map(a => `\`${a.key}\``).join(', ')}) and installed none. Run \`bun install\` before the next commit or gate: until then a script or hook that calls them fails with "command not found".`,
+      suggested: 'decide',
+      blocking: false,
+    });
+  }
+
+  // 8b3. Oxlint ships (`.oxlintrc.base.json` is on disk) but the project's
+  //      pre-commit still runs ESLint on staged code: its `lint-staged` task is
+  //      a kept project value, so the sync cannot switch it. One row names the
+  //      exact change; nothing breaks if the project keeps ESLint there.
+  if (fs.existsSync(path.join(input.root, '.oxlintrc.base.json'))) {
+    const lintStaged = readLintStagedCommands(input.root);
+    if (lintStaged.some(c => c.includes('eslint')) && !lintStaged.some(c => c.includes('oxlint'))) {
+      findings.push({
+        surface: 'package',
+        path: 'package.json',
+        evidence: 'informational: upstream now runs Oxlint (well under a second) in pre-commit and keeps ESLint as the gate in `lint:check`, `repo:check`, `pre-push` and CI. Your `lint-staged` still runs ESLint on staged code, so commits stay correct but slow. To switch, set the `*.{ts,tsx,js,jsx}` task to `["oxlint -c .oxlintrc.json"]` (needs `bun install` first and a `.oxlintrc.json` that extends `./.oxlintrc.base.json`); `bun run lint:fix` still autofixes style.',
+        suggested: 'decide',
+        blocking: false,
+      });
+    }
+  }
+
   // 8c. A protected file's test held back with it: delivering upstream's test
   //     next to a kept copy that differs fails `bun test` on code nobody changed.
   for (const held of input.testSiblingsHeldBack ?? []) {
@@ -2100,7 +2199,7 @@ export function collectParityFindings(input: ParityInput): ParityFinding[] {
     }
   }
 
-  return findings.map((f, i) => ({ id: i + 1, ...f }));
+  return redactFindings(findings, input.root).map((f, i) => ({ id: i + 1, ...f }));
 }
 
 // ============================================================================
@@ -2197,7 +2296,7 @@ export function renderParityReport(findings: ParityFinding[], meta: ParityMeta):
  * protected file it kept, the likely cause; one for `cli/` when none was kept.
  */
 export function selfUpdateBlockedFindings(blocked: { protectedPaths: string[], error: string }): ParityFinding[] {
-  const loader = blocked.error.split('\n').find(line => line.trim() !== '') ?? 'the entry did not load';
+  const loader = redactSecretText(blocked.error.split('\n').find(line => line.trim() !== '') ?? 'the entry did not load');
   const paths = blocked.protectedPaths.length > 0 ? blocked.protectedPaths : ['cli/'];
   return paths.map((p, i) => ({
     id: i + 1,
