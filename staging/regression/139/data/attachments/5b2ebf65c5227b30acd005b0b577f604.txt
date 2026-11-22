@@ -1,0 +1,4 @@
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/workspaces/047c106e-5334-4a80-8b66-d99ef4c474b4/coverage
+✅ [BK-872] withholdCoverageFromForeignWorkspace - PASS (124ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/workspaces/b7bd64f3-f6c1-4d67-b637-43a1f6beba20/coverage
+✅ [BK-872] withholdCoverageFromForeignWorkspace - PASS (140ms)

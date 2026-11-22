@@ -1,0 +1,12 @@
+{
+  "acceptance_criterion": {
+    "id": "205cd605-d285-48a2-8d76-6dbcf7ea9eab",
+    "title": "AC awaiting cov-1795323426092-rbipy3",
+    "position": 2,
+    "created_at": "2026-11-22T04:57:07.139164+00:00",
+    "archived_at": null,
+    "description": null,
+    "user_story_id": "4f3a5b28-c01e-493d-a574-64d7096b064b",
+    "archive_batch_id": null
+  }
+}
