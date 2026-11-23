@@ -2,7 +2,7 @@
   "browser": {
     "browserName": "chromium",
     "launchOptions": {
-      "headless": false
+      "headless": true
     },
     "contextOptions": {
       "viewport": {
