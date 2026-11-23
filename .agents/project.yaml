@@ -69,29 +69,31 @@ qa:
 board:
   source: auto
   tickets_file: .context/sprint/tickets.yaml
-  jql: null
-  bug_jql: null
+  jql: project = BK AND sprint in openSprints() AND issuetype in (Story, 'Tech Story')
+  bug_jql: project = BK AND sprint in openSprints() AND issuetype in (Bug, Defect)
   ticket_key_pattern: null
   timezone: null
   statuses:
     tickets:
-      not_ready: null
-      in_test: null
-      tested: null
-      blocked: null
-      dropped: null
+      not_ready: [backlog, ready_for_dev, in_progress, in_review, shift_left_qa, to_do]
+      in_test: [ready_for_qa, in_test]
+      tested: [qa_approved, ready_for_release, deployed_to_production, completed, automated, fixed]
+      blocked: [blocked]
+      dropped: [aborted]
     bugs:
-      open: null
-      fixed: null
-      resolved: null
-      discarded: null
+      open: [open, in_progress, in_review, deferred]
+      fixed: [ready_for_qa]
+      resolved: [closed]
+      discarded: [aborted, cannot_reproduce, duplicated, rejected, enhancement]
     tests:
       PASSED: [PASSED, passed]
       FAILED: [FAILED, failed]
-      NOT RUN: [TODO, EXECUTING, ABORTED, n_r]
+      NOT RUN: [TODO, TO DO, EXECUTING, ABORTED, n_r]
       BLOCKED: [blocked]
       DEFERRED: []
-  people: null
+  people:
+    - { name: Luis Flores, role: qa, language: es, jira: Luis Eduardo Flores Villarroel }
+    - { name: Ely, role: dev, language: es, jira: Ely }
   evidence:
     allowed_hosts: [claude.ai]
   brand:
