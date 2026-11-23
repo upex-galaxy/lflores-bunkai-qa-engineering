@@ -1,0 +1,12 @@
+{
+  "acceptance_criterion": {
+    "id": "85424445-1993-4822-bf14-99b9ab2839cd",
+    "title": "AC executed cov-1795412305436-gt4oFk",
+    "position": 1,
+    "created_at": "2026-11-23T05:38:26.54736+00:00",
+    "archived_at": null,
+    "description": null,
+    "user_story_id": "cc052d59-44a1-47a3-878f-97a6e8d74e7e",
+    "archive_batch_id": null
+  }
+}

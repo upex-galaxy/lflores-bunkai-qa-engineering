@@ -1,0 +1,8 @@
+{
+  "name": "pat-1795412250668-WxdeVr",
+  "scopes": [
+    "atc:read",
+    "atc:write",
+    "run:execute"
+  ]
+}

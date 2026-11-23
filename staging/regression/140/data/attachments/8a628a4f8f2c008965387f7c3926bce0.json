@@ -1,0 +1,54 @@
+{
+  "run": {
+    "id": "2b8a580e-aa6a-4d56-8645-fec0541a8d45",
+    "atcs": [
+      {
+        "id": "484d7379-05aa-4590-b2a6-90884e4caee9",
+        "steps": [
+          {
+            "id": "ff9276aa-51b4-4a32-a6a4-39c19a879a63",
+            "note": null,
+            "status": "passed",
+            "content": "Seeded by BK-864 to fix the AC in a known coverage state",
+            "expected": null,
+            "position": 1,
+            "input_data": null,
+            "atc_step_id": "414e63e8-28ef-450b-ade0-3c5742db981e",
+            "executed_at": "2026-11-23T05:38:29.049783+00:00",
+            "evidence_url": null
+          }
+        ],
+        "atc_id": "d77921e9-fd9a-4849-9b9e-808d3f97d4e7",
+        "status": "passed",
+        "position": 1,
+        "atc_title": "ATC executed cov-1795412305436-gt4oFk"
+      }
+    ],
+    "branch": null,
+    "commit": null,
+    "status": "passed",
+    "test_id": "cef3fa70-1c5f-4d98-ae94-ab51df16911a",
+    "version": 1,
+    "replayed": false,
+    "atc_count": 1,
+    "module_id": "589e386c-4220-4dbd-9519-66cf19f40c75",
+    "created_at": "2026-11-23T05:38:29.049783+00:00",
+    "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+    "started_at": "2026-11-23T05:38:28.049783+00:00",
+    "step_count": 1,
+    "test_title": "Test executed cov-1795412305436-gt4oFk",
+    "updated_at": "2026-11-23T05:38:29.049783+00:00",
+    "finished_at": "2026-11-23T05:38:29.049783+00:00",
+    "module_name": "Defect Triage",
+    "abort_reason": null,
+    "pipeline_url": null,
+    "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+    "evidence_urls": [],
+    "executor_mode": "agent",
+    "executor_name": "pat-1795412308521-LSOWeK",
+    "pipeline_name": null,
+    "environment_id": "f47e2fa0-e830-4218-8c79-9113b262934d",
+    "environment_name": "sweep-env-1794482677515-r23t4K",
+    "executor_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5"
+  }
+}
