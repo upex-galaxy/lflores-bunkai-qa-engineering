@@ -1,0 +1,482 @@
+{
+  "items": [
+    {
+      "id": "a24b2afb-7693-4941-b2b9-bb326320e114",
+      "payload": {
+        "title": "BK-479 automated fixture bug - 1795429505400",
+        "run_id": null,
+        "status": "resolved",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "in_progress",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "d7473e0a-78d8-4828-bbb7-f2e334597248",
+      "created_at": "2026-11-23T10:25:06.09889+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "cc247545-a220-4e40-9108-7eafea2bb91e",
+      "payload": {
+        "title": "BK-479 automated fixture bug - 1795429505400",
+        "run_id": null,
+        "status": "in_progress",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "d7473e0a-78d8-4828-bbb7-f2e334597248",
+      "created_at": "2026-11-23T10:25:05.943164+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "c74c1230-eb41-4231-9ad0-803152f2a13b",
+      "payload": {
+        "title": "BK-487 automated fixture bug (status) - 1795429504694",
+        "run_id": null,
+        "status": "in_progress",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "e0c755ae-1209-4cf9-9767-7b523517a66d",
+      "created_at": "2026-11-23T10:25:05.206851+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "b5bc12e8-d6d4-4196-87ef-dab3a44282d7",
+      "payload": {
+        "title": "BK-477 automated fixture bug (owner) - 1795429503380",
+        "run_id": null,
+        "project_slug": "qa-defect-triage",
+        "assignee_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "previous_assignee_user_id": null
+      },
+      "read_at": null,
+      "entity_id": "62b2bdc0-64d9-4b33-9e10-2e3a1a0015d8",
+      "created_at": "2026-11-23T10:25:03.719097+00:00",
+      "event_type": "bug.assigned",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "7002d185-d6c5-4d49-a585-c045d746ff9a",
+      "payload": {
+        "title": "Test executed cov-1795412305436-gt4oFk",
+        "verdict": "passed",
+        "project_slug": "qa-defect-triage"
+      },
+      "read_at": null,
+      "entity_id": "2b8a580e-aa6a-4d56-8645-fec0541a8d45",
+      "created_at": "2026-11-23T05:38:29.049783+00:00",
+      "event_type": "run.finished",
+      "entity_type": "run",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "14f7a85b-7bef-4594-b5de-7f5ae8450317",
+      "payload": {
+        "title": "BK-479 automated fixture bug - 1795412203501",
+        "run_id": null,
+        "status": "resolved",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "in_progress",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "2b7095c0-3ecb-4bf7-aa2f-35e53e6a7c52",
+      "created_at": "2026-11-23T05:36:44.685153+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "46fb92b5-45bf-4daf-8cfd-188a77be578e",
+      "payload": {
+        "title": "BK-479 automated fixture bug - 1795412203501",
+        "run_id": null,
+        "status": "in_progress",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "2b7095c0-3ecb-4bf7-aa2f-35e53e6a7c52",
+      "created_at": "2026-11-23T05:36:44.407912+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "4523b362-e0bb-47f3-aecd-6d37381e48c3",
+      "payload": {
+        "title": "BK-483 automated fixture bug - 1795412200002",
+        "run_id": null,
+        "project_slug": "qa-defect-triage",
+        "assignee_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "previous_assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "c2864399-ae3f-473e-89db-e91296b6c62f",
+      "created_at": "2026-11-23T05:36:40.699971+00:00",
+      "event_type": "bug.reassigned",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "94f6bc11-1a36-46e9-a953-47e102fa39c7",
+      "payload": {
+        "title": "BK-484 automated fixture bug (reassign) - 1795412196216",
+        "run_id": null,
+        "project_slug": "qa-defect-triage",
+        "assignee_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "previous_assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "21f0681c-6ac6-4b84-b920-623d6c57be66",
+      "created_at": "2026-11-23T05:36:37.994816+00:00",
+      "event_type": "bug.reassigned",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "af1ea0d6-c09d-45da-9370-6b449e7d55c8",
+      "payload": {
+        "title": "BK-487 automated fixture bug (status) - 1795412194905",
+        "run_id": null,
+        "status": "in_progress",
+        "project_slug": "qa-defect-triage",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "read_at": null,
+      "entity_id": "1cf14cff-1af8-4069-8364-b8ffa3b94fa1",
+      "created_at": "2026-11-23T05:36:35.847475+00:00",
+      "event_type": "bug.status_changed",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "afabd15f-ea6f-480b-b40e-fcc47feca702",
+      "payload": {
+        "title": "BK-477 automated fixture bug (owner) - 1795412189708",
+        "run_id": null,
+        "project_slug": "qa-defect-triage",
+        "assignee_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "previous_assignee_user_id": null
+      },
+      "read_at": null,
+      "entity_id": "be996fd5-cdff-4cbd-8b15-1210bd6b6824",
+      "created_at": "2026-11-23T05:36:30.399302+00:00",
+      "event_type": "bug.assigned",
+      "entity_type": "bug",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "7cdb05a2-5188-4c55-a865-7b2063c81f8d",
+      "payload": {
+        "title": "Checkout happy path",
+        "verdict": "passed",
+        "project_slug": "bk1995-qa-0001"
+      },
+      "read_at": null,
+      "entity_id": "16d35564-e6eb-43f7-bd8f-2c3bfa0e5dbc",
+      "created_at": "2026-11-23T00:17:14.374945+00:00",
+      "event_type": "run.finished",
+      "entity_type": "run",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "895b8e6e-3c81-4778-a973-806a95d33100",
+      "payload": {
+        "title": "Checkout happy path",
+        "verdict": "passed",
+        "project_slug": "bk1995-qa-0001"
+      },
+      "read_at": null,
+      "entity_id": "5258885c-ad4d-43ff-aa59-9870509d417f",
+      "created_at": "2026-11-23T00:17:13.83961+00:00",
+      "event_type": "run.finished",
+      "entity_type": "run",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "69ee868b-152c-4caf-8c4e-db35c69a42fa",
+      "payload": {
+        "title": "Checkout happy path",
+        "verdict": "passed",
+        "project_slug": "bk1995-qa-0001"
+      },
+      "read_at": null,
+      "entity_id": "6d1e14fc-3115-4f75-82be-66bd9943d540",
+      "created_at": "2026-11-23T00:16:45.80606+00:00",
+      "event_type": "run.finished",
+      "entity_type": "run",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "a247765a-78a2-45a9-a269-5fa5b39ccf0d",
+      "payload": {
+        "title": "Checkout happy path",
+        "verdict": "passed",
+        "project_slug": "bk228-qa-0001"
+      },
+      "read_at": null,
+      "entity_id": "482d0ea6-a54c-4100-a4d6-520568990656",
+      "created_at": "2026-11-22T23:34:00.323523+00:00",
+      "event_type": "run.finished",
+      "entity_type": "run",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "61ee87c6-1b5c-4853-beae-75f1dd6bad29",
+      "payload": {
+        "title": "Checkout happy path",
+        "reason": "BK-1995 QA cleanup",
+        "project_slug": "bk1995-qa-0001"
+      },
+      "read_at": null,
+      "entity_id": "ed5bd46e-9eab-4590-b728-1f0e8103d946",
+      "created_at": "2026-11-22T23:29:04.275648+00:00",
+      "event_type": "run.aborted",
+      "entity_type": "run",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "48c707a6-f8d8-4131-947c-3d16aba221d6",
+      "payload": {
+        "title": "Checkout happy path",
+        "verdict": "passed",
+        "project_slug": "bk228-qa-0001"
+      },
+      "read_at": null,
+      "entity_id": "7e606ecf-929a-4f23-bd7a-951e68daee8c",
+      "created_at": "2026-11-22T23:12:15.409431+00:00",
+      "event_type": "run.finished",
+      "entity_type": "run",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "d7be51a6-dfe5-4b44-bb47-bf1fb5197962",
+      "payload": {
+        "title": "Checkout happy path",
+        "verdict": "passed",
+        "project_slug": "bk228-qa-0001"
+      },
+      "read_at": null,
+      "entity_id": "40ad345d-5c21-406c-99f1-c21a70f9ae6c",
+      "created_at": "2026-11-22T23:12:14.917595+00:00",
+      "event_type": "run.finished",
+      "entity_type": "run",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "a61b6669-a7a2-4e82-ac36-d5dc2fe46feb",
+      "payload": {
+        "title": "Checkout happy path",
+        "verdict": "passed",
+        "project_slug": "bk228-qa-0001"
+      },
+      "read_at": null,
+      "entity_id": "93720bc1-fdb7-4d01-8634-ed375ad4c042",
+      "created_at": "2026-11-22T23:12:14.377816+00:00",
+      "event_type": "run.finished",
+      "entity_type": "run",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "609d774c-ec02-47fa-a71b-2d42d480960e",
+      "payload": {
+        "title": "Checkout happy path",
+        "verdict": "passed",
+        "project_slug": "bk228-qa-0001"
+      },
+      "read_at": null,
+      "entity_id": "dc6434b8-583a-4dbf-9214-c89d4f7d6b69",
+      "created_at": "2026-11-22T23:12:13.862795+00:00",
+      "event_type": "run.finished",
+      "entity_type": "run",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "612dc00a-40a6-4622-8e73-f54197bb25d8",
+      "payload": {
+        "title": "Checkout happy path",
+        "verdict": "passed",
+        "project_slug": "bk228-qa-0001"
+      },
+      "read_at": null,
+      "entity_id": "5120dbb4-6c28-47fa-94cd-9adb0036c67c",
+      "created_at": "2026-11-22T23:12:13.358646+00:00",
+      "event_type": "run.finished",
+      "entity_type": "run",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "37ecf8b4-c956-48f8-9121-501e62859cdb",
+      "payload": {
+        "title": "Checkout happy path",
+        "verdict": "passed",
+        "project_slug": "bk228-qa-0001"
+      },
+      "read_at": null,
+      "entity_id": "852edcee-1f6a-439f-aed1-8b6a63a74ee2",
+      "created_at": "2026-11-22T23:12:12.871647+00:00",
+      "event_type": "run.finished",
+      "entity_type": "run",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "5fc5d108-9764-4b3f-843e-1b7e2e85790b",
+      "payload": {
+        "title": "Checkout happy path",
+        "verdict": "passed",
+        "project_slug": "bk228-qa-0001"
+      },
+      "read_at": null,
+      "entity_id": "5f42a8f9-517a-4381-ab5f-f4191d602849",
+      "created_at": "2026-11-22T23:12:12.375646+00:00",
+      "event_type": "run.finished",
+      "entity_type": "run",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "6aa38a12-64f7-49ab-ad4a-830afeb4f80d",
+      "payload": {
+        "title": "Checkout happy path",
+        "verdict": "passed",
+        "project_slug": "bk228-qa-0001"
+      },
+      "read_at": null,
+      "entity_id": "85c05b30-e9ea-4e03-b7a0-eca236c24090",
+      "created_at": "2026-11-22T23:12:11.872869+00:00",
+      "event_type": "run.finished",
+      "entity_type": "run",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "9469b963-3530-4771-9cb5-714ba1355ac7",
+      "payload": {
+        "title": "Checkout happy path",
+        "verdict": "passed",
+        "project_slug": "bk228-qa-0001"
+      },
+      "read_at": null,
+      "entity_id": "02513a85-4846-4703-813f-8bcd343a9893",
+      "created_at": "2026-11-22T23:12:11.3726+00:00",
+      "event_type": "run.finished",
+      "entity_type": "run",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "83e3ce3f-917a-494f-9d6c-fb949c68c69c",
+      "payload": {
+        "title": "Checkout happy path",
+        "verdict": "passed",
+        "project_slug": "bk228-qa-0001"
+      },
+      "read_at": null,
+      "entity_id": "c953e5b7-73cf-4188-aef3-0f666f1d522b",
+      "created_at": "2026-11-22T23:12:10.876019+00:00",
+      "event_type": "run.finished",
+      "entity_type": "run",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "8fd354cd-5ca5-4488-b4b3-5ea285436369",
+      "payload": {
+        "title": "Checkout happy path",
+        "verdict": "passed",
+        "project_slug": "bk228-qa-0001"
+      },
+      "read_at": null,
+      "entity_id": "b887719f-f17f-484c-bf1e-9d31473bae7f",
+      "created_at": "2026-11-22T23:12:10.357528+00:00",
+      "event_type": "run.finished",
+      "entity_type": "run",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "f63ef5eb-53b9-44f9-bda1-7ebf24da1003",
+      "payload": {
+        "title": "Checkout happy path",
+        "verdict": "passed",
+        "project_slug": "bk228-qa-0001"
+      },
+      "read_at": null,
+      "entity_id": "0a39550d-ad41-4f38-a27c-07116ba56e1d",
+      "created_at": "2026-11-22T23:12:09.877288+00:00",
+      "event_type": "run.finished",
+      "entity_type": "run",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "0e0d2e32-30b1-4fb7-8047-0da047385875",
+      "payload": {
+        "title": "Checkout happy path",
+        "verdict": "passed",
+        "project_slug": "bk228-qa-0001"
+      },
+      "read_at": null,
+      "entity_id": "b09ef351-d0fe-4760-8bbf-1d16f2949b38",
+      "created_at": "2026-11-22T23:12:09.385781+00:00",
+      "event_type": "run.finished",
+      "entity_type": "run",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    },
+    {
+      "id": "ecec58ac-cc7e-4183-9fba-8f7f46175c2f",
+      "payload": {
+        "title": "Checkout happy path",
+        "verdict": "passed",
+        "project_slug": "bk228-qa-0001"
+      },
+      "read_at": null,
+      "entity_id": "7ec99bc4-f97f-48c6-ae04-91aa5e4d7f07",
+      "created_at": "2026-11-22T23:12:08.880502+00:00",
+      "event_type": "run.finished",
+      "entity_type": "run",
+      "workspace_id": "18a65b3b-6f03-478a-93b3-b7a3ae518d40",
+      "entity_available": true
+    }
+  ],
+  "unread_count": 245,
+  "next_cursor": "MjAyNi0xMS0yMlQyMzoxMjowOC44ODA1MDIrMDA6MDB8ZWNlYzU4YWMtY2M3ZS00MTgzLTlmYmEtOGY3ZjQ2MTc1YzJm"
+}
