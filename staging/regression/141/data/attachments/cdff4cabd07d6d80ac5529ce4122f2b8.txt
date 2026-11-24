@@ -1,0 +1,2 @@
+---- API NOK: 404 - https://staging-upexbunkai.vercel.app/api/v1/bugs/3b9105fb-c37c-4f0a-ac8d-69d179c4b4b5/assign
+✅ [BK-488] rejectNonDisclosingNotFound - PASS (333ms)

@@ -1,0 +1,4 @@
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/bugs
+---- API NOK: 403 - https://staging-upexbunkai.vercel.app/api/v1/bugs/b6f46f9b-bf40-4e82-81b8-c2691895ce6f/assign
+✅ [BK-486] rejectWriteActionForViewer - PASS (212ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/b6f46f9b-bf40-4e82-81b8-c2691895ce6f
