@@ -1,0 +1,4 @@
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/tokens
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/tokens
+---- API OK: 204 - https://staging-upexbunkai.vercel.app/api/v1/tokens/480033ed-ef63-4427-9c91-3b0b3f024f6f
+✅ [BK-545] allowSessionAuthenticatedTokenLifecycle - PASS (864ms)

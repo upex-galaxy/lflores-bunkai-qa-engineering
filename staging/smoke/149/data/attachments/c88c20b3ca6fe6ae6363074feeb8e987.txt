@@ -1,0 +1,4 @@
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/tokens
+---- API OK: 204 - https://staging-upexbunkai.vercel.app/api/v1/tokens/3313be4b-689c-4319-86d4-bd3fe33dd7dd
+---- API NOK: 401 - https://staging-upexbunkai.vercel.app/api/v1/projects/0fe6b7ba-20ef-4486-a7e4-16c7572adee3/modules
+✅ [BK-558] rejectRevokedTokenWithInvalidMessage - PASS (208ms)

@@ -1,0 +1,4 @@
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/bugs
+---- API NOK: 422 - https://staging-upexbunkai.vercel.app/api/v1/bugs/85091f6a-7f6a-462f-86da-7b3680dd5868/status
+✅ [BK-478] rejectStatusSkip - PASS (289ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/85091f6a-7f6a-462f-86da-7b3680dd5868
