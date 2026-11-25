@@ -1,0 +1,12 @@
+{
+  "id": "e8d0cdbc-9f33-4aa3-be71-66ea84ee8542",
+  "token": "***",
+  "name": "pat-1795589541647-FXYRaX",
+  "scopes": [
+    "atc:write"
+  ],
+  "workspace_id": null,
+  "expires_at": null,
+  "created_at": "2026-11-25T06:52:21.964908+00:00",
+  "warning": "Store this token now — it cannot be retrieved later."
+}

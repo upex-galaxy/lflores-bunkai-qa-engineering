@@ -1,0 +1,12 @@
+{
+  "acceptance_criterion": {
+    "id": "ba372470-4c9c-4492-b630-5ac86d565ba3",
+    "title": "AC awaiting cov-1795589635431-11m99V",
+    "position": 2,
+    "created_at": "2026-11-25T06:53:56.471519+00:00",
+    "archived_at": null,
+    "description": null,
+    "user_story_id": "f7363851-944f-4fe5-be32-ee654961464c",
+    "archive_batch_id": null
+  }
+}

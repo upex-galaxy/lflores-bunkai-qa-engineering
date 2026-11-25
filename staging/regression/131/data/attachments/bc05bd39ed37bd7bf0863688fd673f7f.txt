@@ -1,7 +1,0 @@
----- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
----- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/workspaces/18a65b3b-6f03-478a-93b3-b7a3ae518d40/invites
----- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/tokens
----- API NOK: 403 - https://staging-upexbunkai.vercel.app/api/v1/workspaces/18a65b3b-6f03-478a-93b3-b7a3ae518d40/invites/95e53a1a-5e74-424b-8488-b583133d9e0a
-✅ [BK-548] rejectRevokeInviteWithoutAdminScope - PASS (357ms)
----- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/workspaces/18a65b3b-6f03-478a-93b3-b7a3ae518d40/invites
----- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/workspaces/18a65b3b-6f03-478a-93b3-b7a3ae518d40/invites/95e53a1a-5e74-424b-8488-b583133d9e0a
