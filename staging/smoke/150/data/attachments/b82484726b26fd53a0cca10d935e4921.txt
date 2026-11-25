@@ -1,0 +1,8 @@
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/tokens
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/tokens
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/workspaces/6646f244-a28c-441e-8486-9af33bdb5c11/coverage
+---- API NOK: 403 - https://staging-upexbunkai.vercel.app/api/v1/workspaces/6646f244-a28c-441e-8486-9af33bdb5c11/coverage
+✅ [BK-873] gateCoverageByPatScope - PASS (466ms)
+---- API OK: 204 - https://staging-upexbunkai.vercel.app/api/v1/tokens/11d67e2d-b3e3-48b3-8515-a1f2e0f0bd29
+---- API OK: 204 - https://staging-upexbunkai.vercel.app/api/v1/tokens/5e73fba3-7a9c-4b2e-9f74-0e6ee8c760a2

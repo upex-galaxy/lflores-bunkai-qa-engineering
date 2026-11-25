@@ -1,0 +1,581 @@
+{
+  "items": [
+    {
+      "id": "e1d566fb-135a-40d5-9794-b8c7241eec60",
+      "entity_type": "test",
+      "action": "test.created",
+      "action_label": "created a Test",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "gate-fixture-test-1795604249904-XLAztx",
+        "entity_id": "81ee3600-b76e-40c9-a936-96fd2b616402"
+      },
+      "payload": {
+        "title": "gate-fixture-test-1795604249904-XLAztx"
+      },
+      "created_at": "2026-11-25T10:57:30.16658+00:00"
+    },
+    {
+      "id": "940e5497-9f1c-4b23-afd0-d0fbb7e8db15",
+      "entity_type": "atc",
+      "action": "atc.created",
+      "action_label": "created an ATC",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "gate-fixture-atc-1795604249590-9d7CZb",
+        "entity_id": "4e50b4fd-9372-482c-8ffc-693bd407dcdc"
+      },
+      "payload": {
+        "title": "gate-fixture-atc-1795604249590-9d7CZb"
+      },
+      "created_at": "2026-11-25T10:57:29.827932+00:00"
+    },
+    {
+      "id": "78a2dd4e-053d-4d39-8d73-9a508fb19897",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "cccefd87-473a-43f9-8a3e-6e7d4945da86"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-11-25T10:57:24.371778+00:00"
+    },
+    {
+      "id": "a299ece3-4791-439d-9b71-b627ebbc0451",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "closed this defect",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "74cc7906-5bc9-49ae-90a6-b39611096226"
+      },
+      "payload": {
+        "status": "closed",
+        "previous_status": "resolved",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-11-25T10:57:23.40522+00:00"
+    },
+    {
+      "id": "7509efd6-04ce-484b-8fde-74f741f10f9f",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to resolved",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "74cc7906-5bc9-49ae-90a6-b39611096226"
+      },
+      "payload": {
+        "status": "resolved",
+        "previous_status": "in_progress",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-11-25T10:57:23.233239+00:00"
+    },
+    {
+      "id": "d668284a-5362-4a43-82fc-4ad88803d33e",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "74cc7906-5bc9-49ae-90a6-b39611096226"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-11-25T10:57:22.981617+00:00"
+    },
+    {
+      "id": "60109d5f-ca3f-444c-896c-cf4918f4dd87",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "99290c1e-7af8-4f89-ab7f-a9504b1d81ff"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-11-25T10:57:22.123906+00:00"
+    },
+    {
+      "id": "3e62ebbc-39ed-4a35-9a1d-498846d8c951",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to resolved",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "878ad8fe-de75-4e90-badd-f7ad94c6fec0"
+      },
+      "payload": {
+        "status": "resolved",
+        "previous_status": "in_progress",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-11-25T10:57:21.260887+00:00"
+    },
+    {
+      "id": "194b7784-8851-43e7-a10c-675cc0b7bbf9",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "878ad8fe-de75-4e90-badd-f7ad94c6fec0"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-11-25T10:57:21.092762+00:00"
+    },
+    {
+      "id": "604b95a1-6767-48ec-917f-a6c03299cec5",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "894e2851-762b-4211-b79a-4c0eacfe1187"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-11-25T10:57:20.148825+00:00"
+    },
+    {
+      "id": "3c63f6d4-192b-41b9-9172-4f2aa8983df2",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "closed this defect",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "6d35c64d-cde0-4073-9bc7-bfc7b737c710"
+      },
+      "payload": {
+        "status": "closed",
+        "previous_status": "resolved",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "created_at": "2026-11-25T10:57:17.946322+00:00"
+    },
+    {
+      "id": "4eab10b7-01c4-4d73-8a1f-f49aff94b1ed",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to resolved",
+      "actor": {
+        "user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "email": "bk264-member2@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "6d35c64d-cde0-4073-9bc7-bfc7b737c710"
+      },
+      "payload": {
+        "status": "resolved",
+        "previous_status": "in_progress",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "created_at": "2026-11-25T10:57:17.750167+00:00"
+    },
+    {
+      "id": "507e7a0a-415e-4f70-ba24-cd088cbc299c",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "email": "bk264-member2@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "6d35c64d-cde0-4073-9bc7-bfc7b737c710"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "created_at": "2026-11-25T10:57:17.556682+00:00"
+    },
+    {
+      "id": "75b2adbd-5682-48eb-a40b-66508b5a5ffb",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bk264-member2@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "6d35c64d-cde0-4073-9bc7-bfc7b737c710"
+      },
+      "payload": {
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-11-25T10:57:17.336225+00:00"
+    },
+    {
+      "id": "e55f1039-e854-460b-b210-e08b2c223696",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "email": "bk264-member2@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "ae1469ba-dba6-4ea3-807f-c829295d8fa8"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a"
+      },
+      "created_at": "2026-11-25T10:57:16.606292+00:00"
+    },
+    {
+      "id": "b9825da4-0661-44b4-98bf-d51fea896f4a",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bk264-member2@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "ae1469ba-dba6-4ea3-807f-c829295d8fa8"
+      },
+      "payload": {
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-11-25T10:57:16.351259+00:00"
+    },
+    {
+      "id": "beef2bff-e8af-46a3-8501-6ed7ad555129",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bk264-member2@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "22b51972-edd1-469b-a447-6b52af6d594e"
+      },
+      "payload": {
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-11-25T10:57:15.548491+00:00"
+    },
+    {
+      "id": "68c1e1fc-6d0f-4a39-9547-b4ab13ebf39f",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to luis-flores-qa@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "65dc6358-9282-4a34-842d-9f665b33e4f4"
+      },
+      "payload": {
+        "assignee_user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-11-25T10:57:14.698408+00:00"
+    },
+    {
+      "id": "b2509b05-bfd7-4c9f-b43d-30293b7f1266",
+      "entity_type": "bug",
+      "action": "bug.assigned",
+      "action_label": "assigned this defect to bk264-member2@ambuusteln.resend.app",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "ac178d22-22c2-4d71-a175-a440de8a8c52"
+      },
+      "payload": {
+        "assignee_user_id": "a8548f64-1aa8-43b1-9a5b-c44b27c4782a",
+        "previous_assignee_user_id": null
+      },
+      "created_at": "2026-11-25T10:57:14.032802+00:00"
+    },
+    {
+      "id": "aa13869c-86f9-4053-8390-24d0a605f820",
+      "entity_type": "run",
+      "action": "run.finished",
+      "action_label": "finished a run",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a run",
+        "entity_id": "056fdc60-9d00-4d52-b21b-c241224777dc"
+      },
+      "payload": {
+        "verdict": "passed",
+        "skipped_steps": 0
+      },
+      "created_at": "2026-11-25T06:53:59.375943+00:00"
+    },
+    {
+      "id": "ce963e01-fcbb-4b50-8cc9-ec97a8af67a7",
+      "entity_type": "test",
+      "action": "test.created",
+      "action_label": "created a Test",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "Test executed cov-1795589635431-11m99V",
+        "entity_id": "60354eae-7cfd-4854-ad83-3b81f43e6752"
+      },
+      "payload": {
+        "title": "Test executed cov-1795589635431-11m99V"
+      },
+      "created_at": "2026-11-25T06:53:58.957514+00:00"
+    },
+    {
+      "id": "7e3e2053-7fd5-46c1-b362-6ea4a6e0ed17",
+      "entity_type": "atc",
+      "action": "atc.created",
+      "action_label": "created an ATC",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "ATC awaiting cov-1795589635431-11m99V",
+        "entity_id": "dedb363e-6a5b-46b6-86bb-8142df4881b6"
+      },
+      "payload": {
+        "title": "ATC awaiting cov-1795589635431-11m99V"
+      },
+      "created_at": "2026-11-25T06:53:58.603292+00:00"
+    },
+    {
+      "id": "0adb59cb-d810-429d-830a-7ff371064c50",
+      "entity_type": "atc",
+      "action": "atc.created",
+      "action_label": "created an ATC",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "ATC executed cov-1795589635431-11m99V",
+        "entity_id": "52eb1b8b-633e-4798-b710-e8e9a79665e8"
+      },
+      "payload": {
+        "title": "ATC executed cov-1795589635431-11m99V"
+      },
+      "created_at": "2026-11-25T06:53:56.931404+00:00"
+    },
+    {
+      "id": "b8166a0d-fe7b-44c4-b3d2-ec25fbfc4ad1",
+      "entity_type": "test",
+      "action": "test.created",
+      "action_label": "created a Test",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "gate-fixture-test-1795589551719-Yrf8W8",
+        "entity_id": "0b94cf35-e694-4052-b9a2-f4fdf5d41049"
+      },
+      "payload": {
+        "title": "gate-fixture-test-1795589551719-Yrf8W8"
+      },
+      "created_at": "2026-11-25T06:52:32.039767+00:00"
+    },
+    {
+      "id": "fa693cf0-2ab7-4430-a348-d6fa2ced807c",
+      "entity_type": "atc",
+      "action": "atc.created",
+      "action_label": "created an ATC",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "gate-fixture-atc-1795589551372-T71eUY",
+        "entity_id": "d6ae0623-b724-489b-bed9-b4bee292f226"
+      },
+      "payload": {
+        "title": "gate-fixture-atc-1795589551372-T71eUY"
+      },
+      "created_at": "2026-11-25T06:52:31.644327+00:00"
+    },
+    {
+      "id": "0ba78fb8-dab3-4b73-ae59-cff2087a1e18",
+      "entity_type": "test",
+      "action": "test.created",
+      "action_label": "created a Test",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "gate-fixture-test-1795589548382-cbIdLL",
+        "entity_id": "01129e78-1c7f-4b48-956b-f7ab197f7566"
+      },
+      "payload": {
+        "title": "gate-fixture-test-1795589548382-cbIdLL"
+      },
+      "created_at": "2026-11-25T06:52:28.666163+00:00"
+    },
+    {
+      "id": "14514551-7c7f-4470-846d-8c6a119da373",
+      "entity_type": "atc",
+      "action": "atc.created",
+      "action_label": "created an ATC",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "gate-fixture-atc-1795589547913-2Je5xX",
+        "entity_id": "e32d4d60-a495-4282-8fc9-b27cc60fe160"
+      },
+      "payload": {
+        "title": "gate-fixture-atc-1795589547913-2Je5xX"
+      },
+      "created_at": "2026-11-25T06:52:28.298992+00:00"
+    },
+    {
+      "id": "7834e8d3-bafa-4fd8-bf69-4f5da7f9880b",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to in progress",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "724cc351-82b9-4022-abe6-eae3d590f7fb"
+      },
+      "payload": {
+        "status": "in_progress",
+        "previous_status": "open",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-11-25T06:52:21.055701+00:00"
+    },
+    {
+      "id": "4cd94c52-13b3-41d9-ad9c-586fae28cf1d",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "closed this defect",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "0b1381e4-ef2e-4797-9e22-9e44306f94a5"
+      },
+      "payload": {
+        "status": "closed",
+        "previous_status": "resolved",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-11-25T06:52:19.899826+00:00"
+    },
+    {
+      "id": "0c626cdd-17c8-4ee2-b339-efb0e1edd324",
+      "entity_type": "bug",
+      "action": "bug.status_changed",
+      "action_label": "moved this defect to resolved",
+      "actor": {
+        "user_id": "01166a16-607b-4fd2-b72e-288672ff1dd5",
+        "email": "luis-flores-qa@ambuusteln.resend.app"
+      },
+      "item": {
+        "label": "a bug",
+        "entity_id": "0b1381e4-ef2e-4797-9e22-9e44306f94a5"
+      },
+      "payload": {
+        "status": "resolved",
+        "previous_status": "in_progress",
+        "assignee_user_id": null
+      },
+      "created_at": "2026-11-25T06:52:19.63177+00:00"
+    }
+  ],
+  "next_cursor": "MjAyNi0xMS0yNVQwNjo1MjoxOS42MzE3NyswMDowMHwwYzYyNmNkZC0xN2M4LTRlZTItYjMzOS1lZmIwZTFlZGQzMjQ"
+}

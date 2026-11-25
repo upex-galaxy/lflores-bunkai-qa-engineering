@@ -1,0 +1,8 @@
+{
+  "name": "pat-1795604274429-d2wdHv",
+  "scopes": [
+    "atc:read",
+    "atc:write",
+    "run:execute"
+  ]
+}
