@@ -1,0 +1,8 @@
+{
+  "name": "pat-1795675458833-bFrTFa",
+  "scopes": [
+    "atc:read",
+    "atc:write",
+    "run:execute"
+  ]
+}

@@ -1,0 +1,6 @@
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/workspaces
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/workspaces/164ccc45-69e9-429a-a139-1cfdd532d29a/invites
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/invites/accept
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me/active-workspace
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/workspaces/164ccc45-69e9-429a-a139-1cfdd532d29a/membership
+✅ [BK-680] allowCookieSessionOnSessionOnlyRoutes - PASS (620ms)

@@ -1,0 +1,6 @@
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/bugs
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/dbd4b8af-0a31-45da-8d25-eac40f5a7b64/assign
+✅ [BK-477] assignBugToEligibleMember - PASS (271ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/dbd4b8af-0a31-45da-8d25-eac40f5a7b64/assign
+✅ [BK-483] reassignBugToDifferentMember - PASS (276ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/dbd4b8af-0a31-45da-8d25-eac40f5a7b64

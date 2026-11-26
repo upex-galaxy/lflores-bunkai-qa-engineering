@@ -1,0 +1,12 @@
+{
+  "acceptance_criterion": {
+    "id": "559ca819-603e-44e1-9af2-2a9ed6170c3a",
+    "title": "AC uncovered cov-1795675513883-CXa26u",
+    "position": 3,
+    "created_at": "2026-11-26T06:45:15.873327+00:00",
+    "archived_at": null,
+    "description": null,
+    "user_story_id": "47e235f9-fc9c-45a4-a47d-d11d6f61f8fa",
+    "archive_batch_id": null
+  }
+}
