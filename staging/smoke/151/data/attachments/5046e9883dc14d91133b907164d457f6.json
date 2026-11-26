@@ -1,0 +1,8 @@
+{
+  "name": "pat-1795689195757-rN65i1",
+  "scopes": [
+    "atc:read",
+    "atc:write",
+    "run:execute"
+  ]
+}

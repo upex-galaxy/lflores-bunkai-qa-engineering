@@ -1,0 +1,8 @@
+{
+  "name": "pat-1795689195082-2cfnvu",
+  "scopes": [
+    "atc:read",
+    "atc:write",
+    "run:execute"
+  ]
+}

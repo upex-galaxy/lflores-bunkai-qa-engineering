@@ -1,0 +1,34 @@
+{
+  "story": {
+    "id": "0737e106-0dc8-42d4-a56a-2cb14e1dd186",
+    "title": "sweep-us-1795689153909-Rb8ouu",
+    "status": "draft",
+    "archived_at": null
+  },
+  "criteria": [
+    {
+      "id": "aa0e2ec5-528f-417d-8fdd-2f3f5ed3a9d9",
+      "atcs": [
+        {
+          "id": "4c24cf5b-779b-4dc7-acc8-3e27d40bd5f5",
+          "slug": "defect-triage/atc-fc9ad51d",
+          "test": {
+            "id": "f4cf2a1c-4725-4eab-8b8a-2379416dccd4",
+            "title": "gate-fixture-test-1795689174425-imuX9f",
+            "archived_at": null
+          },
+          "layer": "API",
+          "title": "gate-fixture-atc-1795689174092-Yyuihf",
+          "module": {
+            "id": "589e386c-4220-4dbd-9519-66cf19f40c75",
+            "name": "Defect Triage"
+          },
+          "defects": [],
+          "latest_run": null,
+          "archived_at": null
+        }
+      ],
+      "title": "gate-fixture-ac-1795689173903-xXWrPZ"
+    }
+  ]
+}
