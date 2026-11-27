@@ -1,0 +1,3 @@
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/bugs
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/f1e3baba-fb84-4760-9be2-b039884103ec/assign
+✅ [BK-477] assignBugToEligibleMember - PASS (381ms)

@@ -1,3 +1,0 @@
----- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
----- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/activity
-✅ [BK-681] allowBrowserSessionOnGatedRouteNoScopeCheck - PASS (198ms)

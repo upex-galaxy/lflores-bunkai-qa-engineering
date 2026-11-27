@@ -1,5 +1,0 @@
----- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
----- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/bugs
----- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/571c6391-271b-4ef4-abd4-2d9ce7e75a90/assign
----- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/activity
-✅ [BK-487] attributeActionToActualCaller - PASS (420ms)

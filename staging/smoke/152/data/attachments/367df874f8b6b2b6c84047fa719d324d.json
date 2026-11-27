@@ -1,0 +1,12 @@
+{
+  "id": "3c4e392d-c2a1-4fc9-9ba5-56bd92e31e25",
+  "token": "***",
+  "name": "pat-session-lifecycle-1795775876696-lY2QVq",
+  "scopes": [
+    "atc:read"
+  ],
+  "workspace_id": null,
+  "expires_at": null,
+  "created_at": "2026-11-27T10:37:56.953172+00:00",
+  "warning": "Store this token now — it cannot be retrieved later."
+}
