@@ -1,0 +1,12 @@
+{
+  "id": "7db8f08f-eea8-4f10-9eb7-bd9cb4021fd4",
+  "token": "***",
+  "name": "pat-1795761289803-bsHX52",
+  "scopes": [
+    "run:execute"
+  ],
+  "workspace_id": null,
+  "expires_at": null,
+  "created_at": "2026-11-27T06:34:50.065194+00:00",
+  "warning": "Store this token now — it cannot be retrieved later."
+}

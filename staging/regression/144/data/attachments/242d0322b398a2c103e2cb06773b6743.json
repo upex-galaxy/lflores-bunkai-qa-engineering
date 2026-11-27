@@ -1,0 +1,15 @@
+{
+  "title": "ATC awaiting cov-1795761396669-qT88wX",
+  "module_id": "589e386c-4220-4dbd-9519-66cf19f40c75",
+  "user_story_id": "50f8e6c3-da18-43bc-9704-7d8504e3b8fe",
+  "acceptance_criterion_ids": [
+    "8f02e9cc-624c-4b43-b8ea-d994e26a7e9c"
+  ],
+  "layer": "API",
+  "steps": [
+    {
+      "position": 1,
+      "content": "Seeded by BK-864 to fix the AC in a known coverage state"
+    }
+  ]
+}

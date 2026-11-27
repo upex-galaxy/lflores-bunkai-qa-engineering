@@ -1,0 +1,12 @@
+{
+  "test_id": "8004b619-1515-41ac-8b28-0227fd43007a",
+  "environment": "sweep-env-1794482677515-r23t4K",
+  "verdict": "passed",
+  "duration_seconds": 1,
+  "steps": [
+    {
+      "position": 1,
+      "result": "pass"
+    }
+  ]
+}
