@@ -1,0 +1,269 @@
+# ============================================
+# KATA Architecture - Unit Test Pipeline
+# ============================================
+# Purpose: Run the boilerplate's own unit tests (`bun test`: cli/, scripts/,
+# tests/utils/, packages/; `bun run skills:test`: .agents/skills/, which a bare
+# `bun test` skips) and the repo:check gates that build.yml does not run, on
+# every push. Before this workflow those tests gated
+# only on a laptop. Job ConsumerMatrix syncs one throwaway downstream project
+# per harness shape from the pushed commit and runs a project's gates there. The Playwright suites are not here: bunfig.toml keeps
+# `bun test` off tests/e2e/ and tests/integration/.
+
+name: Unit Tests
+run-name: ${{ github.actor }} triggered Unit Tests on ${{ github.ref_name }}
+
+on:
+  push:
+    # Every branch. Naming only branches leaves tag pushes out: a tag points at
+    # a commit whose branch push already ran.
+    branches:
+      - '**'
+  # Every PR, whatever its base (an integration trunk or a stacked PR), like build.yml.
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  # A superseded run on a branch is cancelled: it publishes nothing. On main
+  # every commit gets its own group, so no run there is ever cancelled. Work
+  # lands on main by direct push, and a shared group would cancel a landed
+  # commit's run: `cancel-in-progress: false` alone is not enough, because a
+  # group keeps one pending run and cancels it when a newer one arrives.
+  group: unit-tests-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: true
+
+jobs:
+  UnitTests:
+    name: bun test + repo gates
+    # A PR from this repository already got the push run on the same commit,
+    # and GitHub shows that run on the PR. Only a fork PR (no push run here)
+    # needs its own. A manual dispatch always runs.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          # Full history: scripts/ui-up-e2e.test.ts builds its bun sync fixture
+          # from HEAD~30 and SKIPS on a shallow clone, which would leave the
+          # updater's end-to-end test out of the gate without a word.
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Boilerplate checkout?
+        id: upstream
+        run: |
+          enforced=$(bun -e "import { contractsEnforced } from './scripts/lib/doc-contracts.ts'; console.log(contractsEnforced(process.cwd()))")
+          echo "enforced=$enforced" >> "$GITHUB_OUTPUT"
+          if [ "$enforced" != "true" ]; then
+            echo "unit-tests: inert outside the boilerplate's own checkout (contractsEnforced, scripts/lib/doc-contracts.ts)"
+          fi
+        # Several unit tests assert the boilerplate's own files (the maintainer
+        # project.yaml, the scaffolder under packages/), so a project created
+        # from the template would go red on day one. Same test as the
+        # documentation contracts (ADR-0016): upstream package name AND the
+        # maintainer sentinel. Every later step runs only when it holds.
+
+      - name: Install Chromium
+        if: steps.upstream.outputs.enforced == 'true'
+        run: bun run pw:install
+        # scripts/ui-page.test.ts drives the installer page in a real browser
+        # and skips when Chromium is missing.
+
+      - name: Install Pillow
+        if: steps.upstream.outputs.enforced == 'true'
+        run: python3 -m pip install --user pillow
+        # The evidence-artifact build.py tests (run by bun test) skip when
+        # Python 3.9+ or Pillow is missing.
+
+      - name: Repo Gates
+        if: steps.upstream.outputs.enforced == 'true'
+        run: |
+          bun run format:check
+          bun run vars:check
+          bun run vars:schema:check
+          bun run skills:registry:check
+          bun run shared:check
+          bun run agents:schema:check
+          bun run kata:manifest:check
+          bun run vars:env:check
+          bun run board:check
+        # The repo:check pieces no other workflow runs. Left out on purpose:
+        # types, lint, docs and skills (build.yml runs them), agents:compat:check
+        # (it checks the gitignored .claude/skills alias a workstation
+        # generates) and git:policy verify (needs a host session; without one it
+        # warns and exits 0, so it would gate nothing).
+
+      - name: Unit Tests
+        if: steps.upstream.outputs.enforced == 'true'
+        run: bun test
+
+      - name: Skill Tests
+        if: steps.upstream.outputs.enforced == 'true'
+        run: bun run skills:test
+        # The bare `bun test` above skips dot directories, so .agents/skills runs by path.
+
+  ContractIds:
+    name: contract ids
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      ids: ${{ steps.ids.outputs.ids }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Contract Ids
+        id: ids
+        env:
+          EDD_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -f scripts/edd.ts ]; then
+            ids=$(bun scripts/edd.ts check --list)
+            echo "ids=$ids" >> "$GITHUB_OUTPUT"
+          else
+            echo 'ids=[]' >> "$GITHUB_OUTPUT"
+          fi
+
+  ContractChecks:
+    # One check per ci id of the evidence contract (evidence.static in
+    # .agents/project.yaml), named by the id so a ruleset can require it. The
+    # ids and each command come from the contract at the base commit, not from
+    # this file. The only job-level skip is a contract with no ci id: a skipped
+    # job reports success to a required check, and then none is required.
+    needs: ContractIds
+    if: needs.ContractIds.outputs.ids != '[]'
+    name: ${{ matrix.id }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        id: ${{ fromJSON(needs.ContractIds.outputs.ids) }}
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Workstation Alias
+        if: matrix.id == 'repo-gates'
+        run: |
+          if [ -d .agents/skills ] && [ ! -e .claude/skills ]; then
+            mkdir -p .claude
+            ln -s ../.agents/skills .claude/skills
+          fi
+        # repo:check runs agents:compat:check, which expects the .claude/skills
+        # symlink a workstation generates (gitignored). Only the link is made
+        # here; `bun run agents:compat` would also repair what the check exists
+        # to catch.
+
+      - name: Contract Check
+        env:
+          CHECK_ID: ${{ matrix.id }}
+          EDD_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -f scripts/edd.ts ]; then
+            bun scripts/edd.ts check "$CHECK_ID"
+          else
+            echo "scripts/edd.ts is not in this checkout: $CHECK_ID has nothing to run"
+          fi
+
+  UpstreamGate:
+    name: boilerplate checkout?
+    # Same trigger rule as UnitTests: push runs, plus fork PRs.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      enforced: ${{ steps.upstream.outputs.enforced }}
+    # One small job decides for the matrix, so a project (the installer
+    # delivers this workflow) starts no matrix runner at all.
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Boilerplate checkout?
+        id: upstream
+        run: |
+          enforced=$(bun -e "import { contractsEnforced } from './scripts/lib/doc-contracts.ts'; console.log(contractsEnforced(process.cwd()))")
+          echo "enforced=$enforced" >> "$GITHUB_OUTPUT"
+          if [ "$enforced" != "true" ]; then
+            echo "consumer-matrix: inert outside the boilerplate's own checkout (contractsEnforced, scripts/lib/doc-contracts.ts)"
+          fi
+
+  ConsumerMatrix:
+    name: consumer ${{ matrix.leg }}
+    needs: UpstreamGate
+    if: needs.UpstreamGate.outputs.enforced == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      # Every leg reports: one harness shape failing says nothing about the others.
+      fail-fast: false
+      matrix:
+        leg: [all, claude-only, no-pi-legacy, codex-only, legacy-updater]
+    # One downstream project per harness shape, synced from this commit with
+    # `bun sync --auto` and held to the gates a project runs, so a change that
+    # breaks consumers (a test that assumes a harness, a synced page citing a
+    # file that does not travel) is caught here instead of in every project.
+    # `legacy-updater` runs the first sync of a project made before the
+    # boilerplate's tests stopped travelling: its old updater runs first.
+    # The legs live in packages/consumer-fixture/run-leg.ts.
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          # Full history: the fixture rolls the consumer back 30 commits, and
+          # the legacy leg checks out an older commit.
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Consumer Leg
+        run: bun packages/consumer-fixture/run-leg.ts --leg ${{ matrix.leg }} --out "$RUNNER_TEMP/consumer-fixture"
