@@ -39,6 +39,8 @@ harnesses: [claude]
 qa:
   formal_blocked_gate: true # When true and the substrate exposes a `blocked` story status, FAILED stories dispatch `defect_reported` (in_test -> blocked). When false (or no `blocked` slug), the skill leaves the story in `in_test` with the linked bug — non-strict fallback. See sprint-testing/references/sprint-orchestration.md Briefing 4 Step 5.
   qa_artifact_label: QA-Artifact # Jira label carried by every QA process epic (Master Test Plan, Test Repository, Test Artifacts, Defect Management) so they're identifiable without hardcoding keys. Read by scripts/sync-jira-issues.ts (falls back to this same default if unset). See defect-management-doctrine.md Part 4.
+  deferral:
+    label: not-fully-tested # Jira label on a Story signed off with in-scope cases an external block left unobserved, until every deferred case PASSED. No spaces. See sprint-testing/references/shift-right-deferral.md.
   # QA process epics — buckets that hold QA artifacts so they never pollute product epics/roadmap.
   # FOUR QA-process epics form the QA-governance cluster: Test Plans parent to `master_test_plan_epic`;
   # Test (TC) issues parent to `test_repository_epic`; Test Executions/Preconditions/Test Sets parent to
@@ -154,6 +156,7 @@ git_strategy:
         pattern: '*.md' # every staged file in the change set must match (doc-only — no code, no config, no scripts)
         then: allowed # match -> push straight to main
         else: forbidden # any non-.md file in the same change set -> falls back to the base policy (branch + PR)
+    merge_mode: manual # added 2026-11-28 per user decision: the agent stops at PR creation and a person merges; auto needs main's host protection prepared first (git:policy apply)
     admin_bypass: true # team POLICY: may a repo admin bypass PR/protection for urgent changes? actual capability still depends on the GitHub user's role — the skill re-confirms at runtime
     require_pr_reviews: 0 # null | 0 | N — min approvals before merge to a protected branch (informational)
     accepted_divergences: # git:policy verify findings intentionally left open — see .claude/skills/git-flow-master/references/ruleset-parity.md §2b
@@ -173,6 +176,15 @@ git_strategy:
           changes) but the host ruleset does not currently grant it. Same first-surfaced-2026-08-22
           situation as above — accepted until the team decides whether to configure the bypass on
           GitHub or drop the declared intent.
+      - field: repo.allowed_merge_methods
+        enforced: allow_merge_commit true, allow_squash_merge true, allow_rebase_merge true (repo-level toggles; the main ruleset's pull_request rule allows only merge)
+        accepted: 2026-11-28
+        reason: >
+          Surfaced by git:policy verify after the 293eb51 sync added the repo-level check. The
+          effective gate is the ruleset on main, which already allows only merge commits
+          (verified through rules/branches/main). Correcting the repo toggles with
+          `git:policy apply` also loosens other protections and needs --allow-loosening, so it is
+          left to a separate owner decision.
   branch_prefixes:
     precedence: [feat, fix, refactor, test, docs, chore]
     naming_with_key: '{prefix}/{ISSUE-KEY}-{kebab-slug}'
