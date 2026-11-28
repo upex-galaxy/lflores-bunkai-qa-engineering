@@ -107,6 +107,9 @@ import { parse as parseYaml } from 'yaml';
 import { classifyProjectYaml, SCHEMA_FILE, seedFromSchema } from '../cli/lib/agents-schema.ts';
 import { boardStatusPlan, defaultBoardJql, fillBoardIfValid, loadSyncedCatalogs } from '../cli/lib/board-setup.ts';
 import { currentBuckets } from '../cli/lib/sprint-source/suggest-statuses.ts';
+import { remoteSlug } from './lib/edd/git.ts';
+import { commitSigners, seedAllowedSigners, seedWarns } from './lib/edd/signers.ts';
+import { untouchedCopy } from './lib/edd/verify.ts';
 
 // ============================================================================
 // CONSTANTS
@@ -1402,10 +1405,10 @@ function gitOrigin(): string | null {
  * nothing of this project's is lost. Asks once; `--non-interactive` needs
  * `--reseed` as its consent; a refusal exits 1 before anything else runs.
  */
-async function reseedCopiedTemplate(flags: CliFlags): Promise<void> {
-  if (!existsSync(PROJECT_YAML_PATH)) { return; }
+async function reseedCopiedTemplate(flags: CliFlags): Promise<boolean> {
+  if (!existsSync(PROJECT_YAML_PATH)) { return false; }
   const current = readFileSync(PROJECT_YAML_PATH, 'utf8');
-  if (classifyProjectYaml(current, gitOrigin()) !== 'copied-template') { return; }
+  if (classifyProjectYaml(current, gitOrigin()) !== 'copied-template') { return false; }
 
   const schemaPath = join(REPO_ROOT, SCHEMA_FILE);
   const seeded = existsSync(schemaPath) ? seedFromSchema(readFileSync(schemaPath, 'utf8')) : null;
@@ -1417,7 +1420,7 @@ async function reseedCopiedTemplate(flags: CliFlags): Promise<void> {
   log.warn('.agents/project.yaml is the boilerplate maintainers\' own copy (GitHub "Use this template" carried it over): their project, their Jira, their standing push authorization.');
   if (flags.dryRun) {
     log.info(`Dry run: would replace it with the blank template from ${SCHEMA_FILE}. Nothing written.`);
-    return;
+    return false;
   }
   let proceed = flags.reseed;
   if (!proceed && !flags.nonInteractive) {
@@ -1431,6 +1434,7 @@ async function reseedCopiedTemplate(flags: CliFlags): Promise<void> {
   }
   writeFileSync(PROJECT_YAML_PATH, seeded, 'utf8');
   log.success(`Reseeded ${relative(process.cwd(), PROJECT_YAML_PATH)} from ${SCHEMA_FILE}: every field is null, git_strategy is inherited.`);
+  return true;
 }
 
 // ============================================================================
@@ -1451,7 +1455,18 @@ async function main(): Promise<void> {
     process.exit(1);
   });
 
-  await reseedCopiedTemplate(flags);
+  const reseeded = await reseedCopiedTemplate(flags);
+  if (!flags.dryRun) {
+    const copy = untouchedCopy(REPO_ROOT, 'HEAD', remoteSlug(REPO_ROOT));
+    const seed = seedAllowedSigners(REPO_ROOT, { replace: reseeded || copy, copy });
+    if (seedWarns(seed)) { log.warn(seed.message); }
+    else { log.info(seed.message); }
+    if (copy && seed.status === 'written') {
+      const sha = commitSigners(REPO_ROOT);
+      if (sha) { log.info(`Committed .agents/edd/allowed_signers on its own as ${sha.slice(0, 12)}.`); }
+      else { log.warn('The commit of .agents/edd/allowed_signers failed: commit it on its own before anything else.'); }
+    }
+  }
   const loaded = loadProjectYaml();
 
   if (flags.reset) {

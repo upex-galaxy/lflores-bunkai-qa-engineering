@@ -212,6 +212,128 @@ updater:
   declined_denies: [] # upstream permissions.deny entries NOT to append to .claude/settings.json (e.g. ['Bash(env)']); see .agents/project.schema.yaml
   declined_hooks: [] # upstream hook commands NOT to append to .claude/settings.json; see .agents/project.schema.yaml
 
+evidence:
+  include: []
+  static:
+    - { id: format, cmd: bun run format:check, where: [pre-push, ci] }
+    - { id: lint, cmd: bun run lint:check, where: [pre-push, ci] }
+    - { id: types, cmd: bun run types:check, where: [pre-push, ci] }
+    - { id: unit, cmd: bun test, where: [pre-push, ci] }
+    - { id: repo-gates, cmd: bun run repo:check, where: [ci] }
+  agentic:
+    - id: board-screens
+      kind: screenshots
+      tool: playwright-cli
+      envs: [local]
+      min_depth: light
+      paths: ['cli/sprint-board/app/**']
+    - id: gate-tests
+      kind: test-run
+      tool: bun
+      envs: [local]
+      min_depth: standard
+      paths:
+        [
+          '.github/workflows/**',
+          '.husky/**',
+          'scripts/edd.ts',
+          'scripts/lib/edd/**',
+          'scripts/git-policy.ts',
+          '.agents/edd/**',
+          'CODEOWNERS',
+          '.agents/skills/*/evidence.yaml',
+          '**/eslint.config*',
+          'kata-eslint-plugin.js',
+          '**/tsconfig*.json',
+          '**/.prettierrc*',
+          '**/prettier.config.*',
+          '**/.prettierignore',
+          '**/.editorconfig',
+          '**/bunfig.toml',
+          '**/.oxlintrc*.json',
+          '.agents/project.yaml',
+          '**/package.json',
+          '**/package.yaml',
+        ]
+    - id: changed-specs
+      kind: test-run
+      tool: playwright
+      envs: [local, staging]
+      min_depth: standard
+      paths: ['tests/**', 'api/**', 'playwright.config.ts']
+    - id: evidence-page-screens
+      kind: screenshots
+      tool: playwright-cli
+      envs: [local]
+      min_depth: light
+      paths: ['cli/evidence-page/**']
+  depth:
+    default: none
+    rules:
+      - {
+          paths:
+            [
+              '.github/workflows/**',
+              '.husky/**',
+              'scripts/edd.ts',
+              'scripts/lib/edd/**',
+              'scripts/git-policy.ts',
+              '.agents/edd/**',
+              'CODEOWNERS',
+              '.agents/skills/*/evidence.yaml',
+              '**/eslint.config*',
+              'kata-eslint-plugin.js',
+              '**/tsconfig*.json',
+              '**/.prettierrc*',
+              '**/prettier.config.*',
+              '**/.prettierignore',
+              '**/.editorconfig',
+              '**/bunfig.toml',
+              '**/.oxlintrc*.json',
+            ],
+          depth: standard,
+        }
+      - { paths: ['**/*.md', 'docs/**', '.agents/instructions/**'], depth: none }
+      - { paths: ['.agents/skills/**'], depth: none }
+      - { paths: ['cli/sprint-board/app/**', 'cli/evidence-page/**'], depth: light }
+      - { paths: ['tests/**', 'api/**'], depth: standard }
+      - { paths: ['tests/components/**', 'tests/fixtures/**', 'playwright.config.ts'], depth: deep }
+  human:
+    paths:
+      - '.github/workflows/**'
+      - '.husky/**'
+      - 'scripts/edd.ts'
+      - 'scripts/lib/edd/**'
+      - 'scripts/git-policy.ts'
+      - '.agents/edd/**'
+      - 'CODEOWNERS'
+      - '.agents/skills/*/evidence.yaml'
+      - '**/eslint.config*'
+      - 'kata-eslint-plugin.js'
+      - '**/tsconfig*.json'
+      - '**/.prettierrc*'
+      - '**/prettier.config.*'
+      - '**/.prettierignore'
+      - '**/.editorconfig'
+      - '**/bunfig.toml'
+      - '**/.oxlintrc*.json'
+    keys:
+      [
+        evidence,
+        git_strategy.strategy,
+        git_strategy.branches,
+        git_strategy.protected,
+        git_strategy.policy,
+      ]
+  review:
+    bot: null
+    max_rounds: 2
+  record:
+    artifact_retention_days: 30
+
+notify:
+  provider: none
+
 checks:
   mcp_parity:
     mode: strict

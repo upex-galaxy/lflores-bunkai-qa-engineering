@@ -194,6 +194,7 @@ const ENV_SCHEMA_FILES = ['.env.schema', '.env.core.schema'];
 const CODEX_FRAMEWORK_FILES = ['hooks.json'];
 const PI_ADAPTER_FILES = ['agentic-qa.js'];
 const PI_CONFIG_FILES = ['mcp.json'];
+export const EDD_WORKFLOW_FILES = ['evidence.yml', 'evidence-push.yml'];
 const CLAUDE_ROOT_CONFIG_FILES = ['settings.json'];
 // The framework helpers under `tests/utils/`: pure logic every project runs as
 // is (outcome classes, the known-defect marker, the Xray JSON body) plus their
@@ -376,6 +377,7 @@ export const COMPONENTS: Component[] = [
   { name: 'orca-config', type: 'file-list', paths: ['.'], files: ORCA_CONFIG_FILES, bootstrapOnly: true },
   { name: 'oxlint-config', type: 'file-list', paths: ['.'], files: OXLINT_CONFIG_FILES, bootstrapOnly: true },
   { name: 'playwright-cli-config', type: 'file-list', paths: ['.playwright'], files: PLAYWRIGHT_CLI_CONFIG_FILES, bootstrapOnly: true },
+  { name: 'edd-workflows', type: 'file-list', paths: ['.github/workflows'], files: EDD_WORKFLOW_FILES, bootstrapOnly: true },
 ];
 
 // --- BOILERPLATE-ONLY FILES (cli/lib/boilerplate-only.ts) ---
@@ -1002,7 +1004,15 @@ export function makeAgentCompatibilityHook(
     sink.step(deferSkillsAlias
       ? 'Revisando superficies de los harnesses (el alias .claude/skills espera al commit de la migración)…'
       : 'Regenerando superficies de los harnesses (alias .claude/skills)…');
-    const repair = repairAgentSurfaces(root, { deferSkillsAlias });
+    let repair: ReturnType<typeof repairAgentSurfaces>;
+    try { repair = repairAgentSurfaces(root, { deferSkillsAlias }); }
+    catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const check = checkAgentCompatibility(root);
+      runFacts.compat = { ...check, ok: false, errors: [message, ...check.errors] };
+      sink.step(`El alias .claude/skills no se pudo reparar: ${message.split('\n')[0]}`);
+      return;
+    }
     runFacts.compat = repair.check;
     runFacts.aliasDeferred = repair.aliasDeferred;
     runFacts.shadowingCommandsMoved = repair.shadowingCommandsMoved;
@@ -1315,6 +1325,19 @@ function makeYamlBackfillHook(
 
 // --- HOOK COMPOSITION ---
 
+export function eddWorkflowsDelivered(summary: Pick<RunSummary, 'applied'>): string[] {
+  const wanted = new Set(EDD_WORKFLOW_FILES.map(f => `.github/workflows/${f}`));
+  return summary.applied.map(a => a.entry.path).filter(p => wanted.has(p));
+}
+
+function makeEddWorkflowsHook(sink: ReportSink): (summary: RunSummary) => Promise<void> {
+  return async (summary: RunSummary): Promise<void> => {
+    for (const p of eddWorkflowsDelivered(summary)) {
+      sink.step(`EDD: delivered ${p} because it was missing; bun sync never overwrites it once it exists.`);
+    }
+  };
+}
+
 /** Run several afterApply hooks in sequence (each isolated; one failure warns, never aborts). */
 function composeHooks(
   sink: ReportSink,
@@ -1426,7 +1449,7 @@ const PROTECTED_WATCHLIST: ProtectedWatchEntry[] = [
   // The reporter and the two helpers that carry project wiring. Their pure
   // neighbours sync through `tests-utils`; these get a drift row with the hunks.
   { path: 'tests/KataReporter.ts', reason: 'the project\'s reporter: merge upstream\'s outcome records (reports/test-outcomes.json, the run id shared with atc_results.json), without which the board never shows an automated result' },
-  { path: 'tests/utils/decorators.ts', reason: 'the @atc decorator adapted per project: merge upstream\'s AtcResult.playwrightTestId and the runtime test.skip() as SKIP' },
+  { path: 'tests/utils/decorators.ts', reason: 'the @atc decorator adapted per project: merge upstream\'s credential masking of step arguments, AtcResult.playwrightTestId and the runtime test.skip() as SKIP' },
   { path: 'tests/utils/jiraSync.ts', reason: 'the project\'s TMS write-back: merge upstream\'s Xray body built through the synced tests/utils/xrayResults.ts and its key check before authenticating' },
   // Since the api-login split the generic CLI lives in `scripts/lib/api-login-core.ts`
   // (plainly synced) and the project's auth flow in `scripts/api-login.project.ts`
@@ -2477,6 +2500,7 @@ async function main(): Promise<void> {
             // the sync must already resolve skills through `.claude/skills`.
             makeAgentCompatibilityHook(sink),
             makeKataManifestHook(sink),
+            makeEddWorkflowsHook(sink),
             // Before the compat check reads settings.json? No: after. This merge
             // only ADDS allow and deny entries, which no compatibility contract
             // asserts on (the hook groups, which one does, merged first).
@@ -2581,8 +2605,17 @@ async function updateCommunitySkills(sink: ReportSink, parsed: ParsedArgs, lang:
   try {
     const { PROJECT_LEVEL_SKILLS, USER_LEVEL_SKILLS } = await import('./install.ts');
     sink.step(lang === 'en' ? 'Community skills: checking for updates' : 'Skills de la comunidad: buscando actualizaciones');
+    let declined: string[] = [];
+    try {
+      const raw = JSON.parse(fs.readFileSync(path.join(process.cwd(), '.template', 'installer.state.json'), 'utf8')) as { skills?: Record<string, string> };
+      declined = Object.entries(raw.skills ?? {}).filter(([, v]) => v === 'declined').map(([k]) => k.replace(/^community:global:/, ''));
+    }
+    catch {
+      declined = [];
+    }
     await runSkillsUpdate({
       cwd: process.cwd(),
+      declined,
       global: USER_LEVEL_SKILLS,
       project: PROJECT_LEVEL_SKILLS,
       dryRun: parsed.dryRun,

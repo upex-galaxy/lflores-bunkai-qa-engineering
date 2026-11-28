@@ -11,7 +11,7 @@ worker, and keeps the board and the sprint record current, so the team gets QA f
 
 One pass is the steps below, then stop. A pass with nothing to do prints ONE line and ends. A step that
 fails is logged and the pass moves on, so a pass never blocks. Every decision is recorded with
-`bun run board arrival <KEY> launched|held|skipped "<why>"`, which makes passes idempotent: a missed pass
+`bun run board arrival <KEY> launched|held|skipped "<why>" --by conductor`, which makes passes idempotent: a missed pass
 costs nothing, and the ticket shows up on the next one. After §6, re-arm the sentinel in the same turn
 (`sprint-board.md` §7).
 
@@ -20,13 +20,17 @@ costs nothing, and the ticket shows up on the next one. After §6, re-arm the se
 ## 1. Guard and the first pass of the day
 
 - The CURRENT board must be `<slug>` (`bun run board sprints`). If it is not, say so once and stop.
-- On a scheduled pass (the fallback), outside working hours: do nothing, say nothing. The sentinel does
-  not wake then.
+- On a scheduled pass (the fallback), outside working hours: do nothing, say nothing.
+- A sentinel wake runs its pass whatever the hour: an owner answer, a Decision dock send or note, or
+  an ask moved on the page wakes it at any time.
 - First pass of the day: check what died overnight and report it in one line instead of restarting it
   on your own: the board page answers, the orchestration runtime is reachable, the mailbox read returns
-  `ok`, and `bun run board status` shows a recent "Last watch pass". The restart path is
-  `/sprint-conductor --resume` (`references/boot-and-resume.md` §4). The one exception is the board server,
-  whose working-hours lifecycle the sentinel owns.
+  `ok`, and `bun run board status` shows a recent "Last watch pass" and no unexpected
+  `! <name> not running` line. One is expected: `! sentinel not running (pid <n>, exited cleanly HH:MM)`
+  at the time of the wake that started this pass, because the sentinel exited to send it and §6 re-arms
+  it. A line saying `no clean exit`, a sentinel exit older than that wake, or any other name did die. The
+  restart path is `/sprint-conductor --resume` (`references/boot-and-resume.md` §4). The one exception is
+  the board server, whose working-hours lifecycle the sentinel owns.
 
 ## 2. Detect
 
@@ -71,16 +75,16 @@ Nothing NEW or RECHECK: go straight to §5.
    - Name the feature gate, not a page flag. A flag that only shows a page proves nothing about the
      behaviour behind it; the brief names the setting that actually turns the behaviour on, and the data
      that puts it in scope.
-   - Not deployed: `bun run board arrival <KEY> held "<what is missing>"` plus
+   - Not deployed: `bun run board arrival <KEY> held "<what is missing>" --by conductor` plus
      `bun run board hold <KEY> --reason deploy --on <developer> "<what>"`. Next ticket. A held ticket comes
      back as RECHECK on every pass, and on the `recheck-sweep` wake.
 3. Module: the ticket's module (its Epic) decides which synced `module-context.md` and which recorded
    fixtures its brief carries.
 4. Skip what is not worth a worker (no ACs at all, pure configuration with nothing observable, a
-   duplicate): `arrival <KEY> skipped "<why>"`, and say it in the pass line.
+   duplicate): `arrival <KEY> skipped "<why>" --by conductor`, and say it in the pass line.
 5. Fixture gaps, asked now: `references/boot-and-resume.md` §2.5, so a worker never discovers them.
 6. Cap: at most `<cap>` live workers, counting every one (an ad-hoc retest included). Full:
-   `arrival <KEY> held "fleet full"`; it returns as RECHECK on the next pass.
+   `arrival <KEY> held "fleet full" --by conductor`; it returns as RECHECK on the next pass.
 7. Collision with a live worker: the same `entity:id` with `write` on either side
    (`fleet-conductor.md` §8, runtime half: `write` conflicts with everything on the same `entity:id`)
    holds the ticket the same way. Compare against the claims ledger
@@ -104,7 +108,7 @@ Nothing NEW or RECHECK: go straight to §5.
 4. Launch natively and confirm on screen (`/agent-orchestration`, conductor cycle §2 and §3): the tab renamed to `<KEY>--<handle>` and read back with the session name, the agent footer within a short wait, credentials loaded, the prompt delivered. A harness
    error on screen is reported, not retried blindly.
 5. Board: `bun run board start <KEY> --worker <handle> --by conductor` and
-   `bun run board arrival <KEY> launched "<one line>"`.
+   `bun run board arrival <KEY> launched "<one line>" --by conductor`.
 6. The roster row (`fleet-conductor.md` §1) with the handle and the dispatch.
 7. Sprint-record scope: a launched ticket that is not in the sprint test plan goes on
    `.session/sprint-board/staged/<test plan key>-updates.md` (one line: ticket, date, why it joined; staged
@@ -117,14 +121,27 @@ Nothing NEW or RECHECK: go straight to §5.
 
 1. Owner answers on the board: `bun run board inbox` plus the bounded `listen --since <last pass>`
    replay (`sprint-board.md` §3). Act on anything newer than the last pass, relay it to its worker
-   (mailbox reply plus a terminal pointer; the worker echoes the decision back), then `resolve`. Measured
+   (mailbox reply plus a terminal pointer; the worker echoes the decision back), then close it: `resolve ... --by conductor`
+   for a Needs-you answer (a gating question only once the owner's own record exists, `sprint-board.md` §3),
+   `say --reply <msg-id>` for an inbox message. Measured
    on the source board: four owner answers sat unread 15 to 60 minutes before this read became part of
    every pass.
+   An ask part in the wake is read the same way. `ask-sent`: the person now owes a reply, so keep or
+   open the ticket's `wait`. `ask-changed`: on `closed` or `dropped` stop expecting that reply, and on
+   `answered` read it and act. `ask-approved`: the ask is approved and not drafted. The board hands it
+   to the messenger itself. If a later pass still shows it `approved`, record
+   `ask-state <ask-id> draft-failed --error "<what is known>" --by conductor`, which gives the owner a
+   Retry. Every ask move the pass records carries `--by conductor` (`sprint-board.md` §4).
+   The Decision dock is read on every pass too: `bun run board sweep read --unconsumed --json`. Act on
+   each answer and note (a card answer goes to its worker like any other), then
+   `sweep consume <batch or note id> --by conductor`. On `dock-recheck`, check the named question
+   against the ticket as it is now and `sweep close <item-id> --why "..." --by conductor` when it no
+   longer holds (`sprint-board.md` §3).
 2. The Run mailbox: the runtime pushes a notice when messages wait; read and ack them per
    `references/boot-and-resume.md` §3 step 3, then answer each worker by replying to one of its messages.
 3. A waited-on developer (optional, only when a read-only chat tool is configured for this project):
    for each open `wait` on the board, read the owner's conversation with that person for a reply since the
-   wait opened. A reply: tell the owner, `unwait`. Do not write there.
+   wait opened. A reply: tell the owner, `unwait ... --by conductor`. Do not write there.
 4. Finished workers: `references/round-close.md`. The conductor reads back the final ticket status
    itself; a report is never the proof.
 5. A live worker silent for two or three passes: read its screen (`agent-orchestration` liveness
@@ -149,7 +166,7 @@ Nothing NEW or RECHECK: go straight to §5.
    on its own.
 
 Owner decisions go to the board and the chat (`sprint-board.md` §3). Setting `DEFERRED` is the worker's
-QA call once a case cannot be recreated in the environment, not the pass's
+QA call once the unblock preflight (`sprint-testing/references/preflight-gate.md`) says `DEFER`, not the pass's
 (`agentic-qa-core/references/discovery-driven-doctrine.md` §5).
 
 ## 6. What a pass reports

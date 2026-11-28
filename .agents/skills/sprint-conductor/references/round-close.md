@@ -20,7 +20,10 @@ record stays with the conductor" (the report is a claim; Critical Rule #16). The
 ticket's tracker status from this session, with a bounded poll for the value the worker reported
 (`[ISSUE_TRACKER_TOOL]`, the synced copy refreshed with `bun run jira:sync-issues get <KEY>`). When the
 poll ends without that value, the worker's transition did not land: say so, and re-run the transition only
-after the round-close subagent confirms the gate below.
+after the round-close subagent confirms the gate below. A Story, Tech Story or Tech Debt with a deferred case is never moved here without
+the owner's own OK (`sprint-testing/references/shift-right-deferral.md` §3). For a ticket waiting for owner OK
+the expected status is still in test (a tech item: still in review). A ticket whose OK was refused is an open
+block (§3 there): the same expected status, with its cases `BLOCKED` and the owner's answer recorded.
 
 ## 2. The round-close subagent (one per finished worker)
 
@@ -36,12 +39,20 @@ so it reads the `## Module Context (QA)` section the first one published. Closes
 run side by side. This is how "one writer per module" (`fleet-conductor.md` §10 "Module learnings")
 holds when several closes are due at once.
 
+### Step 0: shift-right plan rows, before the checks
+
+For a Story signed off with deferrals, the conductor writes the worker's plan rows into the shift-right test
+plan and reads them back (`sprint-testing/references/shift-right-deferral.md` §5, `fleet-conductor.md` §10).
+This is one of the allowed writes. The plan description is rewritten wholesale, so closes that write it run one
+after another.
+
 ### Step 1: verify the artifacts, not the report
 
 | Checklist row | What can be observed, cheaply |
 |---|---|
-| every TC executed or deferred with its reason | each Test's status in the TMS; every `DEFERRED` carries its reason line (`agentic-qa-core/references/discovery-driven-doctrine.md` §5); the board's `tc` records agree (`bun run board status`) |
-| the ATR complete | the Test Execution item and its Test Environment, per the Reporting DoD (`agentic-qa-core/references/stage-gates.md`) |
+| every TC executed or deferred with its reason | each Test's status in the TMS; every `DEFERRED` carries its reason line (`agentic-qa-core/references/discovery-driven-doctrine.md` §5) and a preflight record in the ATR that names each attempt with an evidence pointer you open, the external class, who owes it and verdict `DEFER` (`sprint-testing/references/preflight-gate.md`): a record short of that fails the row; the board's `tc` records agree (`bun run board status`) |
+| a Story, Tech Story or Tech Debt with a deferred case | open the OK pointer the ATR cites and write down what you read (a fleet ticket always needs one: `owner OK given in session`, typed or picked, never passes this row, a worker has nobody at its keyboard) (`sprint-testing/references/shift-right-deferral.md` §3 "Checking the OK and the record"): a Jira comment's author and timestamp from Jira (the owner, after the notice, covering the case ids, not posted by a session of the run), or the board's `need.answer` event and who wrote it (`owner` only; it proves the record did not come through the board CLI, not who typed it, so a comment is preferred when both exist). A citation with no pointer that opens fails the row and the ticket is never `PASSED`. Then the notice comment and the `qa.deferral.label` label read back on the item, and one shift-right plan row per case from Step 0. Waiting for owner OK passes this row and the ATR row when: item still in test, ATR `active`, ATP and ATS untouched by closure, no pass result comment, no label, no plan rows (§3). A refused OK passes them the same way, with the cases `BLOCKED` and the owner's answer recorded |
+| the ATR complete | the Test Execution item and its Test Environment, per the Reporting DoD (`agentic-qa-core/references/stage-gates.md`); waiting for owner OK: the item stays `active`, which passes |
 | traceability complete | the link graph Story ↔ ATP ↔ ATS ↔ TC ↔ ATR in the direction the doctrine fixes (`agentic-qa-core/references/traceability-linking.md`), read with `[TMS_TOOL]` / `[ISSUE_TRACKER_TOOL]` |
 | evidence captured | the ticket's evidence folder on disk, and its evidence page recorded on the board (`sprint-board.md` §6) |
 | every bug filed carries its evidence | its evidence page linked AND its ONE thumbnail embedded in the Description (`evidence-artifact/references/workflow.md` §4); a board `bug` record without `--evidence-embedded` is a bug still missing its image |
@@ -63,7 +74,9 @@ previous close's publish.
 ### Step 3: the sprint record
 
 The conductor is the sprint record's only writer (`fleet-conductor.md` §2, §10). For the closed issue:
-the sprint `progress.md` entry, the STP comment, the queue row off `PENDING`, the issue sub-scope archived
+the sprint `progress.md` entry, the STP comment, the queue row off `PENDING`, the issue sub-scope archived (a
+ticket waiting for owner OK: the row and the report say so, and its sub-scope stays; refused OK: the row reads
+`BLOCKED` and the sub-scope stays too)
 (`sprint-testing/references/sprint-orchestration.md` STEP 4). Then apply the staged
 sprint-record update list (`.session/sprint-board/staged/<test plan key>-updates.md`,
 `references/watch-pass.md` §4 step 7): every ticket on it joins the sprint test plan, and the list is
@@ -72,8 +85,10 @@ temporary directory.
 
 ### Step 4: the board
 
-`bun run board verdict <KEY> <PASSED|FAILED|BLOCKED> --note "<one line>" --by conductor` reconciled with
-the tracker, and `bun run board worker <KEY> --state done --by conductor`.
+`bun run board verdict <KEY> <PASSED|FAILED|BLOCKED|"PASSED WITH DEFERRALS"> --note "<one line>" --by conductor` reconciled with
+the tracker, and `bun run board worker <KEY> --state done --by conductor`. Waiting for owner OK: verdict
+`BLOCKED` plus `bun run board hold <KEY> --reason other "waiting for owner OK" --on <owner> --by conductor`,
+never `PASSED`. A refused OK takes the same verdict, with the hold on whoever owes the precondition. After Step 1 has opened a covering OK, record `bun run board unhold <KEY> --by conductor`, `bun run board verdict <KEY> "PASSED WITH DEFERRALS" --by conductor` and `bun run board deferral-ok <KEY> --cases <ids> --pointer "<pointer>" --by conductor`: `unhold` clears the hold, and the verdict and the OK decide the lane, so the verdict alone or `deferral-ok` alone leaves a ticket recorded as waiting in Held. A `needs-you` the owner has not answered on the page keeps it in Needs you until it is resolved after `deferral-ok`, under the rule of `sprint-board.md` §3 (`bun run board resolve <KEY> --id <need-id> --by conductor`). No board record passes the OK row of Step 1 or stands in for opening the pointer.
 
 ### What it returns
 
@@ -90,9 +105,12 @@ board: verdict <value> · worker done
 After the subagent returns: read the worker's cost footer off its screen, then close it and, when it ran in
 its own worktree, remove the worktree after the orphan audit
 (`/agent-orchestration`, conductor cycle §6). Release its claims (`fleet-conductor.md` §8).
-Keep a worker open while its artifacts fail Step 1, until it answers.
+Keep a worker open while its artifacts fail Step 1, until it answers. A ticket waiting for owner OK does not
+fail it, so its worker may be closed; neither does one whose OK was refused.
 
 ## 4. The round is complete
 
-When every issue of the round is closed, the status screen says "round <n> complete" with its count table,
+When every issue of the round is closed, waiting for owner OK or blocked on a refused OK (the last two listed
+by key), the status screen says
+"round <n> complete" with its count table,
 and the next round forms (`fleet-conductor.md` §6). Anything that needs a developer or product answer goes in one team-decision message per round (`sprint-board.md` §4, whose "wave" is this round).

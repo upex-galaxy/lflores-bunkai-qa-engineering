@@ -1,3 +1,6 @@
+import type { Messenger } from './messenger.ts';
+import type { Ask, AskState } from './model.ts';
+import type { SendInput } from './sweep.ts';
 /**
  * Local live server, http://127.0.0.1:4477
  *
@@ -10,8 +13,9 @@
  *   /files/<path>      evidence images (repo-relative, allowlisted roots, no SVG)
  *   /archive/<file>    frozen snapshots
  *   POST /api/answer   { ticket, needId?, text }  -> need.answer event
- *   POST /api/ask      { id, state }              -> ask.state event
- *   POST /api/msg      { text, replyTo? }         -> msg event from the owner (the inbox)
+ *   POST /api/ask      { id, action | state, expect? } -> ask.state event, through the ask lock
+ *   POST /api/msg      { text, replyTo?, via?, ticket? }  -> msg event from the owner (the inbox; via "dock" is a dock note)
+ *   POST /api/sweep/send { answers, skipped? }    -> one Decision dock batch, through the sweep lock
  *
  * Change detection is a 1 s fingerprint poll of known files, not fs.watch:
  * FSEvents reports real paths through the .session symlink and atomic renames
@@ -19,18 +23,24 @@
  */
 import { existsSync, readdirSync, realpathSync, statSync } from 'node:fs';
 import { extname, join, resolve, sep } from 'node:path';
+import { applyPageTransition, AskError, draftApproved, owesDraft } from './ask-transition.ts';
 import { brandHtml } from './brand.ts';
 import { buildApp, openInBrowser } from './build.ts';
 import { readMergeLine } from './merge-read.ts';
-import { ASK_STATES, needTarget, oneOf } from './model.ts';
+import { resolveMessenger } from './messenger.ts';
+import { ASK_ACTIONS, ASK_STATES, awaitsOwner, needTarget, oneOf } from './model.ts';
 import { buildState, watchedFiles } from './sources.ts';
-import { appendEvent, archiveDir, BOARD_DIR, currentSlug, listArchives, listSprints, readSprint, REPO_ROOT, serverFile, sprintDir, writeAtomic } from './store.ts';
+import { appendEvent, appendEvents, archiveDir, BOARD_DIR, currentSlug, listArchives, listSprints, readSprint, REPO_ROOT, serverFile, sprintDir, withSweepLock, writeAtomic } from './store.ts';
+import { DOCK_VIA, planSend } from './sweep.ts';
+import { watcherViews } from './watchers.ts';
 
 const APP_DIR = join(import.meta.dir, 'app');
 /** Merge Line's data, shared by every worktree through the .session symlink. */
 const MERGE_DIR = process.env.MERGE_STATE_DIR ?? join(REPO_ROOT, '.session', 'gitflow-master');
 const COLLECT = join(import.meta.dir, 'merge-collect.ts');
 const mergeWatched = () => [join(MERGE_DIR, 'docs', 'meta'), join(MERGE_DIR, 'docs', 'prs'), join(MERGE_DIR, 'notes'), join(MERGE_DIR, 'collector.json')];
+const WATCHER_RECHECK_MS = 5000;
+const deadWatchers = (slugs: string[]) => slugs.flatMap(slug => watcherViews(slug).filter(w => !w.alive).map(w => `${slug}/${w.name}:${w.pid}`)).join(',');
 const EVIDENCE_ROOTS = ['.session', '.context/PBI'].map(r => join(REPO_ROOT, r));
 const IMAGE_TYPES: Record<string, string> = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp' };
 
@@ -65,6 +75,34 @@ function safeEvidence(rel: string): string | null {
     catch { return false; }
   });
   return ok && IMAGE_TYPES[extname(abs).toLowerCase()] ? abs : null;
+}
+
+// The two drafting results are the messenger's to report; the page may only put a recorded one back (Undo).
+const pageGuard = (cur: Ask, to: AskState): string | null =>
+  to === 'draft-failed' || (to === 'drafted' && !cur.history.some(h => h.state === 'drafted')) ? `${to} is not set from the page` : null;
+
+async function postAsk(slug: string, body: Record<string, string>, messenger: Messenger | null): Promise<Response> {
+  const id = String(body.id ?? '');
+  if (!/^ask-[a-z0-9]+$/.test(id)) { return json({ error: 'bad id' }, 400); }
+  const target = body.action
+    ? { action: oneOf(ASK_ACTIONS, String(body.action), 'action') }
+    : { state: oneOf(ASK_STATES, String(body.state ?? ''), 'state') };
+  const expect = body.expect ? oneOf(ASK_STATES, String(body.expect), 'expect') : undefined;
+  const result = await applyPageTransition(slug, { id, ...target, expect, guard: pageGuard }, messenger);
+  if (messenger && owesDraft(result)) {
+    void draftApproved(slug, id, messenger).catch((err: Error) => console.warn(`${id}: the draft was not recorded: ${err.message}`));
+  }
+  return json(result);
+}
+
+async function postSweep(slug: string, body: SendInput): Promise<Response> {
+  const plan = await withSweepLock(slug, async (held) => {
+    const planned = planSend(buildState(slug), { answers: body.answers, skipped: body.skipped });
+    if (!held()) { throw new Error('another writer took sweep.lock before this one wrote. Nothing was written, send it again'); }
+    appendEvents(slug, planned.events.map(e => ({ kind: e.kind, ticket: e.ticket, by: 'owner', text: e.text, data: e.data })));
+    return planned;
+  });
+  return json({ ok: plan.written > 0, batch: plan.written ? plan.batch : undefined, results: plan.results }, plan.written ? 200 : 409);
 }
 
 async function alreadyRunning(): Promise<string | null> {
@@ -119,7 +157,8 @@ function startMergeLoop(everySec: number): void {
   void tick();
 }
 
-export async function serve(opts: { port: number, open: boolean, syncMinutes: number, discover?: boolean, mergeEvery?: number }): Promise<void> {
+export async function serve(opts: { port: number, open: boolean, syncMinutes: number, discover?: boolean, mergeEvery?: number, messenger?: Messenger }): Promise<void> {
+  const messenger = opts.messenger ?? resolveMessenger();
   const running = await alreadyRunning();
   if (running) {
     console.log(`Sprint Board is already live at ${running}`);
@@ -137,6 +176,8 @@ export async function serve(opts: { port: number, open: boolean, syncMinutes: nu
       catch { clients.delete(c); }
     }
   };
+  let deadAt = 0;
+  let dead = '';
   const check = () => {
     let slug = '';
     try { slug = currentSlug(); }
@@ -144,7 +185,14 @@ export async function serve(opts: { port: number, open: boolean, syncMinutes: nu
     const dir = slug ? sprintDir(slug) : BOARD_DIR;
     const dirs = listSprints().map(x => sprintDir(x));
     const ids = [...new Set([...idsBySlug.values()].flat())];
-    const sig = `${slug}#${fingerprint([join(BOARD_DIR, 'CURRENT'), dir, ...dirs, ...watchedFiles(ids), ...mergeWatched()])}`;
+    // A dying process touches no file, and checking it spawns `ps`: joined to the signature, re-read less often than the tick.
+    if (Date.now() - deadAt >= WATCHER_RECHECK_MS) {
+      deadAt = Date.now();
+      // Thrown out of this timer, a read error would take the whole server down.
+      try { dead = deadWatchers([...new Set([slug, ...idsBySlug.keys()])].filter(Boolean)); }
+      catch (err) { console.warn(`watcher check failed: ${(err as Error).message}`); }
+    }
+    const sig = `${slug}#${dead}#${fingerprint([join(BOARD_DIR, 'CURRENT'), dir, ...dirs, ...watchedFiles(ids), ...mergeWatched()])}`;
     if (sig !== lastSig) {
       lastSig = sig;
       push(`event: changed\ndata: ${JSON.stringify({ slug, at: new Date().toISOString() })}\n\n`);
@@ -201,8 +249,8 @@ export async function serve(opts: { port: number, open: boolean, syncMinutes: nu
             const text = String(body.text ?? '').trim().slice(0, 1500);
             if (!/^[A-Z][A-Z0-9]*-\d+$/.test(id) || !text) { return json({ error: 'ticket and text required' }, 400); }
             const t = buildState(slug).tickets.find(x => x.id === id);
-            if (!t?.needs.some(n => !n.answer && !n.synthetic)) { return json({ error: `${id} has no open question to answer` }, 400); }
-            const needId = needTarget(t.needs, 'answer', id, body.needId ? String(body.needId) : undefined);
+            if (!t?.needs.some(n => !n.synthetic && awaitsOwner(n))) { return json({ error: `${id} has no open question to answer` }, 400); }
+            const needId = needTarget(t.needs, 'page', id, body.needId ? String(body.needId) : undefined);
             appendEvent(slug, { kind: 'need.answer', ticket: id, by: 'owner', text: `Owner answered on ${id}: ${text}`, data: { id: needId, text } });
             return json({ ok: true });
           }
@@ -213,19 +261,19 @@ export async function serve(opts: { port: number, open: boolean, syncMinutes: nu
             if (replyTo && !buildState(slug).inbox.some(t => t.id === replyTo || t.replies.some(r => r.id === replyTo))) {
               return json({ error: `no message ${replyTo} to reply to` }, 400);
             }
+            if (body.via !== undefined && body.via !== DOCK_VIA) { return json({ error: `via must be "${DOCK_VIA}" or absent` }, 400); }
+            const via = body.via;
+            const ticket = body.ticket ? String(body.ticket).toUpperCase() : undefined;
+            if (ticket && !buildState(slug).tickets.some(t => t.id === ticket)) { return json({ error: `${ticket} is not on the ${slug} board` }, 400); }
             const id = `msg-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
-            appendEvent(slug, { kind: 'msg', by: 'owner', text: `Owner: ${text}`, data: { id, from: 'owner', text, replyTo } });
+            appendEvent(slug, { kind: 'msg', ticket, by: 'owner', text: `Owner: ${text}`, data: { id, from: 'owner', text, replyTo, via } });
             return json({ ok: true, id });
           }
-          if (p === '/api/ask') {
-            const state = oneOf(ASK_STATES, String(body.state ?? ''), 'state');
-            const id = String(body.id ?? '');
-            if (!/^ask-[a-z0-9]+$/.test(id)) { return json({ error: 'bad id' }, 400); }
-            appendEvent(slug, { kind: 'ask.state', by: 'owner', text: `Draft ${id} marked ${state}`, data: { id, state } });
-            return json({ ok: true });
-          }
+          if (p === '/api/sweep/send') { return await postSweep(slug, body); }
+          if (p === '/api/ask') { return await postAsk(slug, body, messenger); }
         }
         catch (err) {
+          if (err instanceof AskError) { return json({ error: err.message, ...err.current }, err.status); }
           return json({ error: (err as Error).message }, 400);
         }
         return new Response('not found', { status: 404 });
@@ -250,7 +298,13 @@ export async function serve(opts: { port: number, open: boolean, syncMinutes: nu
           const slug = url.searchParams.get('sprint') ?? currentSlug();
           if (!/^sprint-\d+$/.test(slug)) { return json({ error: 'bad sprint' }, 400); }
           const state = buildState(slug);
-          if (!state.sprint.closedAt) { idsBySlug.set(slug, state.tickets.map(t => t.id)); }
+          state.messenger = messenger?.id;
+          if (state.sprint.closedAt) { delete state.sweep; }
+          else {
+            idsBySlug.set(slug, state.tickets.map(t => t.id));
+            try { state.watchers = watcherViews(slug); }
+            catch (err) { state.warnings.push(`watchers could not be read: ${(err as Error).message}`); }
+          }
           return json(state);
         }
         catch (err) {

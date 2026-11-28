@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 import type { BoardConfig } from '../lib/sprint-source/index.ts';
 import type { BoardEvent, Sprint } from './model.ts';
+import type { SweepOption } from './sweep.ts';
 /**
  * Sprint Board CLI. Every write appends one fact to the sprint's events.ndjson;
  * `serve` folds the log + the tracker (source.json) + the workers' own files into the live page.
@@ -9,6 +10,8 @@ import type { BoardEvent, Sprint } from './model.ts';
 import { existsSync, readFileSync } from 'node:fs';
 import { isAbsolute, join, relative, resolve } from 'node:path';
 import { evidenceUrlError } from '../lib/evidence-page/hosts.ts';
+import { AGENT_ACTORS, agentRefusal, applyAskTransition, AskError, draftApproved, futureRefusal, owesDraft, ownerRefusal } from './ask-transition.ts';
+import { resolveMessenger } from './messenger.ts';
 import {
   ARRIVAL_ACTIONS,
   arrivals,
@@ -18,16 +21,29 @@ import {
   boardTicketIds,
   bugEvidenceReminder,
   decisionOptions,
+  DEFAULT_EVIDENCE_HOSTS,
+  defaultTwoWay,
+  DEFERRAL_NOTES,
+  DEFERRAL_OK_ACTORS,
+  DEFERRAL_OK_RULE,
+  deferralHold,
+  deferralMark,
+  deferralNote,
+  deferralOkRecord,
   EVIDENCE_ARTIFACT_BY,
   EVIDENCE_OUTCOMES,
   evidenceArtifactUrl,
   HOLD_REASONS,
+  HOST_UNVERIFIED,
   listenLine,
   listFixtures,
   localHhmm,
+  metrics,
   needTarget,
   oneOf,
   ownerActionsSince,
+  printable,
+  printableJson,
   resolvePerson,
   SCHEMA,
   SEVERITIES,
@@ -35,8 +51,10 @@ import {
   TC_STATUSES,
   trackerName,
   untrackedInTest,
+  unverifiedHostCases,
   VERDICTS,
   WATCH_STALE_MIN,
+  watchersDown,
   watchLiveness,
   WORKER_STAGES,
   WORKER_STATES,
@@ -55,30 +73,39 @@ import {
   setCurrent,
   SOURCE_LOCK_WAIT_MS,
   sprintDir,
+  withSweepLock,
   writeSprint,
 } from './store.ts';
+import { dockAgeDays, isDockMedia, isDockStale, openSweepItems, readBatches, SWEEP_MAX_OPTIONS, unreadNotes } from './sweep.ts';
 import { boardConfig } from './sync.ts';
+import { checkWatcherName, clearWatcher, registerWatcher, watcherViews } from './watchers.ts';
 
-interface Args { _: string[], flags: Record<string, string[]> }
+interface Args { _: string[], flags: Record<string, string[]>, bare: Set<string> }
 
 /** Flags that never take a value: `say --ask "text"` must not swallow the text. */
-const BOOLEAN_FLAGS = new Set(['all', 'ask', 'discover', 'dry-run', 'embed-evidence', 'evidence-embedded', 'fragment', 'json', 'once', 'open', 'out-of-scope', 'reuse', 'sync']);
+const BOOLEAN_FLAGS = new Set(['all', 'ask', 'discover', 'dry-run', 'embed-evidence', 'evidence-embedded', 'fragment', 'json', 'multi', 'no-free-text', 'once', 'one-way', 'open', 'out-of-scope', 'reuse', 'sync', 'two-way', 'unconsumed']);
 
 function parse(argv: string[]): Args {
-  const out: Args = { _: [], flags: {} };
+  const out: Args = { _: [], flags: {}, bare: new Set() };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a.startsWith('--')) {
       const eq = a.indexOf('=');
       const k = eq > 0 ? a.slice(2, eq) : a.slice(2);
       const next = argv[i + 1];
-      const v = eq > 0 ? a.slice(eq + 1) : !BOOLEAN_FLAGS.has(k) && next !== undefined && !next.startsWith('--') ? (i++, next) : 'true';
+      // `--match` is searched in a command line: left bare it must read as empty, never as the text "true".
+      const bare = k === 'match' ? '' : 'true';
+      const valued = eq <= 0 && !BOOLEAN_FLAGS.has(k) && next !== undefined && !next.startsWith('--');
+      if (eq <= 0 && !valued) { out.bare.add(k); }
+      const v = eq > 0 ? a.slice(eq + 1) : valued ? (i++, next) : bare;
       (out.flags[k] ??= []).push(v);
     }
     else { out._.push(a); }
   }
   return out;
 }
+
+const print = (line = '') => console.log(printable(line));
 
 const flag = (a: Args, k: string) => a.flags[k]?.at(-1);
 const flags = (a: Args, k: string) => (a.flags[k] ?? []).flatMap(x => x.split(',')).map(x => x.trim()).filter(Boolean);
@@ -117,6 +144,22 @@ const TC_ID = /^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+$/i;
 const slugOf = (a: Args) => flag(a, 'sprint-slug') ?? currentSlug();
 const by = (a: Args) => flag(a, 'by');
 
+// An event that states what someone said or decided must name its author, or readers take it as someone else's word.
+function writer(a: Args): string {
+  const who = need(by(a), `--by ${AGENT_ACTORS.join('|')}: say who is writing (the owner writes from the page)`);
+  const refused = agentRefusal(who);
+  if (refused) { throw new Error(refused); }
+  return who;
+}
+
+function authorRefusal(a: Args): string | null {
+  const given = a.flags.by ?? [];
+  if (a.bare.has('by') || given.some(who => !who.trim())) { return '--by needs a value: say who is writing'; }
+  return given.map(ownerRefusal).find(Boolean) ?? null;
+}
+
+const ASK_STATE_FLAGS = { 'reply': 'answered', 'reply-at': 'answered', 'link': 'drafted', 'error': 'draft-failed' } as const;
+
 /** Fail loudly: only tickets already on this board, unless the command is `add`. */
 function knownTicket(slug: string, raw: string | undefined): string {
   const id = need(raw, `ticket id (${keyExample()})`).toUpperCase();
@@ -144,6 +187,157 @@ function lockWait(a: Args): number {
   return s * 1000;
 }
 
+function pipePair(raw: string, what: string): [string, string | undefined] {
+  const at = raw.indexOf('|');
+  const head = (at < 0 ? raw : raw.slice(0, at)).trim();
+  const tail = at < 0 ? undefined : raw.slice(at + 1).trim() || undefined;
+  if (!head) { throw new Error(`${what} "${raw}" has nothing before the "|"`); }
+  return [head, tail];
+}
+
+function dockMedia(raw: string): { path: string, caption?: string } {
+  const [file, caption] = pipePair(raw, '--media');
+  const path = repoPath(file).replaceAll('\\', '/');
+  if (!isDockMedia(path)) { throw new Error(`--media must be a png, jpg, gif or webp image under .session/ or .context/PBI/, the roots the board serves (got ${path})`); }
+  return { path, caption };
+}
+
+function dockLink(raw: string, hosts: readonly string[]): { title: string, url: string } {
+  const [head, tail] = pipePair(raw, '--link');
+  const url = (tail ?? head).replace(/\/$/, '');
+  const refused = evidenceUrlError(url, hosts);
+  if (refused) { throw new Error(`--link "${url}" cannot be posted: ${refused}`); }
+  const safe = evidenceArtifactUrl(url, hosts);
+  return { title: tail ? head : new URL(safe).hostname, url: safe };
+}
+
+const DOCK_PATH_MAX = 300;
+function dockPath(raw: string): string {
+  const path = raw.trim();
+  if (!path || /[\n\r]/.test(path) || path.length > DOCK_PATH_MAX) { throw new Error(`--path "${path.slice(0, 40)}" must be one line of 1 to ${DOCK_PATH_MAX} characters`); }
+  return path;
+}
+
+function dockOptions(a: Args): { options: SweepOption[], recommend: string[], multi: boolean, freeText: boolean } {
+  const labelled = (a.flags.option ?? []).map(o => pipePair(o, '--option'));
+  if (labelled.length === 1 || labelled.length > SWEEP_MAX_OPTIONS) { throw new Error(`--option takes 2 to ${SWEEP_MAX_OPTIONS} options, or none for a free-text question (got ${labelled.length})`); }
+  const options = labelled.map(([label, desc], i) => ({ key: String.fromCharCode(97 + i), label, desc }));
+  const multi = flag(a, 'multi') === 'true';
+  const freeText = flag(a, 'no-free-text') !== 'true';
+  if (!options.length && !freeText) { throw new Error('an item with no options needs free text: drop --no-free-text'); }
+  if (!options.length && multi) { throw new Error('--multi needs options'); }
+  const recommend = [...new Set(flags(a, 'recommend').map((r) => {
+    const key = /^\d+$/.test(r) ? String.fromCharCode(96 + Number(r)) : r.toLowerCase();
+    if (!options.some(o => o.key === key)) { throw new Error(`--recommend "${r}" matches no option (keys ${options.map(o => o.key).join(', ') || 'none'}; positions 1 to ${options.length})`); }
+    return key;
+  }))];
+  if (!multi && recommend.length > 1) { throw new Error('a single-choice item recommends one option; add --multi to recommend several'); }
+  return { options, recommend, multi, freeText };
+}
+
+function deferralHint(slug: string, id: string): void {
+  const t = buildState(slug).tickets.find(x => x.id === id);
+  if (!t || deferralHold(t) !== 'owner-ok' || (t.lane !== 'Held' && t.lane !== 'Needs you')) { return; }
+  const waiting = t.deferral!.waiting.join(',');
+  print(`${id} is waiting for owner OK on ${waiting}: once you observe it, record it with deferral-ok ${id} --cases ${waiting} --pointer "<p>" --by ${DEFERRAL_OK_ACTORS.join('|')}`);
+}
+
+const stamp = (iso: string) => `${iso.slice(0, 16).replace('T', ' ')}Z`;
+
+const sweepCommands: Record<string, (a: Args, slug: string) => void | Promise<void>> = {
+  add(a, slug) {
+    const who = writer(a);
+    if (who === 'worker') { throw new Error('sweep add is not for a worker: raise a needs-you card (needs-you <ticket> "<question>" --by worker), which reaches the same dock'); }
+    const { closedAt } = readSprint(slug);
+    if (closedAt) { throw new Error(`${slug} is closed (${closedAt}): nobody can answer a dock item on it`); }
+    const question = need(flag(a, 'question'), '--question');
+    const choices = dockOptions(a);
+    const ticket = flag(a, 'ticket') === undefined ? undefined : knownTicket(slug, flag(a, 'ticket'));
+    const hosts = config()?.evidenceHosts ?? readSprint(slug).evidenceHosts ?? DEFAULT_EVIDENCE_HOSTS;
+    const media = (a.flags.media ?? []).map(dockMedia);
+    const paths = (a.flags.path ?? []).map(dockPath);
+    const links = (a.flags.link ?? []).map(l => dockLink(l, hosts));
+    const refused = futureRefusal(flag(a, 'at'));
+    if (refused) { throw new Error(refused); }
+    const id = `sw-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
+    appendEvent(slug, { kind: 'sweep.add', ticket, text: `Dock: ${question}`, by: who, at: flag(a, 'at'), data: { id, question, header: flag(a, 'header'), context: flag(a, 'context'), ...choices, media, paths, links } });
+    print(`${id} posted to the dock (${openSweepItems(buildState(slug)).length} open on ${slug})`);
+  },
+
+  list(a, slug) {
+    const state = buildState(slug);
+    const all = state.sweep?.items ?? [];
+    const everything = flag(a, 'all') === 'true';
+    const shown = everything ? all : openSweepItems(state);
+    const raw = flag(a, 'stale-days');
+    if (raw !== undefined && !(Number(raw) > 0)) { throw new Error(`--stale-days "${raw}" must be a number above 0`); }
+    const staleDays = raw === undefined ? state.sprint.dockStaleDays : Number(raw);
+    const now = Date.now();
+    const aged = shown.map(i => (i.state === 'open' ? { ...i, ageDays: dockAgeDays(i.createdAt, now), stale: isDockStale(i.createdAt, now, staleDays) } : { ...i, ageDays: undefined, stale: undefined }));
+    if (flag(a, 'json') === 'true') { console.log(printableJson(aged, 2)); return; }
+    for (const i of aged) {
+      const age = i.ageDays === undefined ? '' : `  ${i.ageDays}d${i.stale ? ' STALE' : ''}`;
+      const options = i.options.length ? `  [${i.options.map(o => `${o.key}: ${o.label}`).join(' | ')}]` : '';
+      print(`${i.id}  ${i.state}${i.ticket ? `  ${i.ticket}` : ''}${age}  asked by ${i.by ?? '?'}: ${i.question}${options}`);
+    }
+    print(`${aged.length} shown of ${all.length} dock item(s) on ${slug}${everything ? '' : ' (open only; --all for the rest)'}`);
+  },
+
+  read(a, slug) {
+    const state = buildState(slug);
+    const unconsumed = flag(a, 'unconsumed') === 'true';
+    const batches = readBatches(state, { unconsumed });
+    const notes = unconsumed ? unreadNotes(state) : state.sweep?.notes ?? [];
+    if (flag(a, 'json') === 'true') { console.log(printableJson({ batches, notes: notes.map(n => ({ id: n.id, at: n.at, ticket: n.ticket ?? null, text: n.text, consumed: n.consumed })) }, 2)); return; }
+    for (const b of batches) {
+      print();
+      print(`${b.batch}  sent ${stamp(b.sentAt)}${b.consumed ? '  (consumed)' : ''}`);
+      for (const r of b.answers) {
+        print(`  ${r.kind === 'need' ? 'card ' : ''}${r.ticket ? `${r.ticket} ` : ''}${r.item} asked by ${r.askedBy ?? '?'}: ${r.question}`);
+        print(`    owner answered: ${[...r.labels, r.text ? `"${r.text}"` : ''].filter(Boolean).join(' + ')}${r.tookRecommended ? '  (took the recommendation)' : ''}`);
+      }
+      if (b.skipped.length) { print(`  skipped: ${b.skipped.join(', ')}`); }
+      const unwritten = Object.entries(b.results).filter(([, v]) => v !== 'written');
+      if (unwritten.length) { print(`  not written: ${unwritten.map(([k, v]) => `${k} (${v})`).join(', ')}`); }
+    }
+    for (const n of notes) {
+      print();
+      print(`note ${n.id}  ${stamp(n.at)}${n.ticket ? `  ${n.ticket}` : ''}${n.consumed ? '  (consumed)' : ''}`);
+      print(`  owner wrote: ${n.text}`);
+    }
+    if (!batches.length && !notes.length) { print(`Nothing ${unconsumed ? 'unread' : 'sent'} from the dock (${state.sweep?.batches.length ?? 0} batch(es), ${state.sweep?.notes.length ?? 0} note(s) searched on ${slug}).`); }
+  },
+
+  async consume(a, slug) {
+    const who = writer(a);
+    if (who !== 'conductor') { throw new Error(`sweep consume is the conductor's (got --by ${who}): a batch or note marked read is one the conductor is never told about`); }
+    const id = need(a._[0], 'a batch id (swb-...) or a note id (msg-...)');
+    await withSweepLock(slug, async () => {
+      const view = buildState(slug).sweep;
+      const sent = view?.batches.filter(b => b.complete) ?? [];
+      const found = sent.find(b => b.id === id) ?? view?.notes.find(n => n.id === id);
+      if (!found) { throw new Error(`${id} is no sent batch or dock note on ${slug} (${sent.length} batch(es), ${view?.notes.length ?? 0} note(s) searched)`); }
+      if (found.consumed) { print(`${id} already consumed`); return; }
+      appendEvent(slug, { kind: 'sweep.consume', text: `${id} read by ${who}`, by: who, data: { id } });
+      print(`${id} consumed`);
+    });
+  },
+
+  async close(a, slug) {
+    const who = writer(a);
+    if (who === 'worker') { throw new Error('sweep close is not for a worker: the owner may be answering that item; tell the conductor why it no longer holds'); }
+    const id = need(a._[0], 'an item id (sw-...)');
+    const why = need(flag(a, 'why'), '--why');
+    await withSweepLock(slug, async () => {
+      const item = buildState(slug).sweep?.items.find(i => i.id === id);
+      if (!item) { throw new Error(`${id} is no dock item on ${slug}`); }
+      if (item.state !== 'open') { print(`${id} is already ${item.state}; nothing to close`); return; }
+      appendEvent(slug, { kind: 'sweep.close', ticket: item.ticket, text: `${id} retired: ${why}`, by: who, data: { id, why } });
+      print(`${id} closed`);
+    });
+  },
+};
+
 /** One small `watch.pass` event per test-environment watch pass (liveness). */
 function recordPass(slug: string, note?: string, counts?: Record<string, number>): BoardEvent {
   return appendEvent(slug, { kind: 'watch.pass', by: 'conductor', text: `Watch pass${note ? `: ${note}` : ''}`, data: counts });
@@ -162,7 +356,7 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     if (existsSync(join(sprintDir(slug), 'sprint.json'))) {
       readSprint(slug);
       setCurrent(slug);
-      console.log(`Board reused: ${sprintDir(slug)} (now CURRENT, nothing rewritten)`);
+      print(`Board reused: ${sprintDir(slug)} (now CURRENT, nothing rewritten)`);
       return;
     }
     const s: Sprint = {
@@ -182,14 +376,14 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     writeSprint(s);
     setCurrent(slug);
     appendEvent(slug, { kind: 'sprint', text: `${s.name} board opened`, at: s.startedAt });
-    console.log(`Board ready: ${sprintDir(slug)} (now CURRENT)`);
+    print(`Board ready: ${sprintDir(slug)} (now CURRENT)`);
   },
 
   use(a) {
     const slug = need(a._[0], 'sprint slug, e.g. sprint-22');
     readSprint(slug);
     setCurrent(slug);
-    console.log(`CURRENT -> ${slug}`);
+    print(`CURRENT -> ${slug}`);
   },
 
   sprint(a) {
@@ -208,7 +402,7 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
       s.people = people;
     }
     writeSprint(s);
-    console.log(`${slug} updated`);
+    print(`${slug} updated`);
   },
 
   add(a) {
@@ -219,14 +413,14 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
       if (!TK.test(id)) { throw new Error(`"${id}" is not a ticket id`); }
       appendEvent(slug, { kind: 'scope.add', ticket: id, text: `${id} joined the sprint board`, by: by(a), at: flag(a, 'at'), data: { title: flag(a, 'title'), inScope: flag(a, 'out-of-scope') !== 'true' } });
     }
-    console.log(`added ${ids.join(', ')} to ${slug}`);
+    print(`added ${ids.join(', ')} to ${slug}`);
   },
 
   remove(a) {
     const slug = slugOf(a);
     const id = knownTicket(slug, a._[0]);
     appendEvent(slug, { kind: 'scope.remove', ticket: id, text: `${id} left QA scope${rest(a, 1) ? `: ${rest(a, 1)}` : ''}`, by: by(a) });
-    console.log(`${id} marked out of scope (kept on record)`);
+    print(`${id} marked out of scope (kept on record)`);
   },
 
   meta(a) {
@@ -236,7 +430,7 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     for (const k of ['title', 'type', 'dev', 'priority', 'module', 'next']) { const v = flag(a, k); if (v) { data[k] = v; } }
     if (!Object.keys(data).length) { throw new Error('meta needs at least one of --title --type --dev --priority --module --next'); }
     appendEvent(slug, { kind: 'meta', ticket: id, text: data.next ? `Next on ${id}: ${data.next}` : `${id} details updated`, by: by(a), at: flag(a, 'at'), data });
-    console.log(`${id} updated`);
+    print(`${id} updated`);
   },
 
   start(a) {
@@ -245,7 +439,7 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     const retest = readEvents(slug).events.some(e => e.ticket === id && e.kind === 'verdict');
     if (retest) { appendEvent(slug, { kind: 'attempt', ticket: id, text: `${id} retest started`, by: by(a), at: flag(a, 'at') }); }
     appendEvent(slug, { kind: 'worker', ticket: id, text: `${id} worker started${flag(a, 'worker') ? ` (${flag(a, 'worker')})` : ''}`, by: by(a), at: flag(a, 'at'), data: { state: 'running', stage: 'plan', name: flag(a, 'worker') } });
-    console.log(`${id} running${retest ? ' (new attempt)' : ''}`);
+    print(`${id} running${retest ? ' (new attempt)' : ''}`);
   },
 
   worker(a) {
@@ -257,7 +451,7 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     if (flag(a, 'name')) { data.name = flag(a, 'name')!; }
     if (!Object.keys(data).length) { throw new Error('worker needs --state, --stage or --name'); }
     appendEvent(slug, { kind: 'worker', ticket: id, text: `${id} worker ${data.stage ? `at ${data.stage}` : data.state ?? 'renamed'}`, by: by(a), at: flag(a, 'at'), data });
-    console.log(`${id} worker updated`);
+    print(`${id} worker updated`);
   },
 
   tc(a) {
@@ -268,23 +462,48 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     const status = oneOf(TC_STATUSES, need(rest(a, 2) || undefined, 'TC status'), 'TC status');
     const approval = flag(a, 'approval');
     const reason = flag(a, 'reason');
-    // QA owns a deferral once the case cannot be recreated in the test environment (an owner ruling):
-    // a QA reason is enough; --approval stays for an owner or team decision.
-    if (status === 'DEFERRED' && !reason && !approval) { throw new Error('DEFERRED needs --reason "QA decision <date>: <why it cannot be recreated>" (or --approval "<who>, <where>" for an owner decision). Rule: agentic-qa-core/references/discovery-driven-doctrine.md §5 (DEFERRED (execution))'); }
-    appendEvent(slug, { kind: 'tc', ticket: id, text: `${tc} ${status}${flag(a, 'name') ? `: ${flag(a, 'name')}` : ''}`, by: by(a), at: flag(a, 'at'), data: { tc, status, name: flag(a, 'name'), approval, reason } });
-    console.log(`${id} ${tc} -> ${status}`);
+    if (status === 'DEFERRED' && !reason && !approval) { throw new Error('DEFERRED needs --reason "QA decision <date>: <the external cause>", and only after the unblock preflight ran and its record says DEFER: every attempt carries its evidence, and with no evidence the cause is not external and the case stays BLOCKED. --approval "<who>, <where>" records who agreed to defer this case; it is not the owner\'s OK for the Story to move. Rules: sprint-testing/references/preflight-gate.md §3, agentic-qa-core/references/discovery-driven-doctrine.md §5 (DEFERRED (execution))'); }
+    const who = status === 'DEFERRED' || approval !== undefined ? writer(a) : by(a);
+    appendEvent(slug, { kind: 'tc', ticket: id, text: `${tc} ${status}${flag(a, 'name') ? `: ${flag(a, 'name')}` : ''}`, by: who, at: flag(a, 'at'), data: { tc, status, name: flag(a, 'name'), approval, reason } });
+    print(`${id} ${tc} -> ${status}`);
+    deferralHint(slug, id);
+  },
+
+  'deferral-ok': function (a) {
+    const slug = slugOf(a);
+    const id = knownTicket(slug, a._[0]);
+    const given = need(by(a), `--by ${DEFERRAL_OK_ACTORS.join('|')}: the session that observed the owner OK. See ${DEFERRAL_OK_RULE}`);
+    const who = DEFERRAL_OK_ACTORS.find(x => x === given);
+    if (!who) { throw new Error(`--by must be one of: ${DEFERRAL_OK_ACTORS.join(', ')}, the session that observed the owner OK (got "${given}"). See ${DEFERRAL_OK_RULE}`); }
+    const cases = flags(a, 'cases');
+    const pointer = need(flag(a, 'pointer')?.trim(), `--pointer "<p>": where the owner OK was observed. See ${DEFERRAL_OK_RULE}`);
+    const refused = futureRefusal(flag(a, 'at'));
+    if (refused) { throw new Error(`${refused}. See ${DEFERRAL_OK_RULE}`); }
+    const at = isoAt(flag(a, 'at')) ?? new Date().toISOString();
+    const ticket = buildState(slug).tickets.find(x => x.id === id)!;
+    const record = deferralOkRecord(ticket, { cases, pointer, at });
+    const unverified = record.hostUnverified ? ` (${HOST_UNVERIFIED.en})` : '';
+    appendEvent(slug, { kind: 'deferral.ok', ticket: id, text: `${id}: ${who} observed an owner OK for ${record.cases.join(', ')}: ${record.pointer}${unverified}`, by: who, at, data: record });
+    print(`${id}: ${who} observed an owner OK for ${record.cases.join(', ')} (${record.pointer})`);
+    if (record.hostUnverified) { print(`Pointer ${HOST_UNVERIFIED.en}: the board knows no tracker link for ${id} it can compare the URL with.`); }
+    print(`The record sets the lane only: the pointer is still opened at Stage 3 and at round close (${DEFERRAL_OK_RULE}).`);
+    if (record.pointer.startsWith('board:')) { print('A page answer proves it did not come through the CLI, not who typed it: the Story comment is the preferred pointer when both exist.'); }
+    const after = buildState(slug).tickets.find(x => x.id === id)!;
+    if (after.deferral?.bug) { print(`${id}: ${DEFERRAL_NOTES.bug.en}, so it never reads Passed`); }
+    else { deferralHint(slug, id); }
   },
 
   verdict(a) {
     const slug = slugOf(a);
     const id = knownTicket(slug, a._[0]);
-    const v = oneOf(VERDICTS, need(a._[1], 'verdict'), 'verdict');
+    const v = oneOf(VERDICTS, need(rest(a, 1) || undefined, 'verdict'), 'verdict');
     // PENDING is the board's own "no verdict yet" state; recording it reads as a worker that
     // stopped without a verdict (measured on the source board). An owner or developer wait is BLOCKED + hold.
-    if (v === 'PENDING') { throw new Error(`verdict PENDING means "no verdict yet". For a ticket waiting on an owner or developer decision record \`verdict ${id} BLOCKED --note "<why>"\` and \`hold ${id} --reason no-data|other --on <who> "<what>"\`.`); }
+    if (v === 'PENDING') { throw new Error(`verdict PENDING means "no verdict yet". For a ticket waiting on an owner or developer decision record \`verdict ${id} BLOCKED --note "<why>" --by ${AGENT_ACTORS.join('|')}\` and \`hold ${id} --reason no-data|other --on <who> "<what>"\`.`); }
     const note = flag(a, 'note');
-    appendEvent(slug, { kind: 'verdict', ticket: id, text: `${id} ${v}${note ? `. ${note}` : ''}`, by: by(a), at: flag(a, 'at'), data: { verdict: v, note } });
-    console.log(`${id} verdict ${v}`);
+    appendEvent(slug, { kind: 'verdict', ticket: id, text: `${id} ${v}${note ? `. ${note}` : ''}`, by: writer(a), at: flag(a, 'at'), data: { verdict: v, note } });
+    print(`${id} verdict ${v}`);
+    deferralHint(slug, id);
   },
 
   ask(a) {
@@ -293,32 +512,73 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     const file = flag(a, 'file');
     const text = file ? readFileSync(file, 'utf8').trim() : need(flag(a, 'text'), '--text or --file');
     const tickets = flags(a, 'ticket').map(t => knownTicket(slug, t));
+    const kind = oneOf(ASK_KINDS, flag(a, 'kind') ?? 'blocker', '--kind');
+    if (flag(a, 'one-way') && flag(a, 'two-way')) { throw new Error('pass --one-way or --two-way, not both'); }
+    const twoWay = flag(a, 'two-way') ? true : flag(a, 'one-way') ? false : defaultTwoWay(kind);
+    const who = writer(a);
+    const refused = futureRefusal(flag(a, 'at'));
+    if (refused) { throw new Error(refused); }
     const id = `ask-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
     appendEvent(slug, {
       kind: 'ask.create',
       ticket: tickets[0],
       text: `Draft for ${person.name} ready`,
-      by: by(a),
+      by: who,
       at: flag(a, 'at'),
       data: {
         id,
         to: person.name,
         lang: flag(a, 'lang') ?? person.lang,
-        kind: oneOf(ASK_KINDS, flag(a, 'kind') ?? 'blocker', '--kind'),
+        kind,
         tickets,
         text,
         attach: flags(a, 'attach').map(repoPath),
+        twoWay,
       },
     });
-    console.log(`draft ${id} for ${person.name}`);
+    print(`draft ${id} for ${person.name} (${twoWay ? 'two-way' : 'one-way'})`);
   },
 
-  'ask-state': function (a) {
+  'ask-state': async function (a) {
     const slug = slugOf(a);
     const id = need(a._[0], 'ask id');
-    const st = oneOf(ASK_STATES, need(a._[1], 'state'), 'ask state');
-    appendEvent(slug, { kind: 'ask.state', text: `Draft ${id} marked ${st}`, by: by(a) ?? 'owner', at: flag(a, 'at'), data: { id, state: st } });
-    console.log(`${id} -> ${st}`);
+    const state = oneOf(ASK_STATES, need(a._[1], 'state'), 'ask state');
+    const who = writer(a);
+    const expect = flag(a, 'expect') === undefined ? undefined : oneOf(ASK_STATES, flag(a, 'expect')!, '--expect');
+    for (const [name, only] of Object.entries(ASK_STATE_FLAGS)) {
+      const value = flag(a, name);
+      if (value === undefined) { continue; }
+      if (state !== only) { throw new Error(`--${name} goes with the ${only} state (got ${state})`); }
+      if (a.bare.has(name) || !value.trim()) { throw new Error(`--${name} needs a value`); }
+    }
+    const link = flag(a, 'link');
+    if (link !== undefined && !/^https:\/\/[^\s"'<>]+$/i.test(link)) { throw new Error(`--link must be an https URL (got "${link}")`); }
+    const error = flag(a, 'error');
+    const messenger = resolveMessenger();
+    try {
+      const r = await applyAskTransition(slug, {
+        id,
+        state,
+        expect,
+        by: who,
+        at: flag(a, 'at'),
+        reply: flag(a, 'reply')?.trim(),
+        replyAt: isoAt(flag(a, 'reply-at')),
+        link,
+        error,
+        guard: () => {
+          if (state === 'drafted' && !link) { return 'missing --link <url of the draft>'; }
+          return state === 'draft-failed' && !error ? 'missing --error "<why the draft failed>"' : null;
+        },
+      }, messenger);
+      print(r.noop ? `${id} already ${r.state} (by ${r.by ?? '?'} at ${r.at ?? '?'}); nothing written` : `${id} -> ${r.state}`);
+      if (messenger && owesDraft(r)) { print(`${id} -> ${(await draftApproved(slug, id, messenger)).state}`); }
+    }
+    catch (err) {
+      // A refusal says what the ask is now, so the caller need not read the board to learn it.
+      if (!(err instanceof AskError) || !err.current) { throw err; }
+      throw new Error(`${err.message} (now ${err.current.state}, by ${err.current.by ?? '?'} at ${err.current.at ?? '?'})`);
+    }
   },
 
   /**
@@ -335,11 +595,11 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     const { recommend } = decisionOptions(options, flag(a, 'recommend'));
     const decider = flag(a, 'decider') ? resolvePerson(buildState(slug).people, flag(a, 'decider')!).name : undefined;
     const nid = `need-${Date.now().toString(36)}`;
-    appendEvent(slug, { kind: 'need.open', ticket: id, text: `${id} needs you: ${question}`, by: by(a), at: flag(a, 'at'), data: { id: nid, question, blocker, options, blocked: flag(a, 'blocked'), why: flag(a, 'why'), recommend, decider } });
-    console.log(`${id} -> Needs you (${nid})${recommend ? `, QA recommends ${recommend}` : ''}${decider ? `, ${decider} decides` : ''}`);
+    appendEvent(slug, { kind: 'need.open', ticket: id, text: `${id} needs you: ${question}`, by: writer(a), at: flag(a, 'at'), data: { id: nid, question, blocker, options, blocked: flag(a, 'blocked'), why: flag(a, 'why'), recommend, decider } });
+    print(`${id} -> Needs you (${nid})${recommend ? `, QA recommends ${recommend}` : ''}${decider ? `, ${decider} decides` : ''}`);
   },
 
-  /** The owner (or the conductor for them) answers with text; with no text it prints the answers given. */
+  /** An agent records an answer given outside the page, under its own name; with no text it prints the answers given and by whom. */
   answer(a) {
     const slug = slugOf(a);
     const id = knownTicket(slug, a._[0]);
@@ -347,20 +607,25 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     if (!text) {
       const t = buildState(slug).tickets.find(x => x.id === id);
       const answered = t?.needs.filter(n => n.answer) ?? [];
-      console.log(answered.length ? answered.map(n => `${n.question}\n-> ${n.answer}`).join('\n\n') : '(no answer yet)');
+      if (!answered.length) { print('(no answer yet)'); }
+      for (const n of answered) {
+        print(`${n.id} asked by ${n.openedBy ?? '?'}: ${n.question}`);
+        print(`${n.id} answered by ${n.answeredBy ?? '?'}: ${n.answer}`);
+      }
       return;
     }
+    const who = writer(a);
     const needId = needTarget(buildState(slug).tickets.find(x => x.id === id)?.needs ?? [], 'answer', id, flag(a, 'id'));
-    appendEvent(slug, { kind: 'need.answer', ticket: id, text: `Owner answered on ${id}: ${text}`, by: by(a) ?? 'owner', at: flag(a, 'at'), data: { id: needId, text } });
-    console.log(`${id} answered`);
+    appendEvent(slug, { kind: 'need.answer', ticket: id, text: `${who} answered on ${id}: ${text}`, by: who, at: flag(a, 'at'), data: { id: needId, text } });
+    print(`${id} answered`);
   },
 
   resolve(a) {
     const slug = slugOf(a);
     const id = knownTicket(slug, a._[0]);
     const needId = needTarget(buildState(slug).tickets.find(x => x.id === id)?.needs ?? [], 'resolve', id, flag(a, 'id'));
-    appendEvent(slug, { kind: 'need.close', ticket: id, text: `${id} question closed${rest(a, 1) ? `: ${rest(a, 1)}` : ''}`, by: by(a), at: flag(a, 'at'), data: { id: needId } });
-    console.log(`${id} question ${needId} closed`);
+    appendEvent(slug, { kind: 'need.close', ticket: id, text: `${id} question closed${rest(a, 1) ? `: ${rest(a, 1)}` : ''}`, by: writer(a), at: flag(a, 'at'), data: { id: needId } });
+    print(`${id} question ${needId} closed`);
   },
 
   hold(a) {
@@ -369,14 +634,14 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     const reason = oneOf(HOLD_REASONS, need(flag(a, 'reason'), '--reason'), '--reason');
     const note = need(rest(a, 1) || undefined, 'what it is waiting for');
     appendEvent(slug, { kind: 'hold.set', ticket: id, text: `${id} held: ${note}`, by: by(a), at: flag(a, 'at'), data: { reason, note, on: flag(a, 'on') } });
-    console.log(`${id} -> Held`);
+    print(`${id} -> Held`);
   },
 
   unhold(a) {
     const slug = slugOf(a);
     const id = knownTicket(slug, a._[0]);
     appendEvent(slug, { kind: 'hold.clear', ticket: id, text: `${id} released from hold${rest(a, 1) ? `: ${rest(a, 1)}` : ''}`, by: by(a), at: flag(a, 'at') });
-    console.log(`${id} hold cleared`);
+    print(`${id} hold cleared`);
   },
 
   wait(a) {
@@ -385,15 +650,15 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     const person = resolvePerson(buildState(slug).people, need(flag(a, 'on'), '--on <person>')).name;
     const what = need(flag(a, 'what'), '--what "<what you need from them>"');
     appendEvent(slug, { kind: 'wait.open', ticket: id, text: `Waiting on ${person}: ${what}`, by: by(a), at: flag(a, 'at'), data: { id: `wait-${Date.now().toString(36)}`, person, what } });
-    console.log(`${id} waiting on ${person}`);
+    print(`${id} waiting on ${person}`);
   },
 
   unwait(a) {
     const slug = slugOf(a);
     const id = knownTicket(slug, a._[0]);
     const person = resolvePerson(buildState(slug).people, need(flag(a, 'on'), '--on <person>')).name;
-    appendEvent(slug, { kind: 'wait.close', ticket: id, text: `${person} answered on ${id}${rest(a, 1) ? `: ${rest(a, 1)}` : ''}`, by: by(a), at: flag(a, 'at'), data: { person } });
-    console.log(`${id} no longer waiting on ${person}`);
+    appendEvent(slug, { kind: 'wait.close', ticket: id, text: `${person} answered on ${id}${rest(a, 1) ? `: ${rest(a, 1)}` : ''}`, by: writer(a), at: flag(a, 'at'), data: { person } });
+    print(`${id} no longer waiting on ${person}`);
   },
 
   bug(a) {
@@ -403,13 +668,13 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     if (!TK.test(bug)) { throw new Error(`"${a._[1]}" is not a ticket id`); }
     const severity = flag(a, 'severity') ? oneOf(SEVERITIES, flag(a, 'severity')!, '--severity') : undefined;
     appendEvent(slug, { kind: 'bug.link', ticket: id, text: `${bug} filed against ${id}${flag(a, 'title') ? `: ${flag(a, 'title')}` : ''}`, by: by(a), at: flag(a, 'at'), data: { bug, title: flag(a, 'title'), severity } });
-    console.log(`${id} <- bug ${bug}`);
+    print(`${id} <- bug ${bug}`);
     // A reminder, never a failure: the link is already recorded above.
     try {
       const live = readLive([id, bug]);
       const images = [...new Set([...(live[id]?.evidence ?? []), ...(live[bug]?.evidence ?? [])])];
       const note = bugEvidenceReminder({ ticket: id, bug, images, embedded: flag(a, 'evidence-embedded') === 'true' });
-      if (note) { console.log(note); }
+      if (note) { print(note); }
     }
     catch { /* the evidence check must never stop a bug link */ }
   },
@@ -422,9 +687,9 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     if (tc && !TC_ID.test(tc)) { throw new Error(`--tc "${flag(a, 'tc')}" is not a TC id like ${keyExample()} or TC-7012`); }
     const outcome = flag(a, 'outcome') ? oneOf(EVIDENCE_OUTCOMES, flag(a, 'outcome')!, '--outcome') : undefined;
     appendEvent(slug, { kind: 'evidence', ticket: id, text: `Evidence on ${id}${tc ? ` ${tc}` : ''}: ${flag(a, 'caption') ?? path}`, by: by(a), at: flag(a, 'at'), data: { path, caption: flag(a, 'caption'), tc, outcome } });
-    console.log(`${id} evidence ${path}${tc ? ` (${tc}${outcome ? `, ${outcome}` : ''})` : outcome ? ` (${outcome})` : ''}`);
+    print(`${id} evidence ${path}${tc ? ` (${tc}${outcome ? `, ${outcome}` : ''})` : outcome ? ` (${outcome})` : ''}`);
     // A note, never a failure: the TC may reach the tracker after the screenshot does.
-    if (tc && !buildState(slug).tickets.find(t => t.id === id)?.tcs.some(x => x.id === tc)) { console.log(`note: ${tc} is not on ${id} yet; the image is grouped under it anyway`); }
+    if (tc && !buildState(slug).tickets.find(t => t.id === id)?.tcs.some(x => x.id === tc)) { print(`note: ${tc} is not on ${id} yet; the image is grouped under it anyway`); }
   },
 
   /**
@@ -454,7 +719,7 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     }
     const prev = bug ? state.bugs?.find(b => b.id === bug)?.page : state.tickets.find(t => t.id === id)?.evidenceArtifact;
     appendEvent(slug, { kind: 'evidence.artifact', ticket: id, text: `Evidence page for ${bug ?? id}${bug ? ` (bug on ${id})` : ''}${title ? `: ${title}` : ''}`, by: who, at: flag(a, 'at'), data: { url, bug, title } });
-    console.log(`${bug ? `${bug} (bug on ${id})` : id} evidence page ${url}${prev ? `; replaces the page recorded ${prev.at.slice(0, 16).replace('T', ' ')}Z (kept in history)` : ''}`);
+    print(`${bug ? `${bug} (bug on ${id})` : id} evidence page ${url}${prev ? `; replaces the page recorded ${prev.at.slice(0, 16).replace('T', ' ')}Z (kept in history)` : ''}`);
   },
 
   /** The older name of `evidence-artifact`, kept so a session briefed with the old name still records its link. */
@@ -477,7 +742,7 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     }
     const fid = `fx-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
     appendEvent(slug, { kind: 'fixture', ticket: id, text: `Test data on ${id}: ${text}`, by: by(a), at: flag(a, 'at'), data: { id: fid, text, module } });
-    console.log(`${id} fixture ${fid}${module ? ` (${module})` : ''}`);
+    print(`${id} fixture ${fid}${module ? ` (${module})` : ''}`);
   },
 
   /** Lists recorded test data, newest first: ticket, module, text, time. */
@@ -486,9 +751,9 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     const all = buildState(slug).fixtures;
     const module = flag(a, 'module');
     const list = listFixtures(all, module);
-    if (flag(a, 'json') === 'true') { console.log(JSON.stringify({ slug, module, searched: all.length, fixtures: list })); return; }
-    console.log(`fixtures on ${slug}: ${list.length} shown, ${all.length} recorded${module ? ` (module ${module})` : ''}`);
-    for (const f of list) { console.log(`${f.at.slice(0, 16).replace('T', ' ')}Z  ${f.ticket}  ${f.module ?? 'no module'}  ${f.text}`); }
+    if (flag(a, 'json') === 'true') { console.log(printableJson({ slug, module, searched: all.length, fixtures: list })); return; }
+    print(`fixtures on ${slug}: ${list.length} shown, ${all.length} recorded${module ? ` (module ${module})` : ''}`);
+    for (const f of list) { print(`${f.at.slice(0, 16).replace('T', ' ')}Z  ${f.ticket}  ${f.module ?? 'no module'}  by ${f.by ?? '?'}: ${f.text}`); }
   },
 
   'accept-risk': function (a) {
@@ -496,7 +761,7 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     const id = knownTicket(slug, a._[0]);
     const who = need(flag(a, 'by'), '--by "<who accepted, where>"');
     appendEvent(slug, { kind: 'accept-risk', ticket: id, text: `${who} accepted ${id} as shipped${rest(a, 1) ? `: ${rest(a, 1)}` : ''}`, by: who, at: flag(a, 'at'), data: { by: who, note: rest(a, 1) || undefined } });
-    console.log(`${id} risk accepted by ${who}`);
+    print(`${id} risk accepted by ${who}`);
   },
 
   /** Claude writes in the inbox: a question (--option or --ask), an update, or a reply (--reply <msg-id>). */
@@ -511,7 +776,7 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     const options = a.flags.option ?? [];
     const id = `msg-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
     appendEvent(slug, { kind: 'msg', ticket, text: `Claude: ${text}`, by: 'claude', at: flag(a, 'at'), data: { id, from: 'claude', text, replyTo, options, ask: flag(a, 'ask') === 'true' || options.length > 0 } });
-    console.log(`${id} posted to the ${slug} inbox`);
+    print(`${id} posted to the ${slug} inbox`);
   },
 
   /** What the owner wrote that Claude has not answered yet (--all: every thread). */
@@ -523,11 +788,18 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
       searched += threads.length;
       for (const t of threads.filter(x => flag(a, 'all') === 'true' || x.state !== 'done')) {
         shown++;
-        console.log(`\n[${slug}] ${t.id}  ${t.state}${t.ticket ? `  ${t.ticket}` : ''}`);
-        for (const m of [t, ...t.replies]) { console.log(`  ${m.at.slice(0, 16).replace('T', ' ')}Z ${m.from} (${m.id}): ${m.text}${m.options.length ? `  [${m.options.join(' | ')}]` : ''}`); }
+        print();
+        print(`[${slug}] ${t.id}  ${t.state}${t.ticket ? `  ${t.ticket}` : ''}`);
+        for (const m of [t, ...t.replies]) { print(`  ${m.at.slice(0, 16).replace('T', ' ')}Z ${m.from} (${m.id}): ${m.text}${m.options.length ? `  [${m.options.join(' | ')}]` : ''}`); }
       }
     }
-    if (!shown) { console.log(`Nothing open in the inbox (${searched} threads searched on ${slugs.join(', ') || 'no open board'}).`); }
+    if (!shown) { print(`Nothing open in the inbox (${searched} threads searched on ${slugs.join(', ') || 'no open board'}).`); }
+  },
+
+  async sweep(a) {
+    const sub = a._.shift() ?? '';
+    if (!Object.hasOwn(sweepCommands, sub)) { throw new Error(`sweep needs a subcommand: ${Object.keys(sweepCommands).join(' | ')} (got "${sub}")`); }
+    await sweepCommands[sub](a, slugOf(a));
   },
 
   /**
@@ -545,23 +817,23 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
       if (!cutoff) { throw new Error(`--since "${since}" is neither an ISO time nor an id on an open board (${total} events searched on ${boards.map(b => b.slug).join(', ') || 'no open board'})`); }
       const replay = boards.flatMap(b => ownerActionsSince(b.events, cutoff).map(e => ({ slug: b.slug, e })));
       replay.sort((x, y) => x.e.at.localeCompare(y.e.at));
-      for (const { slug, e } of replay) { console.log(listenLine(slug, e)); }
-      console.log(`replayed ${replay.length} owner action(s) since ${cutoff} (${total} events searched on ${boards.length} open board(s))`);
+      for (const { slug, e } of replay) { print(listenLine(slug, e)); }
+      print(`replayed ${replay.length} owner action(s) since ${cutoff} (${total} events searched on ${boards.length} open board(s))`);
     }
     const seen = new Map<string, number>();
     const scan = (announce: boolean) => {
       for (const slug of open()) {
         const { events } = readEvents(slug);
         const from = seen.get(slug) ?? (announce ? 0 : events.length);
-        for (const e of events.slice(from)) { if (e.by === 'owner') { console.log(listenLine(slug, e)); } }
+        for (const e of events.slice(from)) { if (e.by === 'owner') { print(listenLine(slug, e)); } }
         seen.set(slug, events.length);
       }
     };
     scan(false);
-    console.log(`listening for owner actions on: ${[...seen.keys()].join(', ') || '(no open board)'}`);
+    print(`listening for owner actions on: ${[...seen.keys()].join(', ') || '(no open board)'}`);
     setInterval(() => {
       try { scan(true); }
-      catch (err) { console.log(`listen error: ${(err as Error).message}`); }
+      catch (err) { print(`listen error: ${(err as Error).message}`); }
     }, 2000);
     await new Promise(() => {});
   },
@@ -572,7 +844,7 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     const ticket = first && TK.test(first) ? knownTicket(slug, first) : undefined;
     const text = need((ticket ? rest(a, 1) : rest(a, 0)) || undefined, 'text');
     appendEvent(slug, { kind: 'note', ticket, text, by: by(a), at: flag(a, 'at') });
-    console.log('logged');
+    print('logged');
   },
 
   release(a) {
@@ -583,7 +855,7 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     (s.releases ??= []).push({ label, at, ref: flag(a, 'ref') });
     writeSprint(s);
     appendEvent(slug, { kind: 'release', text: label, at });
-    console.log('release recorded');
+    print('release recorded');
   },
 
   async sync(a) {
@@ -610,14 +882,17 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     const nowTracked = discovered.length - untracked.length;
     // A synced run IS the scheduled pass: record that it ran, so the board can show the watch is alive.
     if (flag(a, 'sync') === 'true') { recordPass(slug, `${fresh.length} new, ${r.list.length - fresh.length} recheck, ${untracked.length} untracked`, { new: fresh.length, recheck: r.list.length - fresh.length, inTest: r.inTest, untracked: untracked.length }); }
-    if (flag(a, 'json') === 'true') { console.log(JSON.stringify({ slug, syncedAt: tracker?.syncedAt, ...r, untracked, discover: tracker?.discover ? { at: tracker.discover.at, sprintRows: tracker.discover.sprintRows } : null })); return; }
-    console.log(`arrivals on ${slug}: ${r.searched} tickets searched, ${r.inTest} in ${env}, ${fresh.length} new, ${r.list.length - fresh.length} to recheck (${trackerName(tracker?.source)} synced ${tracker?.syncedAt ?? 'never'})`);
-    console.log(tracker?.discover
+    if (flag(a, 'json') === 'true') { console.log(printableJson({ slug, syncedAt: tracker?.syncedAt, ...r, untracked, discover: tracker?.discover ? { at: tracker.discover.at, sprintRows: tracker.discover.sprintRows } : null })); return; }
+    print(`arrivals on ${slug}: ${r.searched} tickets searched, ${r.inTest} in ${env}, ${fresh.length} new, ${r.list.length - fresh.length} to recheck (${trackerName(tracker?.source)} synced ${tracker?.syncedAt ?? 'never'})`);
+    print(tracker?.discover
       ? `untracked: ${untracked.length} of ${tracker.discover.sprintRows} sprint rows in ${env} but not on the board (discovered ${tracker.discover.at}${nowTracked ? `; ${nowTracked} more listed then are on the board now` : ''})`
       : 'untracked: not checked, no sync --discover on this board yet (run arrivals --sync)');
-    for (const x of r.list) { console.log(`${x.state === 'new' ? 'NEW    ' : 'RECHECK'} ${x.id}  ${x.priority ?? '-'}  ${x.dev ?? 'no dev'}  ${x.module ?? 'no module'}  ${x.title ?? ''}${x.note ? `\n        last note: ${x.note}` : ''}`); }
-    for (const x of untracked) { console.log(`UNTRACKED ${x.id}  ${x.status ?? '?'}  QA:${x.qa ?? 'blank'}  ${x.title ?? ''}`); }
-    for (const x of tracker?.discover?.unclassified ?? []) { console.log(`UNCLASSIFIED ${x.id}  ${x.status}  (a status board.statuses does not list; add it to a bucket)`); }
+    for (const x of r.list) {
+      print(`${x.state === 'new' ? 'NEW    ' : 'RECHECK'} ${x.id}  ${x.priority ?? '-'}  ${x.dev ?? 'no dev'}  ${x.module ?? 'no module'}  ${x.title ?? ''}`);
+      if (x.note) { print(`        last note by ${x.noteBy ?? '?'}: ${x.note}`); }
+    }
+    for (const x of untracked) { print(`UNTRACKED ${x.id}  ${x.status ?? '?'}  QA:${x.qa ?? 'blank'}  ${x.title ?? ''}`); }
+    for (const x of tracker?.discover?.unclassified ?? []) { print(`UNCLASSIFIED ${x.id}  ${x.status}  (a status board.statuses does not list; add it to a bucket)`); }
   },
 
   /** Records what the conductor did with an arrival: launched, held (rechecked every pass) or skipped. */
@@ -626,32 +901,73 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     const id = knownTicket(slug, a._[0]);
     const action = oneOf(ARRIVAL_ACTIONS, need(a._[1], 'action (launched|held|skipped)'), 'action');
     const note = rest(a, 2);
-    appendEvent(slug, { kind: 'arrival', ticket: id, by: by(a) ?? 'conductor', text: `${id} arrival ${action}${note ? `: ${note}` : ''}`, data: { action, note: note || undefined } });
-    console.log(`${id} arrival ${action}`);
+    appendEvent(slug, { kind: 'arrival', ticket: id, by: writer(a), text: `${id} arrival ${action}${note ? `: ${note}` : ''}`, data: { action, note: note || undefined } });
+    print(`${id} arrival ${action}`);
   },
 
   /** Records a watch pass that did not go through `arrivals --sync`. */
   'watch-pass': function (a) {
     const slug = slugOf(a);
     recordPass(slug, rest(a, 0) || undefined);
-    console.log(`watch pass recorded on ${slug}`);
+    print(`watch pass recorded on ${slug}`);
   },
 
   status(a) {
-    const s = buildState(slugOf(a));
+    const slug = slugOf(a);
+    const s = buildState(slug);
     const lanes = new Map<string, string[]>();
-    for (const t of s.tickets.filter(x => x.inScope)) { lanes.set(t.lane, [...(lanes.get(t.lane) ?? []), `${t.id}  ${t.title}${t.atRisk ? '  [shipped at risk]' : ''}`]); }
-    console.log(`${s.sprint.name}: ${s.tickets.filter(t => t.inScope).length} tickets in scope`);
-    for (const [lane, list] of lanes) { console.log(`\n${lane} (${list.length})\n  ${list.join('\n  ')}`); }
-    for (const w of s.warnings) { console.log(`\n! ${w}`); }
+    for (const t of s.tickets.filter(x => x.inScope)) {
+      const note = deferralNote(t);
+      const unverified = t.deferral ? unverifiedHostCases(t.deferral) : [];
+      const deferral = t.deferral ? `  [${deferralMark(t.deferral)}]${note ? `  (${DEFERRAL_NOTES[note].en})` : ''}${unverified.length ? `  (OK pointer ${HOST_UNVERIFIED.en}: ${unverified.join(', ')})` : ''}` : '';
+      lanes.set(t.lane, [...(lanes.get(t.lane) ?? []), `${t.id}  ${t.title}${t.atRisk ? '  [shipped at risk]' : ''}${deferral}`]);
+    }
+    print(`${s.sprint.name}: ${s.tickets.filter(t => t.inScope).length} tickets in scope`);
+    for (const [lane, list] of lanes) {
+      print();
+      const marked = lane === 'Passed' ? metrics(s).notFullyTested : 0;
+      print(`${lane} (${list.length}${marked ? `, ${marked} not fully tested` : ''})`);
+      for (const line of list) { print(`  ${line}`); }
+    }
+    for (const w of s.warnings) {
+      print();
+      print(`! ${w}`);
+    }
     const wl = watchLiveness(s.watch?.lastPassAt, new Date());
     if (wl.lastPassAt) {
       const label = { 'ok': '', 'stale': `  STALE: none in the last ${WATCH_STALE_MIN} min of working hours`, 'off-hours': '  (outside working hours)', 'never': '' }[wl.state];
-      console.log(`\nLast watch pass ${localHhmm(wl.lastPassAt)} (${wl.ageMin} min ago, ${s.watch?.passes ?? 0} pass(es))${label}`);
+      print();
+      print(`Last watch pass ${localHhmm(wl.lastPassAt)} (${wl.ageMin} min ago, ${s.watch?.passes ?? 0} pass(es))${label}`);
     }
     else {
-      console.log('\nNo watch pass recorded on this board');
+      print();
+      print('No watch pass recorded on this board');
     }
+    if (!s.sprint.closedAt) {
+      for (const w of watchersDown(watcherViews(slug), new Date())) { print(`! ${w.name} not running (pid ${w.pid}, ${w.exitedAt ? `exited cleanly ${localHhmm(w.exitedAt)}` : 'no clean exit'})`); }
+    }
+  },
+
+  watcher(a) {
+    const slug = slugOf(a);
+    const action = oneOf(['register', 'clear', 'list'] as const, need(a._[0], 'action (register|clear|list)'), 'action');
+    const { closedAt } = readSprint(slug);
+    if (action === 'list') {
+      const all = watcherViews(slug);
+      for (const w of all) { print(`${w.name}  pid ${w.pid}  ${w.alive ? 'running' : 'NOT running'}${w.exitedAt ? `  (exited ${localHhmm(w.exitedAt)})` : ''}`); }
+      print(`${all.length} watcher(s) registered on ${slug}`);
+      return;
+    }
+    const name = checkWatcherName(need(a._[1], 'watcher name'));
+    if (action === 'clear') {
+      print(clearWatcher(slug, name) ? `watcher ${name} cleared on ${slug}` : `no watcher named ${name} on ${slug}`);
+      return;
+    }
+    if (closedAt) { throw new Error(`${slug} is closed (${closedAt}); the board checks watchers on an open board only`); }
+    const match = flag(a, 'match');
+    if (match === '') { throw new Error('--match needs a text; write --match=<text> when the text starts with "--"'); }
+    registerWatcher(slug, { name, pid: Number(need(flag(a, 'pid'), '--pid <n>')), match });
+    print(`watcher ${name} registered on ${slug}`);
   },
 
   async serve(a) {
@@ -681,7 +997,7 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     const { snapshot, SNAPSHOT_MODES } = await import('./snapshot.ts');
     const mode = oneOf(SNAPSHOT_MODES, flag(a, 'mode') ?? 'full', '--mode');
     const out = await snapshot(slugOf(a), { mode, out: flag(a, 'out'), embedEvidence: flag(a, 'embed-evidence') === 'true', fragment: flag(a, 'fragment') === 'true', stpUrl: flag(a, 'stp-url'), stpHosts: stpHosts() });
-    console.log(`snapshot written: ${out}`);
+    print(`snapshot written: ${out}`);
   },
 
   async archive(a) {
@@ -693,15 +1009,17 @@ const commands: Record<string, (a: Args) => void | Promise<void>> = {
     const closingAt = s.closedAt ? undefined : new Date().toISOString();
     const out = await snapshot(slug, { mode: 'full', archive: true, embedEvidence: true, closingAt });
     if (closingAt) { s.closedAt = closingAt; writeSprint(s); }
-    console.log(`archived ${slug} -> ${out}\nThe live folder stays at ${sprintDir(slug)}; nothing was deleted.`);
+    print(`archived ${slug} -> ${out}`);
+    print(`The live folder stays at ${sprintDir(slug)}; nothing was deleted.`);
   },
 
   sprints() {
     let cur = '';
     try { cur = currentSlug(); }
     catch { /* none yet */ }
-    for (const s of listSprints()) { console.log(`${s === cur ? '*' : ' '} ${s}`); }
-    console.log(`\nData: ${BOARD_DIR}`);
+    for (const s of listSprints()) { print(`${s === cur ? '*' : ' '} ${s}`); }
+    print();
+    print(`Data: ${BOARD_DIR}`);
   },
 
   help() {
@@ -714,13 +1032,15 @@ const args = parse(process.argv.slice(2));
 const cmd = args._.shift() ?? 'help';
 const run = commands[cmd];
 if (!run) {
-  console.error(`unknown command "${cmd}". Commands: ${Object.keys(commands).join(', ')}`);
+  console.error(printable(`unknown command "${cmd}". Commands: ${Object.keys(commands).join(', ')}`));
   process.exit(2);
 }
 try {
+  const refused = authorRefusal(args);
+  if (refused) { throw new Error(refused); }
   await run(args);
 }
 catch (err) {
-  console.error(`sprint-board ${cmd}: ${(err as Error).message}`);
+  console.error(printable(`sprint-board ${cmd}: ${(err as Error).message}`));
   process.exit(1);
 }

@@ -1,6 +1,6 @@
-import type { Ask, BoardState, BugGroup, EvidenceArtifact, EvidenceFilter, EvidenceView, Fixture, InboxMsg, InboxThread, Lane, Metrics, Need, OutcomeCounts, SprintBug, TicketView } from '../model.ts';
+import type { Ask, AskAction, AskPhase, AskState, BoardState, BugGroup, EvidenceArtifact, EvidenceFilter, EvidenceView, Fixture, InboxMsg, InboxThread, Lane, Metrics, Need, OutcomeCounts, SprintBug, TicketView } from '../model.ts';
 /** Every view is a pure function of the folded state: state in, HTML out. */
-import { bugCounts, devsOf, EVIDENCE_OUTCOMES, groupEvidence, isDecisionCard, isTestedBucket, LANES, listFixtures, metrics, outcomeCounts, REPORT_PRIORITIES, tcCounts, trackerName } from '../model.ts';
+import { askPhase, askTransition, awaitsOwner, bugCounts, DEFERRAL_NOTES, deferralBlocks, deferralHold, deferralNote, devsOf, EVIDENCE_OUTCOMES, groupEvidence, HOST_UNVERIFIED, isBugType, isDecisionCard, isDraftingState, isTestedBucket, isUnsent, LANES, listFixtures, metrics, NOT_FULLY_TESTED, outcomeCounts, REPORT_PRIORITIES, tcCounts, trackerName } from '../model.ts';
 import { barChart, burnupChart, dotStrip, stackBar } from './charts.ts';
 import { getLang, tr } from './i18n.ts';
 import { ago, day, esc, firstName, hhmm, initials, pct, slackHtml } from './util.ts';
@@ -76,19 +76,34 @@ function matches(t: TicketView, q: string): boolean {
 const inScope = (c: Ctx) => c.state.tickets.filter(t => t.inScope && matches(t, c.filter));
 
 // ---------------------------------------------------------------------------
+// Deferred cases: the mark, the note and the OK records
+// ---------------------------------------------------------------------------
+
+const deferralText = (note: keyof typeof DEFERRAL_NOTES) => tr(DEFERRAL_NOTES[note].en, DEFERRAL_NOTES[note].es);
+const deferralFlag = (t?: TicketView) => (t?.deferral ? ` <span class="flag defer" title="${esc(`DEFERRED: ${t.deferral.cases.join(', ')}`)}">${esc(t.deferral.label ?? tr(NOT_FULLY_TESTED.en, NOT_FULLY_TESTED.es))}</span>` : '');
+const flagOf = (c: Ctx, id?: string) => deferralFlag(c.state.tickets.find(t => t.id === id));
+const notFullyTested = (n: number) => `${n} ${tr('passed, not fully tested', 'en Passed sin probar del todo')}`;
+function deferralLine(t: TicketView): string {
+  const note = deferralNote(t);
+  return note ? `<div class="say">${deferralText(note)}</div>` : '';
+}
+
+// ---------------------------------------------------------------------------
 // Card
 // ---------------------------------------------------------------------------
 
 function caseBar(t: TicketView): string {
   const c = tcCounts(t.tcs);
-  if (!c.total) { return `<span class="meta">${t.type === 'Bug' ? tr('bug retest', 'retest de bug') : tr('no cases yet', 'sin casos aún')}</span>`; }
+  if (!c.total) { return `<span class="meta">${isBugType(t.type) ? tr('bug retest', 'retest de bug') : tr('no cases yet', 'sin casos aún')}</span>`; }
   const seg = (n: number, cls: string) => (n ? `<i class="${cls}" style="width:${(n / c.total) * 100}%"></i>` : '');
   return `<span class="bar" title="${c.PASSED} PASSED · ${c.FAILED} FAILED · ${c.DEFERRED} DEFERRED · ${c.BLOCKED} BLOCKED · ${c['NOT RUN']} NOT RUN">${seg(c.PASSED, 's-pass')}${seg(c.FAILED, 's-fail')}${seg(c.BLOCKED, 's-blk')}${seg(c.DEFERRED, 's-def')}${seg(c['NOT RUN'], 's-nr')}</span><span class="mono">${c.PASSED}/${c.total}</span>`;
 }
 
+const recordedBy = (n: Need): string => (n.answer && n.answeredBy ? esc(tr(`answer recorded by ${n.answeredBy}`, `respuesta registrada por ${n.answeredBy}`)) : '');
+
 function laneLine(t: TicketView, c: Ctx): string {
-  const need = t.needs.find(n => !n.answer);
-  if (t.lane === 'Needs you' && need) { return `<div class="say">◆ ${esc(need.question)}</div>`; }
+  const need = t.needs.find(awaitsOwner);
+  if (t.lane === 'Needs you' && need) { return `<div class="say">◆ ${esc(need.question)}${need.answer ? ` <span class="hint">· ${recordedBy(need)}</span>` : ''}</div>`; }
   if (t.lane === 'Running') {
     const last = t.progress.at(-1)?.text;
     return `<div class="running-stripe"></div><div class="meta">${esc(t.worker.stage ?? 'started')}${t.worker.lastActivity ? ` · ${tr('active', 'activo')} ${ago(t.worker.lastActivity, nowMs(c))} ${tr('ago', 'atrás')}` : ''}${t.worker.quiet ? ` · <b class="warn">${tr('quiet', 'callado')}</b>` : ''}</div>${last ? `<div class="say">${esc(last.slice(0, 110))}</div>` : ''}`;
@@ -104,13 +119,13 @@ export function card(t: TicketView, c: Ctx, compact = false): string {
   const worst = ['Critical', 'High', 'Medium', 'Low'].find(s => t.bugs.some(b => b.severity === s));
   const prio = t.priority === 'Critical' || t.priority === 'High' ? `<span class="prio p-${t.priority.toLowerCase()}">${esc(t.priority)}</span>` : '';
   return `<button type="button" class="card ${LANE_CLASS[t.lane]}${t.worker.quiet ? ' quiet' : ''}${compact ? ' compact' : ''}" data-open="${esc(t.id)}" data-card="${esc(t.id)}">
-    <div class="row"><span class="id">${esc(t.id)}</span>${prio}${t.attempt > 1 ? `<span class="flag retry">${tr('retest', 'retest')} ${t.attempt}</span>` : ''}${t.atRisk ? `<span class="flag" title="${esc(tr(`Past the QA gate in ${TRK(c)} with a case not PASSED or DEFERRED`, `Pasó el gate de QA en ${TRK(c)} con un caso que no está PASSED ni DEFERRED`))}">${tr('shipped at risk', 'salió con riesgo')}</span>` : ''}</div>
+    <div class="row"><span class="id">${esc(t.id)}</span>${prio}${t.attempt > 1 ? `<span class="flag retry">${tr('retest', 'retest')} ${t.attempt}</span>` : ''}${t.atRisk ? `<span class="flag" title="${esc(tr(`Past the QA gate in ${TRK(c)} with a case not PASSED or DEFERRED`, `Pasó el gate de QA en ${TRK(c)} con un caso que no está PASSED ni DEFERRED`))}">${tr('shipped at risk', 'salió con riesgo')}</span>` : ''}${deferralFlag(t)}</div>
     <div class="title">${esc(t.title)}</div>
     ${compact
       ? ''
       : `<div class="row">${caseBar(t)}</div>
     <div class="meta"><span>${esc(firstName(devsOf(t.dev)[0]))}${devsOf(t.dev).length > 1 ? ` +${devsOf(t.dev).length - 1}` : ''}</span>${t.bugs.length ? `<span>${t.bugs.length} ${t.bugs.length === 1 ? 'bug' : 'bugs'}${worst ? ` · ${esc(worst)}` : ''}</span>` : ''}<span>${tr('in lane', 'en carril')} ${ago(t.laneSince, nowMs(c))}</span>${t.drift ? `<span class="flag drift">${esc(t.drift)}</span>` : ''}</div>
-    ${laneLine(t, c)}`}
+    ${laneLine(t, c)}${deferralLine(t)}`}
   </button>`;
 }
 
@@ -125,6 +140,7 @@ function bottomLine(c: Ctx): string {
   const quiet = state.tickets.filter(t => t.worker.quiet);
   const parts = [
     `<span><b class="n">${m.verdicts.done}/${m.verdicts.of}</b> ${tr('tickets have a verdict', 'tickets con veredicto')}</span>`,
+    ...(m.notFullyTested ? [`<span class="warn">${notFullyTested(m.notFullyTested)}</span>`] : []),
     `<span><b class="n">${needs}</b> ${tr(needs === 1 ? 'needs you' : 'need you', needs === 1 ? 'te necesita' : 'te necesitan')}</span>`,
     `<span><b class="n">${m.bugs.open}</b> ${tr('open bugs', 'bugs abiertos')}${highOpen ? ` (${highOpen} High+)` : ''}</span>`,
   ];
@@ -136,7 +152,7 @@ function bottomLine(c: Ctx): string {
 function kpis(c: Ctx): string {
   const { m } = c;
   return `<div class="kpis">
-    <div class="kpi k-pass"><span class="lbl">Verdicts</span><b>${m.verdicts.done}<small style="font-size:14px;color:var(--muted)">/${m.verdicts.of}</small></b><small>${tr('tickets in QA scope', 'tickets en alcance de QA')}</small></div>
+    <div class="kpi k-pass"><span class="lbl">Verdicts</span><b>${m.verdicts.done}<small style="font-size:14px;color:var(--muted)">/${m.verdicts.of}</small></b><small>${tr('tickets in QA scope', 'tickets en alcance de QA')}${m.notFullyTested ? ` · ${notFullyTested(m.notFullyTested)}` : ''}</small></div>
     <div class="kpi k-run"><span class="lbl">Pass rate</span><b>${pct(m.passRate)}</b><small>${tr('executed', 'ejecutados')} ${m.tc.executed} ${tr('of', 'de')} ${m.tc.total} · ${m.tc['NOT RUN']} NOT RUN</small></div>
     <div class="kpi k-fail"><span class="lbl">Open bugs</span><b>${m.bugs.open}</b><small>${m.bugs.total} ${tr('filed this sprint', 'reportados este sprint')}</small></div>
     <div class="kpi k-needs"><span class="lbl">Needs you</span><b>${m.byLane['Needs you']}</b><small>${m.owner.open.length ? `${tr('oldest', 'la más vieja')} ${m.owner.open[0].hours}h` : tr('nothing waiting on you', 'nada te espera')}</small></div>
@@ -150,12 +166,17 @@ export function nextSteps(c: Ctx): { html: string, n: number }[] {
     items.push({ n: 1, html: `<a href="#inbox" data-goto-inbox="${esc(t.id)}">${tr('Answer Claude', 'Responder a Claude')}</a> ${esc(q.text.length > 90 ? `${q.text.slice(0, 90)}…` : q.text)}<small>${t.ticket ? `${esc(t.ticket)} · ` : ''}${ago(q.at, nowMs(c))}</small>` });
   }
   for (const t of inScope(c)) {
-    for (const n of t.needs.filter(x => !x.answer)) {
-      items.push({ n: 1, html: `<a href="#" data-open="${esc(t.id)}">${tr('Decide', 'Decidir')}: <span class="id">${esc(t.id)}</span></a> ${esc(n.question)}<small>${esc(t.title)} · ${ago(n.since, nowMs(c))}</small>` });
+    for (const n of t.needs.filter(awaitsOwner)) {
+      items.push({ n: 1, html: `<a href="#" data-open="${esc(t.id)}">${tr('Decide', 'Decidir')}: <span class="id">${esc(t.id)}</span></a> ${esc(n.question)}<small>${esc(t.title)} · ${ago(n.since, nowMs(c))}${n.answer ? ` · ${recordedBy(n)}` : ''}</small>` });
     }
   }
-  for (const a of c.state.asks.filter(x => x.state === 'draft')) {
-    items.push({ n: 2, html: `<a href="#people">${tr('Send to', 'Enviar a')} ${esc(a.to)}</a>${a.outdated ? ` <span class="flag drift">${tr('outdated', 'desactualizado')}</span>` : ''}<small>${esc(a.tickets.join(', '))} · ${esc(a.kind)}</small>` });
+  for (const a of c.state.asks) {
+    const phase = askPhase(a);
+    if (phase === 'waiting' || phase === 'done') { continue; }
+    const verb = phase === 'read'
+      ? tr('Read the reply from', 'Leer la respuesta de')
+      : phase === 'approve' && c.state.messenger ? tr('Approve the message to', 'Aprobar el mensaje a') : tr('Send to', 'Enviar a');
+    items.push({ n: 2, html: `<a href="#people">${verb} ${esc(a.to)}</a>${a.outdated ? ` <span class="flag drift">${tr('outdated', 'desactualizado')}</span>` : ''}<small>${esc(a.tickets.join(', '))} · ${esc(a.kind)}</small>` });
   }
   for (const t of inScope(c).filter(x => x.atRisk)) {
     items.push({ n: 3, html: `<a href="#" data-open="${esc(t.id)}">${tr('Shipped at risk', 'Salió con riesgo')}: <span class="id">${esc(t.id)}</span></a><small>${tr('get the decision written or accepted', 'consigue la decisión escrita o aceptada')}</small>` });
@@ -176,10 +197,12 @@ function tray(c: Ctx): string {
   const held = inScope(c).filter(t => t.lane === 'Held');
   const next = inScope(c).filter(t => t.lane === 'Up next');
   if (!held.length && !next.length) { return ''; }
-  const chip = (t: TicketView, cls: string, note = '') => `<span class="chip ${cls}" data-open="${esc(t.id)}" data-card="${esc(t.id)}"><span class="id">${esc(t.id)}</span>${note ? ` ${esc(note)}` : ''}</span>`;
+  const chip = (t: TicketView, cls: string, note = '') => `<span class="chip ${cls}" data-open="${esc(t.id)}" data-card="${esc(t.id)}"><span class="id">${esc(t.id)}</span>${note ? ` ${esc(note)}` : ''}${deferralFlag(t)}</span>`;
+  const why = (t: TicketView) => { const note = deferralNote(t); return note ? deferralText(note) : t.hold?.reason ?? 'blocked'; };
+  const waiting = (t: TicketView) => { const note = deferralNote(t); return note ? `· ${deferralText(note)}` : ''; };
   return `<div class="tray" data-tour="tray">
-    ${held.length ? `<span class="lbl">Held ${held.length}</span>${held.map(t => chip(t, 'held', `· ${t.hold?.reason ?? 'blocked'}`)).join('')}` : ''}
-    ${next.length ? `<span class="lbl">Up next ${next.length}</span>${next.map(t => chip(t, '')).join('')}` : ''}
+    ${held.length ? `<span class="lbl">Held ${held.length}</span>${held.map(t => chip(t, 'held', `· ${why(t)}`)).join('')}` : ''}
+    ${next.length ? `<span class="lbl">Up next ${next.length}</span>${next.map(t => chip(t, '', waiting(t))).join('')}` : ''}
   </div>`;
 }
 
@@ -189,7 +212,7 @@ export function board(c: Ctx): string {
     const list = tickets.filter(t => t.lane === lane);
     const compactPassed = lane === 'Passed' && list.length > 4;
     return `<section class="lane ${LANE_CLASS[lane]}" data-lane="${esc(lane)}" data-tour="lane-${LANE_CLASS[lane]}">
-      <div class="lane-head"><span class="glyph" aria-hidden="true">${LANE_GLYPH[lane]}</span><span class="lbl" style="color:var(--ink)">${esc(lane)}</span><span class="n">${list.length}</span></div>
+      <div class="lane-head"><span class="glyph" aria-hidden="true">${LANE_GLYPH[lane]}</span><span class="lbl" style="color:var(--ink)">${esc(lane)}</span><span class="n">${list.length}</span></div>${lane === 'Passed' && list.some(t => t.deferral) ? `<span class="hint">${notFullyTested(list.filter(t => t.deferral).length)}</span>` : ''}
       ${list.length ? list.map(t => card(t, c, compactPassed)).join('') : `<div class="none">${lane === 'Needs you' ? tr('Nothing waiting on you.', 'Nada te espera.') : tr('Empty', 'Vacío')}</div>`}
     </section>`;
   }).join('')}</div>`;
@@ -305,11 +328,11 @@ export function viewMetrics(c: Ctx): string {
   ];
   const sev = ['Critical', 'High', 'Medium', 'Low', 'Unrated'].filter(s => m.bugs.bySeverity[s]).map(s => ({ label: s, a: m.bugs.bySeverity[s].open, b: m.bugs.bySeverity[s].closed }));
   return `<div class="metrics" data-tour="metrics">
-    <section class="panel metric"><span class="lbl">1 · Verdict progress</span><div class="big">${m.verdicts.done}<small> / ${m.verdicts.of} ${tr('tickets', 'tickets')}</small></div>${stackBar(laneSegs)}<p class="hint">${tr('Only tickets in QA scope count. Someone else\'s ticket is shown, never counted.', 'Solo cuentan los tickets en alcance de QA. Los de otra persona se ven pero no suman.')}</p></section>
+    <section class="panel metric"><span class="lbl">1 · Verdict progress</span><div class="big">${m.verdicts.done}<small> / ${m.verdicts.of} ${tr('tickets', 'tickets')}</small></div>${stackBar(laneSegs)}${m.notFullyTested ? `<p class="hint">${notFullyTested(m.notFullyTested)}</p>` : ''}<p class="hint">${tr('Only tickets in QA scope count. Someone else\'s ticket is shown, never counted.', 'Solo cuentan los tickets en alcance de QA. Los de otra persona se ven pero no suman.')}</p></section>
     <section class="panel metric" data-tour="m-cases"><span class="lbl">2 · Case execution</span><div class="big">${pct(m.passRate)}<small> ${tr('pass rate', 'pass rate')} · ${m.tc.executed} ${tr('of', 'de')} ${m.tc.total} ${tr('executed', 'ejecutados')}</small></div>${stackBar(tcSegs)}<p class="hint">${tr('Pass rate = PASSED / (PASSED + FAILED). NOT RUN stays visible: a case that never ran did not pass.', 'Pass rate = PASSED / (PASSED + FAILED). NOT RUN siempre se ve: un caso que no corrió no pasó.')}</p></section>
     <section class="panel metric"><span class="lbl">3 · Burn-up</span>${burnupChart(m.burnup)}<p class="hint">${tr('Tickets with a verdict per sprint day, against scope.', 'Tickets con veredicto por día del sprint, contra el alcance.')}</p></section>
     <section class="panel metric"><span class="lbl">4 · Bugs filed</span><div class="big">${m.bugs.total}<small> · ${m.bugs.open} ${tr('open', 'abiertos')}</small></div>${barChart(sev, ['open', 'closed'])}${bugBreakdown(m)}<p class="hint">${tr('Each bug counted once, even when it blocks two tickets.', 'Cada bug cuenta una vez, aunque bloquee dos tickets.')}${c.state.mode === 'share' ? '' : ` <a href="#bugs">${tr('Every bug of the sprint', 'Todos los bugs del sprint')}</a>`}</p></section>
-    <section class="panel metric"><span class="lbl">5 · First-pass yield</span><div class="big">${m.firstPass.of ? pct(m.firstPass.clean / m.firstPass.of) : '—'}<small> · ${m.firstPass.clean} ${tr('of', 'de')} ${m.firstPass.of}</small></div><p class="hint">${tr('Passed on the first attempt with no bug filed.', 'Pasaron al primer intento sin bug reportado.')}</p></section>
+    <section class="panel metric"><span class="lbl">5 · First-pass yield</span><div class="big">${m.firstPass.of ? pct(m.firstPass.clean / m.firstPass.of) : '—'}<small> · ${m.firstPass.clean} ${tr('of', 'de')} ${m.firstPass.of}${m.notFullyTested ? ` · ${notFullyTested(m.notFullyTested)}` : ''}</small></div><p class="hint">${tr('Passed on the first attempt with no bug filed.', 'Pasaron al primer intento sin bug reportado.')}</p></section>
     <section class="panel metric"><span class="lbl">6 · Your response time</span><div class="big">${m.owner.medianHours ?? '—'}<small>h ${tr('median', 'mediana')} · ${m.owner.answered} ${tr('answered', 'respondidas')}</small></div>${dotStrip(m.owner.open.map(o => ({ label: o.ticket, value: o.hours })))}<p class="hint">${tr('From a question reaching Needs you to your answer. Open ones are the dots.', 'Desde que una pregunta llega a Needs you hasta tu respuesta. Los puntos son las abiertas.')}</p></section>
     <section class="panel metric"><span class="lbl">7 · Waiting on people</span>${m.waits.length ? barChart(m.waits.map(w => ({ label: w.person.split(/\s+/)[0], a: w.oldestHours, b: 0 })), ['hours'], 24) : `<p class="hint">${tr('Nobody owes the sprint an answer.', 'Nadie le debe una respuesta al sprint.')}</p>`}<p class="hint">${tr('Oldest open wait per person, amber past 24h.', 'Espera abierta más vieja por persona, ámbar pasadas 24h.')}</p></section>
     <section class="panel metric" data-tour="m-risk"><span class="lbl">8 · Shipped at risk</span><div class="big" style="color:${m.atRisk.length ? 'var(--fail)' : 'var(--pass)'}">${m.atRisk.length}</div><p class="hint">${m.atRisk.length ? m.atRisk.map(id => `<a href="#" data-open="${esc(id)}" class="id">${esc(id)}</a>`).join(', ') : tr('Nothing passed the QA gate with an open case.', 'Nada pasó el gate de QA con un caso abierto.')}</p><p class="hint">${tr(`Past the QA gate in ${TRK(c)} while a case is still FAILED, NOT RUN or BLOCKED, and it was not DEFERRED with a reason.`, `Pasó el gate de QA en ${TRK(c)} con un caso aún FAILED, NOT RUN o BLOCKED, y no se difirió con un motivo.`)}</p></section>
@@ -321,14 +344,66 @@ export function viewMetrics(c: Ctx): string {
 // People
 // ---------------------------------------------------------------------------
 
+export const askPhaseLabel = (phase: AskPhase, drafting: boolean): string => ({
+  approve: drafting ? tr('To approve', 'Por aprobar') : tr('To send', 'Por enviar'),
+  send: tr('To send', 'Por enviar'),
+  waiting: tr('Waiting reply', 'Esperando respuesta'),
+  read: tr('Reply to read', 'Respuesta por leer'),
+  done: tr('Done', 'Terminado'),
+})[phase];
+
+type AskButton = { label: string } & ({ action: AskAction } | { state: AskState });
+
+function askPrimary(a: Ask, drafting: boolean): AskButton | null {
+  const markSent: AskButton = { action: 'sent', label: tr('Mark sent', 'Marcar enviado') };
+  const backToDraft: AskButton = { state: 'draft', label: tr('Back to draft', 'Volver a borrador') };
+  switch (a.state) {
+    case 'draft': return drafting ? { action: 'approve', label: tr('Create draft', 'Crear borrador') } : markSent;
+    case 'draft-failed': return drafting ? { action: 'retry', label: tr('Retry draft', 'Reintentar borrador') } : markSent;
+    case 'approved': return drafting ? null : backToDraft;
+    case 'drafted': return markSent;
+    case 'sent': return a.twoWay ? { action: 'answered', label: tr('They answered', 'Ya respondió') } : null;
+    case 'answered': return { action: 'close', label: tr('Close', 'Cerrar') };
+    case 'closed': return { action: 'reopen', label: tr('Reopen', 'Reabrir') };
+    default: return backToDraft;
+  }
+}
+
+export function askUndo(done: { from: AskState, state: AskState }, drafting: boolean): AskState | null {
+  const { from, state } = done;
+  if (askTransition(state, from) !== null || from === 'draft-failed' || (isDraftingState(from) && !drafting)) { return null; }
+  return from;
+}
+
+function askButtons(a: Ask, drafting: boolean): string {
+  const button = (b: AskButton, cls: string) => `<button class="${cls}" type="button" data-ask-id="${esc(a.id)}" ${'action' in b ? `data-ask-action="${b.action}"` : `data-ask-state="${b.state}"`}>${b.label}</button>`;
+  const primary = askPrimary(a, drafting);
+  const phase = askPhase(a);
+  return [
+    primary ? button(primary, 'btn primary') : '',
+    phase === 'waiting' ? button({ action: 'close', label: tr('Close', 'Cerrar') }, 'btn') : '',
+    phase === 'approve' || phase === 'send' || phase === 'waiting' ? button({ action: 'drop', label: tr('Drop', 'Descartar') }, 'btn ghost') : '',
+  ].join('');
+}
+
+const askHistory = (a: Ask) => (a.history.length < 2
+  ? ''
+  : `<ol class="draft-history">${a.history.slice(-4).map(h => `<li><b>${esc(h.state)}</b> ${esc(day(h.at).slice(5))} ${hhmm(h.at)}${h.by ? ` · ${esc(h.by)}` : ''}</li>`).join('')}</ol>`);
+
 function draftCard(a: Ask, c: Ctx): string {
+  const drafting = Boolean(c.state.messenger);
+  const copyClass = c.canWrite && askPrimary(a, drafting) ? 'btn' : 'btn primary';
   const imgs = a.attach.map(p => c.img(p)).filter((x): x is string => Boolean(x));
   return `<div class="draft ${a.state}" data-ask="${esc(a.id)}">
-    <div class="draft-head"><span class="pill source">${esc(a.lang.toUpperCase())}</span><span class="pill ${a.kind === 'good-news' ? 'PASSED' : a.kind === 'bug' ? 'FAILED' : 'BLOCKED'}">${esc(a.kind)}</span><span class="id">${esc(a.tickets.join(', '))}</span><span class="spacer"></span><span class="lbl">${esc(a.state)}${a.sentAt ? ` · ${hhmm(a.sentAt)}` : ''}</span>${a.outdated ? `<span class="flag drift">${tr('ticket changed since', 'el ticket cambió desde entonces')}</span>` : ''}</div>
+    <div class="draft-head"><span class="pill source">${esc(a.lang.toUpperCase())}</span><span class="pill ${a.kind === 'good-news' ? 'PASSED' : a.kind === 'bug' ? 'FAILED' : 'BLOCKED'}">${esc(a.kind)}</span><span class="id">${esc(a.tickets.join(', '))}</span><span class="spacer"></span><span class="lbl">${askPhaseLabel(askPhase(a), drafting)} · ${esc(a.state)}${a.sentAt ? ` · ${hhmm(a.sentAt)}` : ''}</span>${a.outdated ? `<span class="flag drift">${tr('ticket changed since', 'el ticket cambió desde entonces')}</span>` : ''}</div>
     <div class="slack">${slackHtml(a.text)}</div>
     ${imgs.length ? `<div class="thumbs" style="padding:0 12px 10px">${imgs.map((src, i) => `<span style="display:grid;gap:4px"><img class="thumb" src="${esc(src)}" data-zoom="${esc(src)}" alt="evidence ${i + 1}"><button class="btn" type="button" data-copy-img="${esc(src)}">${tr('Copy image', 'Copiar imagen')}</button></span>`).join('')}</div>` : ''}
-    <div class="draft-foot"><button class="btn primary" type="button" data-copy-ask="${esc(a.id)}">${tr('Copy message', 'Copiar mensaje')}</button>
-      ${c.canWrite ? (a.state === 'draft' ? `<button class="btn" type="button" data-ask-state="${esc(a.id)}" data-state="sent">${tr('Mark sent', 'Marcar enviado')}</button>` : a.state === 'sent' ? `<button class="btn" type="button" data-ask-state="${esc(a.id)}" data-state="answered">${tr('They answered', 'Ya respondió')}</button>` : '') : ''}
+    ${a.error ? `<div class="draft-note"><span class="lbl">${tr('Draft failed', 'El borrador falló')}</span> ${esc(a.error)}</div>` : ''}
+    ${a.reply ? `<div class="draft-note"><span class="lbl">${esc(a.to)}</span> ${esc(a.reply)}</div>` : ''}
+    ${askHistory(a)}
+    <div class="draft-foot">${c.canWrite ? askButtons(a, drafting) : ''}<button class="${copyClass}" type="button" data-copy-ask="${esc(a.id)}">${tr('Copy message', 'Copiar mensaje')}</button>
+      ${a.link && a.state === 'drafted' ? `<a class="btn" href="${esc(a.link)}" target="_blank" rel="noopener">${tr('Open draft', 'Abrir borrador')}</a>` : ''}
+      ${drafting && a.state === 'approved' ? `<span class="hint">${tr('Creating the draft…', 'Creando el borrador…')}</span>` : ''}
     </div>
   </div>`;
 }
@@ -341,7 +416,7 @@ export function viewPeople(c: Ctx): string {
     const asks = state.asks.filter(a => a.to === name);
     const wait = m.waits.find(w => w.person === name);
     const tickets = state.tickets.filter(t => t.inScope && devsOf(t.dev).includes(name));
-    const unsent = asks.filter(a => a.state === 'draft').length;
+    const unsent = asks.filter(a => isUnsent(a.state)).length;
     return { p, asks, wait, tickets, unsent, score: unsent * 10 + (wait?.oldestHours ?? 0) };
   }).sort((a, b) => b.score - a.score);
   if (!people.length) { return `<section class="panel"><p class="hint">${tr(`No developers on this board yet. Sync from ${TRK(c)} to fill it.`, `Todavía no hay desarrolladores en el tablero. Sincroniza con ${TRK(c)} para llenarlo.`)}</p></section>`; }
@@ -354,7 +429,7 @@ export function viewPeople(c: Ctx): string {
       <div class="chips">${unsent ? `<span class="pill BLOCKED">${unsent} ${tr('unsent', 'sin enviar')}</span>` : ''}${failing ? `<span class="pill FAILED">${failing} failing</span>` : ''}${openBugs ? `<span class="pill FAILED">${openBugs} open bugs</span>` : ''}${wait ? `<span class="pill Held">${tr('oldest wait', 'espera más vieja')} ${wait.oldestHours}h</span>` : ''}</div>
       ${wait ? `<div><span class="lbl">${tr('Waiting on them', 'Esperando de su parte')}</span>${wait.items.map(w => `<div class="progress-line"><span class="id">${esc(w.ticket)}</span> ${esc(w.what)} · ${w.hours}h</div>`).join('')}</div>` : ''}
       ${asks.map(a => draftCard(a, c)).join('')}
-      ${tickets.length ? `<div><span class="lbl">${tr('Their tickets', 'Sus tickets')}</span><table class="grid">${tickets.map(t => `<tr class="clickable" data-open="${esc(t.id)}"><td class="id">${esc(t.id)}</td><td>${esc(t.title)}</td><td><span class="pill ${pillClass(t.lane)}">${esc(t.lane)}</span></td></tr>`).join('')}</table></div>` : ''}
+      ${tickets.length ? `<div><span class="lbl">${tr('Their tickets', 'Sus tickets')}</span><table class="grid">${tickets.map(t => `<tr class="clickable" data-open="${esc(t.id)}"><td class="id">${esc(t.id)}</td><td>${esc(t.title)}</td><td><span class="pill ${pillClass(t.lane)}">${esc(t.lane)}</span>${deferralFlag(t)}</td></tr>`).join('')}</table></div>` : ''}
     </section>`;
   }).join('')}</div>`;
 }
@@ -369,18 +444,26 @@ export function qaResult(t: TicketView): string {
   if (t.lane === 'Failed') { return `Failed ${c.FAILED} of ${c.total}${t.bugs[0] ? `, ${t.bugs[0].id}` : ''}`; }
   if (t.lane === 'Running') { return `Running, ${t.worker.stage ?? 'started'}`; }
   if (t.lane === 'Needs you') { return 'Waiting on a decision'; }
-  if (t.lane === 'Held') { return `Held, ${t.hold?.reason ?? 'blocked'}`; }
+  if (t.lane === 'Held') {
+    const note = deferralNote(t);
+    return `Held, ${note ? deferralText(note) : t.hold?.reason ?? 'blocked'}`;
+  }
   return 'Not started';
 }
 
 function whatIsLeft(t: TicketView): string {
   if (t.atRisk) { return tr('Shipped with open cases: get the decision in writing', 'Salió con casos abiertos: conseguir la decisión por escrito'); }
-  const n = t.needs.find(x => !x.answer);
+  const n = t.needs.find(awaitsOwner);
   if (n) { return n.question; }
+  const note = deferralNote(t);
+  if (note === 'owner-ok') { return `${tr('Waiting for owner OK on', 'Esperando el OK del owner sobre')} ${t.deferral!.waiting.join(', ')}`; }
+  if (note) { return deferralText(note); }
   if (t.waits[0]) { return `${tr('Waiting on', 'Esperando a')} ${t.waits[0].person}: ${t.waits[0].what}`; }
   if (t.hold) { return t.hold.note; }
   if (t.drift) { return t.drift; }
-  return t.next ?? (t.lane === 'Passed' ? tr('Nothing', 'Nada') : '');
+  if (t.next) { return t.next; }
+  if (t.lane !== 'Passed') { return ''; }
+  return t.deferral ? `${tr('Deferred cases still to run', 'Casos diferidos aún por correr')}: ${t.deferral.cases.join(', ')}` : tr('Nothing', 'Nada');
 }
 
 export function viewTickets(c: Ctx): string {
@@ -388,7 +471,7 @@ export function viewTickets(c: Ctx): string {
   const others = c.state.tickets.filter(t => !t.inScope);
   return `<section class="panel" data-tour="tickets"><div class="row" style="display:flex;gap:8px;align-items:center"><h2>${rows.length} ${tr('tickets in QA scope', 'tickets en alcance de QA')}</h2><span class="spacer" style="flex:1"></span>${c.state.mode === 'report' ? '' : '<button class="btn" type="button" data-copy-slack>Copy for Slack</button>'}</div>
     <div class="scroll"><table class="grid"><tr><th>Ticket</th><th>Title</th><th>Developer</th><th>QA result</th><th>${esc(TRK(c))} status</th><th>What is left</th></tr>
-    ${rows.map(t => `<tr class="clickable" data-open="${esc(t.id)}"><td class="id">${esc(t.id)}</td><td>${esc(t.title)}</td><td>${esc(t.dev ?? '')}</td><td><span class="pill ${pillClass(t.lane)}">${esc(qaResult(t))}</span></td><td><span class="pill source">${esc(t.trackerStatus ?? '?')}</span></td><td>${esc(whatIsLeft(t))}</td></tr>`).join('')}
+    ${rows.map(t => `<tr class="clickable" data-open="${esc(t.id)}"><td class="id">${esc(t.id)}</td><td>${esc(t.title)}</td><td>${esc(t.dev ?? '')}</td><td><span class="pill ${pillClass(t.lane)}">${esc(qaResult(t))}</span>${deferralFlag(t)}</td><td><span class="pill source">${esc(t.trackerStatus ?? '?')}</span></td><td>${esc(whatIsLeft(t))}</td></tr>`).join('')}
     </table></div>
     ${others.length ? `<p class="hint">${tr('Out of QA scope (shown, not counted):', 'Fuera del alcance de QA (se muestran, no cuentan):')} ${others.map(t => `<span class="id">${esc(t.id)}</span>`).join(', ')}</p>` : ''}
   </section>`;
@@ -423,7 +506,7 @@ function bugSearchLine(c: Ctx): string {
 
 function bugRow(b: SprintBug, c: Ctx): string {
   const blocks = b.blocks.length
-    ? b.blocks.map(x => `<a href="#" class="chip blk${x.stillBlocked ? ' still' : ''}" data-open="${esc(x.id)}" title="${esc(`${x.title} · ${x.lane}`)}"><span class="id">${esc(x.id)}</span> ${x.stillBlocked ? tr('still blocked', 'sigue bloqueado') : esc(x.lane)}</a>`).join(' ')
+    ? b.blocks.map(x => `<a href="#" class="chip blk${x.stillBlocked ? ' still' : ''}" data-open="${esc(x.id)}" title="${esc(`${x.title} · ${x.lane}`)}"><span class="id">${esc(x.id)}</span> ${x.stillBlocked ? tr('still blocked', 'sigue bloqueado') : esc(x.lane)}${flagOf(c, x.id)}</a>`).join(' ')
     : `<span class="hint">${tr('not linked', 'sin vincular')}</span>`;
   const src = b.sources.includes('linked') ? '' : ` <span class="pill source" title="${esc(tr('Found in the sprint\'s tracker rows, not linked on the board', 'Encontrado en las filas del tracker del sprint, no vinculado en el tablero'))}">${esc(TRK(c))}</span>`;
   return `<tr>
@@ -514,9 +597,10 @@ function ticketCases(t: TicketView): string {
 
 function ticketResult(t: TicketView): string {
   const c = tcCounts(t.tcs);
-  if (c.FAILED) { return `<span class="pill FAILED">${tr('Failed', 'Falló')}</span>`; }
-  if (isTestedBucket(t.bucket)) { return `<span class="pill PASSED">${tr('Signed off', 'Aprobado')}</span>`; }
-  return `<span class="pill BLOCKED">${tr('Not signed off', 'Sin aprobar')}</span><br><span class="hint">${esc(t.trackerStatus ?? tr('not synced', 'sin sincronizar'))}</span>`;
+  if (c.FAILED) { return `<span class="pill FAILED">${tr('Failed', 'Falló')}</span>${deferralFlag(t)}`; }
+  if (isTestedBucket(t.bucket) && !deferralBlocks(t)) { return `<span class="pill PASSED">${tr('Signed off', 'Aprobado')}</span>${deferralFlag(t)}`; }
+  const hold = deferralHold(t);
+  return `<span class="pill BLOCKED">${tr('Not signed off', 'Sin aprobar')}</span>${deferralFlag(t)}<br><span class="hint">${hold ? deferralText(hold) : esc(t.trackerStatus ?? tr('not synced', 'sin sincronizar'))}</span>`;
 }
 
 function bugTable(list: SprintBug[], c: Ctx): string {
@@ -541,7 +625,7 @@ export function viewReport(c: Ctx): string {
   const { neverReached, notCounted } = r.notTested;
 
   // 1. Header band
-  const verdict = `${r.tickets.signedOff} ${tr('of', 'de')} ${r.tickets.tested} ${tr('tested tickets signed off', 'tickets probados aprobados')} · ${r.tc.PASSED} ${tr('of', 'de')} ${r.tc.total} ${tr('test cases passed', 'casos de prueba pasaron')} · ${r.tc.FAILED} ${tr('failed', 'fallaron')}`;
+  const verdict = `${r.tickets.signedOff} ${tr('of', 'de')} ${r.tickets.tested} ${tr('tested tickets signed off', 'tickets probados aprobados')}${r.tickets.notFullyTested ? ` (${r.tickets.notFullyTested} ${tr('not fully tested', 'sin probar del todo')})` : ''} · ${r.tc.PASSED} ${tr('of', 'de')} ${r.tc.total} ${tr('test cases passed', 'casos de prueba pasaron')} · ${r.tc.FAILED} ${tr('failed', 'fallaron')}`;
   const head = `<section class="r-head">
     <div class="r-title-row"><h2>${esc(s.name)} ${tr('QA report', 'reporte de QA')}</h2><span class="chip">${esc(s.closedAt ? `${tr('Closed', 'Cerrado')} ${fmtDay(s.closedAt, true)}` : dateRange(s.startedAt))}</span><span class="chip">${esc(s.env ?? tr('test environment', 'entorno de pruebas'))}</span></div>
     <p class="r-verdict">${verdict}</p>
@@ -549,7 +633,7 @@ export function viewReport(c: Ctx): string {
   </section>`;
 
   // 2. KPI tiles
-  const signedSub = [neverReached.length ? `+${neverReached.length} ${tr('never reached the test environment', 'nunca llegaron al entorno de pruebas')}` : '', notCounted.length ? `${notCounted.length} ${tr('not counted', 'sin contar')}` : ''].filter(Boolean).join(' · ') || tr('every sprint ticket was tested', 'se probaron todos los tickets del sprint');
+  const signedSub = [r.tickets.notFullyTested ? `${r.tickets.notFullyTested} ${tr('signed off, not fully tested', 'aprobados sin probar del todo')}` : '', neverReached.length ? `+${neverReached.length} ${tr('never reached the test environment', 'nunca llegaron al entorno de pruebas')}` : '', notCounted.length ? `${notCounted.length} ${tr('not counted', 'sin contar')}` : ''].filter(Boolean).join(' · ') || tr('every sprint ticket was tested', 'se probaron todos los tickets del sprint');
   const signedState: KpiState = r.tickets.tested && r.tickets.signedOff === r.tickets.tested ? 'ok' : r.tickets.tested && r.tickets.signedOff / r.tickets.tested >= 0.8 ? 'warn' : 'crit';
   const passState: KpiState = r.passRate === null ? 'warn' : r.tc.FAILED === 0 ? 'ok' : r.passRate >= 0.9 ? 'warn' : 'crit';
   const covState: KpiState = r.coverage === null ? 'warn' : unrun + r.tc.FAILED === 0 && r.coverage >= 0.9 ? 'ok' : r.coverage >= 0.8 ? 'warn' : 'crit';
@@ -624,7 +708,7 @@ export function viewTimeline(c: Ctx): string {
     const d = day(e.at);
     const head = d !== lastDay ? `<div class="tl-day lbl">${esc(d)}</div>` : '';
     lastDay = d;
-    return `${head}<div class="tl-item k-${esc(e.kind.replace('.', '-'))}"><span class="mono">${hhmm(e.at)}</span><span class="k">${esc(e.kind)}</span><span>${e.ticket ? `<a href="#" data-open="${esc(e.ticket)}" class="id">${esc(e.ticket)}</a> ` : ''}${esc(e.text)}</span></div>`;
+    return `${head}<div class="tl-item k-${esc(e.kind.replace('.', '-'))}"><span class="mono">${hhmm(e.at)}</span><span class="k">${esc(e.kind)}</span><span>${e.ticket ? `<a href="#" data-open="${esc(e.ticket)}" class="id">${esc(e.ticket)}</a> ` : ''}${esc(e.text)}${e.kind === 'verdict' || e.kind === 'tracker' ? flagOf(c, e.ticket) : ''}</span></div>`;
   }).join('') || `<p class="hint">${tr('Nothing has happened yet.', 'Todavía no pasó nada.')}</p>`}</div></section>`;
 }
 
@@ -688,7 +772,7 @@ export function viewEvidence(c: Ctx): string {
     const tcs = g.tcs.map(t => inner(`${g.id}/${t.tc}`, `<span class="id">${esc(t.tc)}</span><span class="acc-title">${esc(t.name ?? '')}</span>${t.status ? `<span class="pill ${pillClass(t.status)}">${esc(t.status)}</span>` : ''}<span class="acc-meta">${outcomePills(t.counts)}<span class="n">${t.items.length} ${t.items.length === 1 ? tr('image', 'imagen') : tr('images', 'imágenes')}</span></span>`, t.items)).join('');
     const untied = g.untied.length ? inner(`${g.id}/_`, `<span class="acc-title muted">${tr('Not tied to a TC', 'Sin TC')}</span><span class="acc-meta">${outcomePills(outcomeCounts(g.untied))}<span class="n">${g.untied.length} ${g.untied.length === 1 ? tr('image', 'imagen') : tr('images', 'imágenes')}</span></span>`, g.untied, ' untied') : '';
     return `<details class="acc acc-ticket l-${pillClass(g.lane)}${g.hasDefect ? ' defect' : ''}" data-acc="${esc(g.id)}"${open.has(g.id) ? ' open' : ''}>
-      <summary>${chevron}<span class="id">${esc(g.id)}</span><span class="acc-title">${esc(g.title)}</span><span class="pill ${pillClass(g.lane)}">${esc(g.lane)}</span><span class="acc-meta">${outcomePills(g.counts)}<span class="n">${g.tcs.length} TC · ${g.total} ${g.total === 1 ? tr('image', 'imagen') : tr('images', 'imágenes')}</span>${pageLink(g.page, 'ev-page small', tr('Evidence page', 'Página de evidencia'))}</span></summary>
+      <summary>${chevron}<span class="id">${esc(g.id)}</span><span class="acc-title">${esc(g.title)}</span><span class="pill ${pillClass(g.lane)}">${esc(g.lane)}</span>${flagOf(c, g.id)}<span class="acc-meta">${outcomePills(g.counts)}<span class="n">${g.tcs.length} TC · ${g.total} ${g.total === 1 ? tr('image', 'imagen') : tr('images', 'imágenes')}</span>${pageLink(g.page, 'ev-page small', tr('Evidence page', 'Página de evidencia'))}</span></summary>
       <div class="acc-body">${tcs}${untied}</div>
     </details>`;
   }).join('');
@@ -729,29 +813,43 @@ function decisionCard(n: Need): string {
 /** Pick buttons: a structured option fills `key: action`, an old one its raw text. */
 const pickValues = (n: Need): string[] => (isDecisionCard(n) && n.choices?.length ? n.choices.map(o => `${o.key}: ${o.action}`) : n.options);
 
+function deferralSection(t: TicketView): string {
+  const d = t.deferral;
+  if (!d) { return ''; }
+  const note = deferralNote(t);
+  const pointer = (p: string) => (httpsHref(p) ? `<a href="${esc(p)}" target="_blank" rel="noopener">${esc(p)}</a>` : esc(p));
+  const records = (d.oks ?? []).map(ok => `<div class="progress-line">${esc(tr(`Owner OK observed by ${ok.by}`, `OK del owner observado por ${ok.by}`))} · <span class="id">${esc(ok.cases.join(', '))}</span> · ${pointer(ok.pointer)}${ok.hostUnverified ? ` · ${tr(HOST_UNVERIFIED.en, HOST_UNVERIFIED.es)}` : ''} · <span class="mono">${day(ok.at).slice(5)} ${hhmm(ok.at)}</span></div>`).join('');
+  return `<section><span class="lbl">${tr('Deferred cases', 'Casos diferidos')} · ${d.cases.length}</span>
+    ${note ? `<div><b>${deferralText(note)}</b></div>` : ''}
+    ${d.waiting.length ? `<div class="progress-line">${tr('No owner OK observed for', 'Sin OK del owner observado para')} <span class="id">${esc(d.waiting.join(', '))}</span></div>` : ''}
+    ${records}${records ? `<span class="hint">${tr('The record sets the lane only. Open the pointer before relying on it.', 'El registro solo fija el carril. Abre el puntero antes de apoyarte en él.')}</span>` : ''}</section>`;
+}
+
 export function drawer(t: TicketView, c: Ctx): string {
   const c2 = tcCounts(t.tcs);
   // The automated chip (ADR-0020): beside each TC's own pill, never counted.
   const autoRun = t.tcs.find(x => x.automated)?.automated;
-  const needs = t.needs.filter(n => !n.answer);
-  const answered = t.needs.filter(n => n.answer);
+  const needs = t.needs.filter(awaitsOwner);
+  const answered = t.needs.filter(n => !awaitsOwner(n));
   const drafts = c.state.asks.filter(a => a.tickets.includes(t.id));
   const events = c.state.timeline.filter(e => e.ticket === t.id).slice(0, 30);
   // This ticket's own test data first, then what other tickets found in the same module.
   const all = c.state.fixtures ?? [];
   const fixtures = [...all.filter(f => f.ticket === t.id), ...(t.module ? all.filter(f => f.ticket !== t.id && f.module === t.module) : [])].slice(0, 12);
   return `<button class="btn ghost close" type="button" data-close>Esc ✕</button>
-  <div><div class="row" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="id">${esc(t.id)}</span><span class="pill ${pillClass(t.lane)}">${esc(t.lane)}</span><span class="pill source">${esc(TRK(c))}: ${esc(t.trackerStatus ?? '?')}</span>${t.attempt > 1 ? `<span class="flag retry">attempt ${t.attempt}</span>` : ''}${t.atRisk ? `<span class="flag">${tr('shipped at risk', 'salió con riesgo')}</span>` : ''}</div>
+  <div><div class="row" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="id">${esc(t.id)}</span><span class="pill ${pillClass(t.lane)}">${esc(t.lane)}</span><span class="pill source">${esc(TRK(c))}: ${esc(t.trackerStatus ?? '?')}</span>${t.attempt > 1 ? `<span class="flag retry">attempt ${t.attempt}</span>` : ''}${t.atRisk ? `<span class="flag">${tr('shipped at risk', 'salió con riesgo')}</span>` : ''}${deferralFlag(t)}</div>
   <h2 style="margin-top:6px">${esc(t.title)}</h2>
   <p class="hint">${esc(t.dev ?? 'Unassigned')} · ${esc(t.priority ?? 'Not set')} · ${esc(t.type ?? '')}${t.link ? ` · <a href="${esc(t.link)}" target="_blank" rel="noopener">${tr(`open in ${TRK(c)}`, `abrir en ${TRK(c)}`)}</a>` : ''}</p></div>
   ${needs.map(n => `<div class="need-box"><b>◆ ${esc(n.question)}</b><span class="hint">${esc(n.blocker)} · ${tr('waiting', 'esperando')} ${ago(n.since, nowMs(c))}</span>
     ${decisionCard(n)}
+    ${n.answer ? `<span class="hint">${recordedBy(n)}: <b>${esc(n.answer)}</b>. ${tr('It is not your answer until you send one.', 'No es tu respuesta hasta que envíes una.')}</span>` : ''}
     ${!n.synthetic && c.canWrite ? `${pickValues(n).length ? `<div class="opts">${pickValues(n).map(o => `<button class="btn" type="button" data-pick="${esc(o)}">${esc(o)}</button>`).join('')}</div>` : ''}<textarea id="answer-${esc(n.id)}" placeholder="${esc(tr('Your answer. The worker reads it back.', 'Tu respuesta. El worker la lee.'))}"></textarea><div><button class="btn primary" type="button" data-answer="${esc(t.id)}" data-need="${esc(n.id)}">${tr('Send answer', 'Enviar respuesta')}</button></div>` : ''}
     ${n.synthetic ? `<span class="hint">${tr('Raised by the board itself, not by a worker.', 'La levantó el propio tablero, no un worker.')}</span>` : ''}</div>`).join('')}
   ${t.verdictNote || t.evidenceArtifact || t.evidence.length
-    ? `<section class="verdict-row"><div><span class="lbl">Verdict</span><div>${t.verdictNote ? `${esc(t.verdict)}: ${esc(t.verdictNote)}` : `<span class="pill ${pillClass(t.verdict)}">${esc(t.verdict)}</span>`}</div></div>${pageLink(t.evidenceArtifact, 'ev-page big') || noPage()}</section>`
+    ? `<section class="verdict-row"><div><span class="lbl">Verdict</span><div>${t.verdictNote ? `${esc(t.verdict)}: ${esc(t.verdictNote)}` : `<span class="pill ${pillClass(t.verdict)}">${esc(t.verdict)}</span>`}${deferralFlag(t)}</div></div>${pageLink(t.evidenceArtifact, 'ev-page big') || noPage()}</section>`
     : ''}
   ${t.hold ? `<section><span class="lbl">Held</span><div>${esc(t.hold.reason)}: ${esc(t.hold.note)}${t.hold.on ? ` (${esc(t.hold.on)})` : ''}</div></section>` : ''}
+  ${deferralSection(t)}
   ${t.waits.length ? `<section><span class="lbl">${tr('Waiting on', 'Esperando a')}</span>${t.waits.map(w => `<div class="progress-line">${esc(w.person)}: ${esc(w.what)} · ${ago(w.since, nowMs(c))}</div>`).join('')}</section>` : ''}
   ${answered.length ? `<section><span class="lbl">${tr('Your answers', 'Tus respuestas')}</span>${answered.map(n => `<div class="progress-line m-COMPLETE">${esc(n.question)}<br><b>→ ${esc(n.answer)}</b></div>`).join('')}</section>` : ''}
   <section><span class="lbl">Test cases · ${c2.PASSED} PASSED · ${c2.FAILED} FAILED · ${c2.DEFERRED} DEFERRED · ${c2['NOT RUN']} NOT RUN</span>${autoRun ? `<br><span class="hint">${tr('Automated run', 'Corrida automatizada')} ${esc(day(autoRun.at))} ${hhmm(autoRun.at)} · ${esc(autoRun.env)}</span>` : ''}
