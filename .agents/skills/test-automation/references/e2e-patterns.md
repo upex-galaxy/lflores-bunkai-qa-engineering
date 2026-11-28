@@ -229,7 +229,28 @@ await Promise.all([
 
 ## 5. UiBase helpers: interception
 
-UiBase wraps Playwright's response APIs twice. Use the wrappers when a UI action fires a network call whose payload or status code is part of the assertion.
+UiBase wraps Playwright's response APIs twice. Use the wrappers when a UI action fires a network call whose payload or status code is part of the assertion. It also fills credentials.
+
+### `fillSecret`: fill a password or token
+
+Every password, token, one-time code or card field goes through `this.fillSecret(locator, value)`, never through `fill()` or `pressSequentially()`. Those two write the value into the step title and into the error log, and both reach the published report.
+
+```typescript
+await this.emailInput().fill(credentials.email);
+await this.fillSecret(this.passwordInput(), credentials.password);
+```
+
+The helper waits for a visible, editable `input` or `textarea`, sets the value and fires `input` and `change`. It fires no keyboard events.
+
+**Every spec that sends a credential runs without a trace.** A trace holds typed values and request bodies, and it travels inside the published report. Declare it at the top of the file, for a login through the UI and through the API alike:
+
+```typescript
+test.use({ trace: 'off' });
+```
+
+The auth setup projects already declare it in `playwright.config.ts`, and every other spec keeps its trace. `fillSecret()` refuses to type while a trace records: it throws in CI and warns locally. A login sent only through the API has no such guard.
+
+The page snapshot Playwright attaches to a failure can still hold a filled value. `report:scrub` cleans it before a report is published (`regression-testing/references/ci-cd-integration.md`).
 
 ### `interceptResponse`: capture the response of an action
 
@@ -238,7 +259,7 @@ UiBase wraps Playwright's response APIs twice. Use the wrappers when a UI action
 async loginAndCaptureToken(credentials: LoginCredentials) {
   await this.goto();
   await this.emailInput().fill(credentials.email);
-  await this.passwordInput().fill(credentials.password);
+  await this.fillSecret(this.passwordInput(), credentials.password);
 
   const { responseBody, status } = await this.interceptResponse<LoginPayload, TokenResponse>({
     urlPattern: /\/auth\/login/,

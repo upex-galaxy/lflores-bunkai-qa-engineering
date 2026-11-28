@@ -66,6 +66,9 @@ ${colors.bold}TEST MANAGEMENT${colors.reset}
                  --type <type>          Manual|Generic|Cucumber (default: Manual)
                  --description <text>   Test description
                  --labels <l1,l2>       Comma-separated labels
+                 --parent <key>         Parent issue key (e.g. an Epic)
+                 --component <name>     Jira component (repeatable or comma-separated)
+                 --assignee <accountId> Atlassian accountId of the assignee
                  --folder <path>        Folder path in Xray
                  --definition <text>    Definition (for Generic tests)
                  --gherkin <feature>    Gherkin feature (for Cucumber tests)
@@ -123,6 +126,9 @@ ${colors.bold}PRECONDITIONS${colors.reset}
                      --type <type>      Manual|Generic|Cucumber (default: Manual)
                      --definition <text> Precondition definition / setup body
                      --labels <l1,l2>   Comma-separated labels
+                     --parent <key>         Parent issue key (e.g. an Epic)
+                     --component <name>     Jira component (repeatable or comma-separated)
+                     --assignee <accountId> Atlassian accountId of the assignee
                      --folder <path>    Folder path in Xray
   precondition list        List preconditions
                      --project <key>    Filter by project
@@ -146,6 +152,9 @@ ${colors.bold}TEST EXECUTIONS${colors.reset}
                      --project <key>    Project key (required)
                      --summary <text>   Execution summary (required)
                      --tests <id1,id2>  Test issue IDs to include
+                     --parent <key>         Parent issue key (e.g. an Epic)
+                     --component <name>     Jira component (repeatable or comma-separated)
+                     --assignee <accountId> Atlassian accountId of the assignee
                      --environment <e>  Test Environment (repeatable or comma-
                                         separated). Pins the execution to an
                                         environment (e.g. staging) so results are
@@ -182,9 +191,10 @@ ${colors.bold}TEST RUNS${colors.reset}
                                         ABORTED|BLOCKED. The vocabulary is
                                         PER-INSTANCE: a project may accept only
                                         TODO|EXECUTING|PASSED|FAILED and reject the
-                                        rest at mutation time. Record a blocked case
-                                        in a status the project defines and explain
-                                        it with 'run comment'; never leave it TODO.
+                                        rest at mutation time. With no status that
+                                        fits a blocked case, leave the unexecuted
+                                        run TODO, never FAILED, and write its reason
+                                        line in the results.
 
   run step-status    Update a specific step status
                      --run <id>         Test run ID
@@ -225,6 +235,9 @@ ${colors.bold}TEST PLANS${colors.reset}
                      --project <key>    Project key (required)
                      --summary <text>   Plan summary (required)
                      --tests <id1,id2>  Test issue IDs to include
+                     --parent <key>         Parent issue key (e.g. an Epic)
+                     --component <name>     Jira component (repeatable or comma-separated)
+                     --assignee <accountId> Atlassian accountId of the assignee
 
   plan get <id>      Get test plan details with tests
   plan list          List test plans
@@ -249,6 +262,9 @@ ${colors.bold}TEST SETS${colors.reset}
                      --project <key>    Project key (required)
                      --summary <text>   Test set summary (required)
                      --tests <id1,id2>  Test issue IDs to include
+                     --parent <key>         Parent issue key (e.g. an Epic)
+                     --component <name>     Jira component (repeatable or comma-separated)
+                     --assignee <accountId> Atlassian accountId of the assignee
 
   set get <id>       Get test set details with tests
   set list           List test sets

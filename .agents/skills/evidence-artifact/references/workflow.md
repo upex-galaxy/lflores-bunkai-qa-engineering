@@ -124,6 +124,15 @@ Order, so every link exists before the text that carries it is written:
 7. Hand-off to the owner (chat, or the mailbox in worker mode): the URL(s), plus the line:
    "Published private: share it from the page's Share menu so the team can open the links."
 
+A story with deferred cases. Until the owner's OK covers every current deferred case, the pack's
+verdict is `PENDING` and the published page reads waiting for owner OK (a current FAILED case makes it
+`FAILED`). Once the OK is verified and the label read back
+(`sprint-testing/references/shift-right-deferral.md` §3 and §4), write `ticket.deferral`
+(`pack-schema.md` §Shift-right deferral), set the verdict to `PASSED WITH DEFERRALS`, then build and
+publish again to the same URL (steps 2 to 4). A pack that carries `ticket.deferral` beside a current
+DEFERRED case is refused as plain `PASSED`. With nobody at the keyboard and no pointer to the owner's
+OK, leave the pack `PENDING` and report it.
+
 Conductor check. At wave close the conductor checks that each tested ticket and each bug has an
 `evidence-artifact` link on the board. When one is missing, it builds from the worker's pack, publishes
 itself, and records the link with `--by conductor`.
@@ -193,7 +202,7 @@ links it.
 4. Update `ticket.verdict` and `ticket.verdictNote` (`Fixed: verified in retest 1 on <date>`), the
    bug's own TCs' statuses, and `env` (the builds now under test). The header, coverage and board
    counts use the current round only, so a superseded FAILED reproduction no longer reads as failing.
-   A retest never passes with a DEFERRED case in its round.
+   A bug retest never passes with a DEFERRED case in its round.
 5. Build to the same page path, then publish with the pack's `artifact.url` (after the `read`),
    so the link in the bug description, the old QA comment and chat shows the retest. Record it on
    the board again. Before publishing, open the retest case: it must start on current evidence, with

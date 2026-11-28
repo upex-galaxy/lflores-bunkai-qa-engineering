@@ -10,24 +10,30 @@
  *        -> fold() -> BoardState
  */
 import type { BugBucket, SourceKind, TicketBucket } from '../lib/sprint-source/types.ts';
+import type { SweepView } from './sweep.ts';
 import { CASE_STATUSES, VERDICTS as EVIDENCE_VERDICTS } from '../lib/evidence-page/statuses.ts';
 import { countedOutcome } from '../lib/sprint-source/types.ts';
+import { foldSweep } from './sweep.ts';
 
 export const SCHEMA = 1;
 
 export const WORKER_STATES = ['queued', 'running', 'done', 'stopped'] as const;
 export const WORKER_STAGES = ['plan', 'execute', 'report', 'close'] as const;
 /** The board's ticket verdicts: every evidence-page verdict plus BLOCKED (checked below). */
-export const VERDICTS = ['PENDING', 'PASSED', 'FAILED', 'BLOCKED'] as const;
+export const VERDICTS = ['PENDING', 'PASSED', 'FAILED', 'BLOCKED', 'PASSED WITH DEFERRALS'] as const;
 /** One enum with the evidence page and the sprint source (`cli/lib/evidence-page/statuses.ts`). */
 export const TC_STATUSES = CASE_STATUSES as readonly ['PASSED', 'FAILED', 'NOT RUN', 'BLOCKED', 'DEFERRED'];
 /** Closed Blocker vocabulary (sprint-testing standby-report-contract.md) plus `decision`. */
 export const BLOCKERS = ['decision', 'no-data', 'no-access', 'no-permission', 'partial', 'defect'] as const;
 export const HOLD_REASONS = ['deploy', 'no-data', 'no-access', 'no-permission', 'defect', 'other'] as const;
 export const SEVERITIES = ['Critical', 'High', 'Medium', 'Low'] as const;
-/** `dropped`: the draft is no longer needed and will not be sent (kept on record). */
-export const ASK_STATES = ['draft', 'sent', 'answered', 'dropped'] as const;
+// The first four are the older set and must keep their meaning: logs written with them still replay.
+export const ASK_STATES = ['draft', 'sent', 'answered', 'dropped', 'approved', 'drafted', 'draft-failed', 'closed'] as const;
 export const ASK_KINDS = ['blocker', 'bug', 'decision', 'good-news', 'fyi'] as const;
+export const TWO_WAY_KINDS = ['blocker', 'bug', 'decision'] as const;
+export const ASK_ACTIONS = ['approve', 'sent', 'drop', 'retry', 'answered', 'close', 'reopen'] as const;
+export const ASK_PHASES = ['approve', 'send', 'waiting', 'read'] as const;
+export const ASK_ACTORS = ['owner', 'conductor', 'sentinel', 'worker'] as const;
 /** Board columns, in priority order: left is where you act first. */
 export const LANES = ['Needs you', 'Running', 'Failed', 'Passed'] as const;
 /** Not columns: a one-line tray above the board. */
@@ -66,17 +72,33 @@ export const EVENT_KINDS = [
   'arrival',
   'watch.pass',
   'fixture',
+  'sweep.add',
+  'sweep.answer',
+  'sweep.batch',
+  'sweep.consume',
+  'sweep.close',
+  'deferral.ok',
+  'deferral.lapse',
 ] as const;
 /** What the conductor did with a ticket that reached the test environment (`arrival`). */
 export const ARRIVAL_ACTIONS = ['launched', 'held', 'skipped'] as const;
 /** What an evidence image shows (`evidence --outcome`). */
 export const EVIDENCE_OUTCOMES = ['passed', 'failed', 'blocked'] as const;
 /** Who may record an evidence artifact link (`evidence-artifact --by`). */
-export const EVIDENCE_ARTIFACT_BY = ['worker', 'conductor', 'owner'] as const;
+export const EVIDENCE_ARTIFACT_BY = ['worker', 'conductor'] as const;
 /** The tracker status of a bug, in three classes (`bugStatusClass`). */
 export const BUG_STATUS_CLASSES = ['open', 'resolved', 'closed'] as const;
 /** The Bugs view's groups: an open bug blocking a ticket, an open bug that blocks nothing, resolved or closed. */
 export const BUG_GROUPS = ['blocking', 'not-blocking', 'resolved'] as const;
+export const DEFERRAL_OK_ACTORS = ['conductor', 'worker'] as const;
+export const DEFERRAL_OK_RULE = 'sprint-testing/references/shift-right-deferral.md §3';
+export const SESSION_OK = 'owner OK given in session';
+export const HOST_UNVERIFIED = { en: 'host not verified', es: 'host sin verificar' } as const;
+export const NOT_FULLY_TESTED = { en: 'Not fully tested', es: 'Sin probar del todo' } as const;
+export const DEFERRAL_NOTES = {
+  'owner-ok': { en: 'waiting for owner OK', es: 'esperando el OK del owner' },
+  'bug': { en: 'a retest never passes on a deferral', es: 'un retest nunca pasa con un caso diferido' },
+} as const;
 /** Who writes in the owner <-> Claude inbox. */
 export const MSG_FROM = ['owner', 'claude'] as const;
 
@@ -89,6 +111,8 @@ export type HoldReason = (typeof HOLD_REASONS)[number];
 export type Severity = (typeof SEVERITIES)[number];
 export type AskState = (typeof ASK_STATES)[number];
 export type AskKind = (typeof ASK_KINDS)[number];
+export type AskAction = (typeof ASK_ACTIONS)[number];
+export type AskPhase = (typeof ASK_PHASES)[number] | 'done';
 export type Lane = (typeof LANES)[number] | (typeof TRAYS)[number];
 export type Marker = (typeof MARKERS)[number];
 export type EventKind = (typeof EVENT_KINDS)[number];
@@ -131,6 +155,8 @@ export interface Sprint {
   people?: Person[]
   /** `board.evidence.allowed_hosts`, copied by `new` and `sync` so the pure fold can check evidence links. */
   evidenceHosts?: string[]
+  // Days an open Decision dock item waits before it is marked stale; DOCK_STALE_DAYS when absent.
+  dockStaleDays?: number
 }
 
 export interface TrackerTc { id: string, name?: string, status: TcStatus, updatedAt?: string }
@@ -222,21 +248,25 @@ export interface NeedOption { key: string, action: string, cost?: string }
  * An owner question. The decision-card fields (blocked, why, choices with cost, recommend,
  * decider) are optional: a need recorded without them renders as a plain question.
  */
+// An agent's answer is a record of what it heard: the question stays the owner's until they answer it or it is resolved.
+export const awaitsOwner = (n: Pick<Need, 'answer' | 'answeredBy'>): boolean => !n.answer || Boolean(n.answeredBy && n.answeredBy !== 'owner');
 /**
- * The need an `answer` / `resolve` targets, or a refusal naming the open ids.
+ * The need an `answer` / `resolve` / page answer targets, or a refusal naming the open ids.
  * answer: `id` must be an unanswered need on the ticket; without one the fold
- * answers the first open need (undefined is returned). resolve: `id` must be a
+ * answers the first open need (undefined is returned). page: any need that
+ * `awaitsOwner`, an unanswered one first. resolve: `id` must be a
  * need still on the ticket; without one the ticket must have exactly one, so a
  * bare `resolve` never clears several at once. Synthetic needs are never targets.
  */
-export function needTarget(needs: Need[], action: 'answer' | 'resolve', ticket: string, id?: string): string | undefined {
-  const open = needs.filter(n => !n.synthetic && (action === 'resolve' || !n.answer));
+export function needTarget(needs: Need[], action: 'answer' | 'resolve' | 'page', ticket: string, id?: string): string | undefined {
+  const open = needs.filter(n => !n.synthetic && (action === 'resolve' || (action === 'page' ? awaitsOwner(n) : !n.answer)));
   const ids = open.map(n => n.id).join(', ') || 'none';
   if (id) {
     if (!open.some(n => n.id === id)) { throw new Error(`${id} is not an open question on ${ticket} (${open.length} open: ${ids})`); }
     return id;
   }
   if (action === 'answer') { return undefined; }
+  if (action === 'page') { return (open.find(n => !n.answer) ?? open[0])?.id; }
   if (open.length === 1) { return open[0].id; }
   throw new Error(open.length
     ? `${ticket} has ${open.length} open questions (${ids}); pass --id to close one`
@@ -249,8 +279,10 @@ export interface Need {
   blocker: Blocker
   options: string[]
   since: string
+  openedBy?: string
   answer?: string
   answeredAt?: string
+  answeredBy?: string
   synthetic?: boolean
   /** What cannot run until this is decided. */
   blocked?: string
@@ -314,6 +346,10 @@ export interface SprintBug {
 /** `unclassified`: the sprint's own bug rows the source left out (status in no bucket): named, never counted. */
 export interface BugSearch { linked: number, sprintRows: number | null, bugRows: number | null, createdInSprint: number | null, discoveredAt?: string, missing?: string[], unclassified?: { id: string, status: string }[] }
 
+// What a writer says it observed: it sets the lane and never stands in for opening the pointer.
+export interface DeferralOk { cases: string[], pointer: string, by: string, at: string, hostUnverified?: boolean }
+export interface Deferral { cases: string[], waiting: string[], bug: boolean, label?: string, oks?: DeferralOk[] }
+
 export interface TicketView {
   id: string
   title: string
@@ -341,6 +377,7 @@ export interface TicketView {
   /** The newest evidence artifact recorded for this ticket (`evidence-artifact KEY-n <url>`). */
   evidenceArtifact?: EvidenceArtifact
   acceptedRisk?: { by: string, note?: string, at: string }
+  deferral?: Deferral
   next?: string
   lane: Lane
   laneSince: string
@@ -362,8 +399,19 @@ export interface Ask {
   attach: string[]
   state: AskState
   createdAt: string
+  stateAt?: string
   sentAt?: string
   answeredAt?: string
+  closedAt?: string
+  twoWay: boolean
+  link?: string
+  // The messenger's own handle for the message; opaque to the board.
+  ref?: string
+  error?: string
+  reply?: string
+  replyAt?: string
+  by?: string
+  history: { state: AskState, at: string, by?: string }[]
   outdated: boolean
 }
 
@@ -377,7 +425,7 @@ export interface InboxMsg { id: string, from: MsgFrom, text: string, at: string,
 export interface InboxThread extends InboxMsg { replies: InboxMsg[], state: 'needs-owner' | 'needs-claude' | 'done', lastAt: string }
 
 /** `bucket`: on a `tracker` status move, the bucket it moved into. */
-export interface TimelineItem { at: string, kind: EventKind | 'progress', ticket?: string, text: string, by?: string, bucket?: TicketBucket }
+export interface TimelineItem { at: string, kind: EventKind | 'progress', ticket?: string, text: string, by?: string, bucket?: TicketBucket, need?: string }
 
 export interface BoardState {
   v: number
@@ -385,6 +433,8 @@ export interface BoardState {
   tickets: TicketView[]
   asks: Ask[]
   inbox: InboxThread[]
+  // The owner's own: no share, report or frozen copy carries it.
+  sweep?: SweepView
   people: Person[]
   /** Test data found during the sprint, newest first. */
   fixtures: Fixture[]
@@ -393,8 +443,12 @@ export interface BoardState {
   bugSearch?: BugSearch
   timeline: TimelineItem[]
   tracker?: { source?: SourceKind, syncedAt: string, searched: TrackerSnapshot['searched'] }
+  // The provider that can draft messages, by id: the live server attaches it, absent = none.
+  messenger?: string
   /** The conductor's test-environment watch: newest `watch.pass` and how many ran. Absent when none ever ran. */
   watch?: { lastPassAt: string, passes: number }
+  // Pid state is only true while someone is checking it: the live server attaches this, a snapshot never does.
+  watchers?: WatcherView[]
   warnings: string[]
   generatedAt: string
   mode: 'live' | 'snapshot' | 'share' | 'report' | 'demo'
@@ -439,10 +493,69 @@ export function resolvePerson(people: Person[], input: string): Person {
   throw new Error(`"${input}" matches ${exact.length + first.length ? 'more than one' : 'no'} person. Known: ${names}`);
 }
 
+export const isUnsent = (s: AskState) => s === 'draft' || s === 'approved' || s === 'drafted' || s === 'draft-failed';
+export const isDraftingState = (s: AskState) => s === 'approved' || s === 'drafted' || s === 'draft-failed';
+export const defaultTwoWay = (kind: AskKind) => (TWO_WAY_KINDS as readonly string[]).includes(kind);
+
+const ASK_NEXT: Record<AskState, AskState[]> = {
+  'draft': ['approved', 'sent', 'dropped'],
+  'approved': ['drafted', 'draft-failed', 'draft', 'dropped'],
+  'drafted': ['sent', 'draft', 'dropped', 'draft-failed'],
+  'draft-failed': ['approved', 'drafted', 'sent', 'draft', 'dropped'],
+  'sent': ['answered', 'draft', 'drafted', 'dropped', 'closed'],
+  'answered': ['answered', 'sent', 'dropped', 'closed'],
+  'closed': ['answered', 'sent'],
+  'dropped': ['draft', 'drafted', 'sent', 'approved', 'answered'],
+};
+
+export function askTransition(from: AskState, to: AskState): string | null {
+  if (from === to && to !== 'answered') { return `it is already ${to}`; }
+  return ASK_NEXT[from].includes(to) ? null : `cannot go from ${from} to ${to}`;
+}
+
+export type AskStep = { kind: 'go' } | { kind: 'noop' } | { kind: 'refuse', why: string };
+
+export function askStep(cur: Pick<Ask, 'state' | 'reply'>, to: AskState, reply?: string): AskStep {
+  if (cur.state === to) {
+    return to === 'answered' && reply !== undefined && reply !== cur.reply ? { kind: 'go' } : { kind: 'noop' };
+  }
+  const why = askTransition(cur.state, to);
+  return why ? { kind: 'refuse', why } : { kind: 'go' };
+}
+
+export function askPhase(a: Pick<Ask, 'state' | 'twoWay'>): AskPhase {
+  switch (a.state) {
+    case 'draft':
+    case 'draft-failed': return 'approve';
+    case 'approved':
+    case 'drafted': return 'send';
+    case 'sent': return a.twoWay ? 'waiting' : 'done';
+    case 'answered': return 'read';
+    default: return 'done';
+  }
+}
+
+export function askPhaseCounts(asks: Pick<Ask, 'state' | 'twoWay'>[]): Record<AskPhase, number> {
+  const c = { approve: 0, send: 0, waiting: 0, read: 0, done: 0 };
+  for (const a of asks) { c[askPhase(a)]++; }
+  return c;
+}
+
+export const isAskActor = (v: string): boolean => (ASK_ACTORS as readonly string[]).includes(v);
+
+const ACTION_STATE: Record<Exclude<AskAction, 'reopen'>, AskState> = { approve: 'approved', sent: 'sent', drop: 'dropped', retry: 'approved', answered: 'answered', close: 'closed' };
+
+export function askActionState(action: AskAction, ask: Pick<Ask, 'history'>): AskState {
+  if (action !== 'reopen') { return ACTION_STATE[action]; }
+  return ask.history.findLast(h => h.state !== 'closed')?.state === 'answered' ? 'answered' : 'sent';
+}
+
 /** The tracker's Assignee can hold several people ("Dana Dev,Lee Dev"). */
 export const devsOf = (dev?: string): string[] => (dev ? dev.split(/\s*,\s*/).filter(Boolean) : []);
 
 const str = (v: unknown) => (typeof v === 'string' ? v : undefined);
+const said = (v: unknown) => (typeof v === 'string' && v.trim() ? v : undefined);
+const httpsOnly = (u?: string) => (u && /^https:\/\/[^\s"'<>]+$/i.test(u) ? u : undefined);
 
 // ---------------------------------------------------------------------------
 // Evidence pages and bug status
@@ -551,16 +664,148 @@ export function listFixtures(all: Fixture[], module?: string): Fixture[] {
 // Lane rules: the one place a column is decided
 // ---------------------------------------------------------------------------
 
+export const isPassVerdict = (v: Verdict): boolean => v === 'PASSED' || v === 'PASSED WITH DEFERRALS';
+
+export const deferralMark = (d: Deferral): string => d.label ?? NOT_FULLY_TESTED.en;
+
+export const unverifiedHostCases = (d: Deferral): string[] => (d.oks ?? []).filter(o => o.hostUnverified).flatMap(o => o.cases);
+
+export const isBugType = (type?: string): boolean => type?.toLowerCase() === 'bug';
+
+export const deferralBlocks = (t: Pick<TicketView, 'deferral' | 'verdict'>): boolean => (t.deferral ? t.deferral.bug || t.deferral.waiting.length > 0 : t.verdict === 'PASSED WITH DEFERRALS');
+
+// Names the deferral only when nothing else is open: a case still NOT RUN holds the ticket under its own reason.
+export function deferralHold(t: Pick<TicketView, 'deferral' | 'tcs'>): keyof typeof DEFERRAL_NOTES | null {
+  if (!t.deferral) { return null; }
+  if (t.deferral.bug) { return 'bug'; }
+  const c = tcCounts(t.tcs);
+  return t.deferral.waiting.length && c.PASSED + c.DEFERRED === c.total ? 'owner-ok' : null;
+}
+
+export function deferralNote(t: Pick<TicketView, 'deferral' | 'tcs' | 'lane'>): keyof typeof DEFERRAL_NOTES | null {
+  const hold = deferralHold(t);
+  return hold === 'bug' || t.lane === 'Held' ? hold : null;
+}
+
+function deferralOf(tcs: TcView[], type: string | undefined, oks: Map<string, Omit<DeferralOk, 'cases'>>, label?: string): Deferral | undefined {
+  const cases = tcs.filter(x => x.status === 'DEFERRED').map(x => x.id);
+  if (!cases.length) { return undefined; }
+  const records = new Map<string, DeferralOk>();
+  const waiting: string[] = [];
+  for (const id of cases) {
+    const ok = oks.get(id);
+    if (!ok) { waiting.push(id); continue; }
+    const key = JSON.stringify([ok.at, ok.by, ok.pointer]);
+    const record = records.get(key) ?? { ...ok, cases: [] };
+    record.cases.push(id);
+    records.set(key, record);
+  }
+  return { cases, waiting, bug: isBugType(type), label, oks: records.size ? [...records.values()] : undefined };
+}
+
+const SESSION_OK_FORM = new RegExp(`^${SESSION_OK}, (\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2})(?::(\\d{2}))?(Z|[+-]\\d{2}:?\\d{2})?$`);
+const BOARD_OK_LIMIT = 'A page answer proves it did not come through the CLI, not who typed it; the Story comment URL is preferred when both exist';
+
+const minuteOf = (ms: number): number => Math.floor(ms / 60_000);
+
+// Null for any other text and for a date or time that does not exist; with no offset the time is local.
+function sessionOkMinute(pointer: string): number | null {
+  const m = SESSION_OK_FORM.exec(pointer);
+  if (!m) { return null; }
+  const [year, month, day, hour, minute, second] = m.slice(1, 7).map(x => Number(x ?? 0));
+  const zone = m[7];
+  const utc = new Date(Date.UTC(year, month - 1, day, hour, minute));
+  const real = utc.getUTCFullYear() === year && utc.getUTCMonth() === month - 1 && utc.getUTCDate() === day && hour < 24 && minute < 60 && second < 60;
+  if (!real) { return null; }
+  if (!zone) { return minuteOf(new Date(year, month - 1, day, hour, minute).getTime()); }
+  if (zone === 'Z') { return minuteOf(utc.getTime()); }
+  const hours = Number(zone.slice(1, 3));
+  const minutes = Number(zone.slice(-2));
+  if (hours > 23 || minutes > 59) { return null; }
+  return minuteOf(utc.getTime()) - (zone.startsWith('+') ? 1 : -1) * (hours * 60 + minutes);
+}
+
+// A whole token, so KEY-1 is not found inside KEY-10.
+const holdsKey = (path: string, id: string): boolean =>
+  new RegExp(`(?<![A-Za-z0-9_-])${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![A-Za-z0-9_])`, 'i').test(path);
+
+// Never the query or the fragment: any page can carry a key there. build.py applies the same rule, pinned by the same vectors.
+const namesTicket = (url: URL, id: string): boolean =>
+  url.pathname.split('/').some(segment => segment.toUpperCase() === id.toUpperCase())
+  || (Boolean(url.searchParams.get('focusedCommentId')) && holdsKey(url.pathname, id));
+
+export function deferralOkRecord(t: Pick<TicketView, 'id' | 'tcs' | 'needs' | 'link'>, ok: { cases: string[], pointer: string, at: string }): { cases: string[], pointer: string, hostUnverified?: true } {
+  const refuse = (why: string): never => { throw new Error(`${why}. See ${DEFERRAL_OK_RULE}`); };
+  const deferred = new Map(t.tcs.filter(x => x.status === 'DEFERRED').map(x => [x.id.toUpperCase(), x]));
+  const wanted = [...new Set(ok.cases.map(x => x.toUpperCase()))];
+  if (!wanted.length) { refuse('--cases needs at least one DEFERRED case id'); }
+  const stray = wanted.filter(x => !deferred.has(x));
+  if (stray.length) { refuse(`${stray.join(', ')} not DEFERRED on ${t.id} (deferred now: ${[...deferred.values()].map(x => x.id).join(', ') || 'none'})`); }
+  const cases = wanted.map(x => deferred.get(x)!);
+  // Only the board's own record dates a deferral: a tracker row's time moves on any edit.
+  const newerThan = (at: string) => cases.find(x => x.source === 'board' && Date.parse(x.at ?? '') > Date.parse(at));
+  const late = newerThan(ok.at);
+  if (late) { refuse(`${late.id} was recorded DEFERRED at ${late.at}, after this OK (${ok.at}): a case deferred afterwards needs its own OK`); }
+
+  const pointer = ok.pointer.trim();
+  const accepted = { cases: cases.map(x => x.id), pointer };
+  if (/^https?:\/\/[^\s/]\S*$/i.test(pointer)) {
+    const url = URL.canParse(pointer) ? new URL(pointer) : refuse(`--pointer "${pointer}" is not a URL`);
+    if (!namesTicket(url, t.id)) { refuse(`--pointer ${pointer} does not name ${t.id} in its path: give the URL of the owner's comment on that item, read back from the tracker (the key as a whole path segment, or inside the path of a URL with focusedCommentId)`); }
+    const host = t.link && URL.canParse(t.link) ? new URL(t.link).host : '';
+    if (!host) { return { ...accepted, hostUnverified: true }; }
+    if (url.host !== host) { refuse(`--pointer ${pointer} is on ${url.host}, but the tracker link of ${t.id} is on ${host}`); }
+    return accepted;
+  }
+  if (pointer.startsWith(SESSION_OK)) {
+    const given = sessionOkMinute(pointer) ?? refuse(`--pointer "${pointer}" is not the in-session form: write exactly "${SESSION_OK}, <YYYY-MM-DD HH:MM>" with a real date and time (seconds, Z or an offset are optional, no offset reads as local time)`);
+    if (given > minuteOf(Date.now())) { refuse(`--pointer "${pointer}" is in the future (no offset reads as local time)`); }
+    const early = cases.find(x => x.source === 'board' && given < minuteOf(Date.parse(x.at ?? '')));
+    if (early) { refuse(`--pointer "${pointer}" is earlier than the deferral of ${early.id} (${early.at}): a case deferred afterwards needs its own OK`); }
+    return accepted;
+  }
+  if (pointer.startsWith('board:')) {
+    const id = pointer.slice('board:'.length).trim();
+    const own = t.needs.filter(n => !n.synthetic);
+    const need = own.find(n => n.id === id) ?? refuse(`--pointer ${pointer}: no question ${id || '(empty)'} on ${t.id} (${own.length} searched; cite it before it is resolved). ${BOARD_OK_LIMIT}`);
+    if (!need.answer) { refuse(`--pointer ${pointer}: ${id} has no answer yet. ${BOARD_OK_LIMIT}`); }
+    if (need.answeredBy !== 'owner') { refuse(`--pointer ${pointer}: ${id} was answered by ${need.answeredBy ?? '?'}, not by owner from the page. ${BOARD_OK_LIMIT}`); }
+    const undated = cases.find(x => x.source !== 'board');
+    if (undated) { refuse(`--pointer ${pointer}: the board has no deferral time for ${undated.id}, so the answer cannot be shown to come after it: first record it with tc ${t.id} ${undated.id} DEFERRED --reason "<why>" --at <when it was deferred> --by <writer>`); }
+    const after = newerThan(need.answeredAt ?? '');
+    if (after) { refuse(`--pointer ${pointer}: ${after.id} was recorded DEFERRED after that answer (${need.answeredAt}): a case deferred afterwards needs its own OK`); }
+    return accepted;
+  }
+  return refuse(`--pointer "${pointer}" is not accepted: give the Story comment's URL read back from the tracker (preferred), board:<need-id> of a question the owner answered on the page, or "${SESSION_OK}, <YYYY-MM-DD HH:MM>"`);
+}
+
+// source.json keeps only a case's latest status, so a case that moved after an OK is caught while sync still holds both reads.
+export function lapsedDeferrals(events: BoardEvent[], ticket: string, before: TrackerTc[], after: TrackerTc[]): string[] {
+  const okAt = new Map<string, number>();
+  for (const e of events) {
+    if (e.ticket !== ticket || e.kind !== 'deferral.ok') { continue; }
+    for (const id of strs(e.data?.cases)) { okAt.set(id, Math.max(okAt.get(id) ?? 0, Date.parse(e.at))); }
+  }
+  return after.filter((now) => {
+    const ok = okAt.get(now.id);
+    const was = before.find(x => x.id === now.id);
+    if (ok === undefined || !was || was.status === now.status) { return false; }
+    return was.status === 'DEFERRED' || (now.status !== 'DEFERRED' && Date.parse(now.updatedAt ?? '') > ok);
+  }).map(x => x.id);
+}
+
 export function laneOf(t: Omit<TicketView, 'lane' | 'laneSince' | 'atRisk' | 'drift'>): Lane {
   const c = tcCounts(t.tcs);
-  if (t.needs.some(n => !n.answer)) { return 'Needs you'; }
+  if (t.needs.some(awaitsOwner)) { return 'Needs you'; }
   if (t.worker.state === 'running') { return 'Running'; }
   if (t.verdict === 'FAILED' || c.FAILED > 0) { return 'Failed'; }
-  // A PASSED verdict with a case still NOT RUN or BLOCKED is not Passed: it is Held.
-  if (t.verdict === 'PASSED') { return c.total === 0 || c.PASSED + c.DEFERRED === c.total ? 'Passed' : 'Held'; }
+  // A passing verdict with a case still NOT RUN or BLOCKED, or that `deferralBlocks`, is not Passed: it is Held.
+  const settled = c.PASSED + c.DEFERRED === c.total;
+  const passed = deferralBlocks(t) ? 'Held' : 'Passed';
+  if (isPassVerdict(t.verdict)) { return settled ? passed : 'Held'; }
   if (t.hold || t.verdict === 'BLOCKED' || c.BLOCKED > 0) { return 'Held'; }
   // A closed sprint imported without verdict events: the tracker past the gate and every case settled.
-  if (isTestedBucket(t.bucket) && (c.total === 0 ? t.type === 'Bug' : c.PASSED + c.DEFERRED === c.total)) { return 'Passed'; }
+  if (isTestedBucket(t.bucket) && (c.total === 0 ? isBugType(t.type) : settled)) { return passed; }
   return 'Up next';
 }
 
@@ -595,11 +840,65 @@ interface Draft {
   waits: Map<string, Wait>
   evidence: Map<string, Omit<EvidenceView, 'path' | 'source'>>
   acceptedRisk?: TicketView['acceptedRisk']
+  deferralOks: Map<string, Omit<DeferralOk, 'cases'>>
   startedAt?: string
   /** When the current attempt began (first start, or the latest retest). */
   attemptAt?: string
   finishedAt?: string
   lastAt: string
+}
+
+export function foldAsks(events: BoardEvent[]): Ask[] {
+  const asks = new Map<string, Ask>();
+  // By instant, not by text: a time written without milliseconds sorts wrong as a string.
+  for (const e of [...events].sort((a, b) => Date.parse(a.at) - Date.parse(b.at))) {
+    const x = e.data ?? {};
+    if (e.kind === 'ask.create') {
+      const id = str(x.id) ?? e.id;
+      const kind = (str(x.kind) as AskKind) ?? 'fyi';
+      asks.set(id, {
+        id,
+        to: str(x.to) ?? '?',
+        lang: x.lang === 'es' ? 'es' : 'en',
+        kind,
+        tickets: strs(x.tickets),
+        text: str(x.text) ?? '',
+        attach: strs(x.attach),
+        state: 'draft',
+        createdAt: e.at,
+        stateAt: e.at,
+        twoWay: typeof x.twoWay === 'boolean' ? x.twoWay : defaultTwoWay(kind),
+        by: e.by,
+        history: [{ state: 'draft', at: e.at, by: e.by }],
+        outdated: false,
+      });
+    }
+    if (e.kind !== 'ask.state') { continue; }
+    const a = asks.get(str(x.id) ?? '');
+    const state = ASK_STATES.find(v => v === x.state);
+    if (!a || !state) { continue; }
+    const resumed = a.state === 'closed' || a.state === 'answered' || a.state === 'dropped';
+    const reply = said(x.reply);
+    a.state = state;
+    a.stateAt = e.at;
+    a.by = e.by;
+    a.history.push({ state, at: e.at, by: e.by });
+    a.closedAt = state === 'closed' ? e.at : undefined;
+    if (isUnsent(state)) { a.sentAt = undefined; a.answeredAt = undefined; }
+    if (isUnsent(state) || state === 'sent') { a.reply = undefined; a.replyAt = undefined; }
+    // Going back to a message already sent keeps when it was sent.
+    if (state === 'sent' && !(resumed && a.sentAt)) { a.sentAt = e.at; }
+    if (state === 'answered') {
+      a.answeredAt = e.at;
+      a.replyAt = str(x.replyAt) ?? (reply ? e.at : a.replyAt);
+      a.reply = reply ?? a.reply;
+    }
+    if (state === 'draft') { a.link = undefined; a.ref = undefined; }
+    if (state === 'draft' || state === 'approved' || state === 'drafted') { a.error = undefined; }
+    if (state === 'drafted') { a.link = httpsOnly(str(x.link)) ?? a.link; a.ref = said(x.ref) ?? a.ref; }
+    if (state === 'draft-failed') { a.error = said(x.error) ?? 'unknown error'; }
+  }
+  return [...asks.values()];
 }
 
 export function fold(input: {
@@ -609,13 +908,15 @@ export function fold(input: {
   live?: Record<string, LiveTicket>
   now: string
   mode?: BoardState['mode']
+  deferralLabel?: string
 }): BoardState {
   const { sprint, tracker, now } = input;
   const live = input.live ?? {};
   const warnings: string[] = [];
-  const events = [...input.events].sort((a, b) => a.at.localeCompare(b.at));
+  // By instant, then by text: a re-deferral written with milliseconds would sort before an OK written without them.
+  const events = [...input.events].sort((a, b) => Date.parse(a.at) - Date.parse(b.at) || a.at.localeCompare(b.at));
   const drafts = new Map<string, Draft>();
-  const asks = new Map<string, Ask>();
+  const asks = foldAsks(events);
   const threads = new Map<string, InboxThread>();
   const rootOf = new Map<string, string>();
   const fixtures: Fixture[] = [];
@@ -643,6 +944,7 @@ export function fold(input: {
         hold: null,
         waits: new Map(),
         evidence: new Map(),
+        deferralOks: new Map(),
         lastAt: sprint.startedAt,
       };
       drafts.set(id, d);
@@ -652,22 +954,7 @@ export function fold(input: {
 
   for (const e of events) {
     const x = e.data ?? {};
-    if (e.kind === 'ask.create') {
-      const id = str(x.id) ?? e.id;
-      asks.set(id, {
-        id,
-        to: str(x.to) ?? '?',
-        lang: x.lang === 'es' ? 'es' : 'en',
-        kind: (str(x.kind) as AskKind) ?? 'fyi',
-        tickets: strs(x.tickets),
-        text: str(x.text) ?? '',
-        attach: strs(x.attach),
-        state: 'draft',
-        createdAt: e.at,
-        outdated: false,
-      });
-      continue;
-    }
+    if (e.kind === 'ask.create' || e.kind === 'ask.state') { continue; }
     if (e.kind === 'msg') {
       const options = strs(x.options);
       const m: InboxMsg = {
@@ -686,17 +973,7 @@ export function fold(input: {
       else { threads.set(m.id, { ...m, replyTo: undefined, replies: [], state: 'done', lastAt: m.at }); rootOf.set(m.id, m.id); }
       continue;
     }
-    if (e.kind === 'ask.state') {
-      const a = asks.get(str(x.id) ?? '');
-      if (a) {
-        a.state = (str(x.state) as AskState) ?? a.state;
-        if (a.state === 'sent') { a.sentAt = e.at; }
-        if (a.state === 'answered') { a.answeredAt = e.at; }
-        if (a.state === 'draft') { a.sentAt = undefined; a.answeredAt = undefined; }
-      }
-      continue;
-    }
-    if (!e.ticket) { continue; }
+    if (!e.ticket || e.kind.startsWith('sweep.')) { continue; }
     const d = get(e.ticket);
     if (e.kind !== 'note' && e.kind !== 'evidence' && e.kind !== 'evidence.artifact' && e.kind !== 'evidence.page' && e.kind !== 'fixture') { d.lastAt = e.at; }
     switch (e.kind) {
@@ -734,6 +1011,8 @@ export function fold(input: {
         if (str(x.approval)) { tc.approval = str(x.approval); }
         if (str(x.reason)) { tc.reason = str(x.reason); }
         d.tcs.set(id, tc);
+        // An OK covers the deferral it was given on, never a later record of the case.
+        d.deferralOks.delete(id);
         break;
       }
       case 'verdict':
@@ -750,6 +1029,7 @@ export function fold(input: {
           blocker: (str(x.blocker) as Blocker) ?? 'decision',
           options,
           since: e.at,
+          openedBy: e.by,
           blocked: str(x.blocked),
           why: str(x.why),
           choices: options.length ? choicesOf(options) : undefined,
@@ -762,7 +1042,7 @@ export function fold(input: {
         // An explicit id answers that need or nothing; only an id-less answer takes the first open one.
         const want = str(x.id);
         const n = want ? d.needs.get(want) : [...d.needs.values()].find(m => !m.answer);
-        if (n) { n.answer = str(x.text); n.answeredAt = e.at; }
+        if (n && (e.by === 'owner' || n.answeredBy !== 'owner')) { n.answer = str(x.text); n.answeredAt = e.at; n.answeredBy = e.by; }
         break;
       }
       case 'need.close': {
@@ -813,6 +1093,14 @@ export function fold(input: {
       case 'fixture':
         fixtures.push({ id: str(x.id) ?? e.id, ticket: d.id, module: str(x.module), text: str(x.text) ?? e.text, at: e.at, by: e.by });
         break;
+      case 'deferral.ok': {
+        const pointer = said(x.pointer);
+        const by = DEFERRAL_OK_ACTORS.find(a => a === e.by);
+        const unverified = x.hostUnverified === true ? { hostUnverified: true } : {};
+        if (pointer && by) { for (const id of strs(x.cases)) { d.deferralOks.set(id, { pointer, by, at: e.at, ...unverified }); } }
+        break;
+      }
+      case 'deferral.lapse': for (const id of strs(x.cases)) { d.deferralOks.delete(id); } break;
       case 'accept-risk': d.acceptedRisk = { by: str(x.by) ?? e.by ?? '?', note: str(x.note), at: e.at }; break;
       default: break;
     }
@@ -838,7 +1126,7 @@ export function fold(input: {
       }
       else {
         mine.name ??= ct.name;
-        if ((ct.updatedAt ?? '') > (mine.at ?? '') && ct.status !== mine.status) {
+        if (Date.parse(ct.updatedAt ?? '') > Date.parse(mine.at ?? '') && ct.status !== mine.status) {
           mine.history.push({ status: ct.status, at: ct.updatedAt! });
           mine.status = ct.status;
           mine.source = 'tracker';
@@ -905,10 +1193,12 @@ export function fold(input: {
     const evidence: EvidenceView[] = [...d.evidence].map(([path, e]) => ({ path, ...e, outcome: e.outcome ?? outcomeOfTc(e.tc), source: 'board' as const }));
     for (const p of l?.evidence ?? []) { if (!d.evidence.has(p)) { evidence.push({ path: p, source: 'disk' }); } }
 
+    const cases = [...tcs.values()].sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
+    const type = c?.type ?? d.type;
     const base = {
       id: d.id,
       title: c?.title ?? d.title ?? d.id,
-      type: c?.type ?? d.type,
+      type,
       dev: c?.dev ?? d.dev,
       priority: c?.priority ?? d.priority,
       module: c?.module ?? d.module,
@@ -921,7 +1211,7 @@ export function fold(input: {
       worker,
       verdict: d.verdict,
       verdictNote: d.verdictNote,
-      tcs: [...tcs.values()].sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true })),
+      tcs: cases,
       bugs,
       needs,
       hold: d.hold,
@@ -929,6 +1219,7 @@ export function fold(input: {
       evidence,
       evidenceArtifact: ticketPages.get(d.id),
       acceptedRisk: d.acceptedRisk,
+      deferral: deferralOf(cases, type, d.deferralOks, input.deferralLabel),
       next: d.next,
       startedAt: d.startedAt,
       finishedAt: d.finishedAt,
@@ -951,8 +1242,8 @@ export function fold(input: {
 
   // A draft is outdated when its ticket changed after it was written.
   const byId = new Map(tickets.map(t => [t.id, t]));
-  for (const a of asks.values()) {
-    a.outdated = a.state === 'draft' && a.tickets.some(id => (byId.get(id)?.laneSince ?? '') > a.createdAt);
+  for (const a of asks) {
+    a.outdated = isUnsent(a.state) && a.tickets.some(id => (byId.get(id)?.laneSince ?? '') > a.createdAt);
     if (!people.has(a.to)) { people.set(a.to, { name: a.to, lang: a.lang, inferred: true }); }
   }
 
@@ -965,8 +1256,8 @@ export function fold(input: {
   // A watch pass every few minutes would bury the timeline; it lives in the topbar instead.
   const passes = events.filter(e => e.kind === 'watch.pass');
   const timeline: TimelineItem[] = events
-    .filter(e => e.kind !== 'ask.create' && e.kind !== 'ask.state' && e.kind !== 'watch.pass')
-    .map(e => ({ at: e.at, kind: e.kind, ticket: e.ticket, text: e.text, by: e.by, bucket: e.kind === 'tracker' ? str(e.data?.bucket) as TicketBucket | undefined : undefined }));
+    .filter(e => e.kind !== 'ask.create' && e.kind !== 'ask.state' && e.kind !== 'watch.pass' && !e.kind.startsWith('sweep.'))
+    .map(e => ({ at: e.at, kind: e.kind, ticket: e.ticket, text: e.text, by: e.by, bucket: e.kind === 'tracker' ? str(e.data?.bucket) as TicketBucket | undefined : undefined, need: e.kind.startsWith('need.') ? str(e.data?.id) : undefined }));
   for (const [id, l] of Object.entries(live)) {
     for (const line of l.lines) { if (line.at) { timeline.push({ at: line.at, kind: 'progress', ticket: id, text: line.text }); } }
   }
@@ -980,8 +1271,9 @@ export function fold(input: {
     v: SCHEMA,
     sprint,
     tickets: tickets.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true })),
-    asks: [...asks.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    asks: asks.sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
     inbox: [...threads.values()].sort((a, b) => b.lastAt.localeCompare(a.lastAt)),
+    sweep: foldSweep(events, url => safeArtifactUrl(url, sprint.evidenceHosts)),
     people: [...people.values()],
     fixtures: listFixtures(fixtures),
     bugs: bugView.bugs,
@@ -1223,6 +1515,7 @@ export interface Metrics {
   burnup: { day: string, done: number, scope: number }[]
   bugs: { total: number, open: number, bySeverity: Record<string, { open: number, closed: number }>, byDev: Record<string, number>, byModule: Record<string, number>, byStatus: Record<BugStatusClass, number> }
   firstPass: { clean: number, of: number }
+  notFullyTested: number
   owner: { medianHours: number | null, answered: number, open: { ticket: string, hours: number }[] }
   waits: { person: string, open: number, oldestHours: number, items: { ticket: string, what: string, hours: number }[] }[]
   atRisk: string[]
@@ -1265,7 +1558,7 @@ export function metrics(s: BoardState): Metrics {
   }
   tc.executed = tc.PASSED + tc.FAILED;
 
-  const done = scope.filter(t => t.lane === 'Passed' || t.lane === 'Failed' || t.verdict !== 'PENDING');
+  const done = scope.filter(t => t.lane === 'Passed' || t.lane === 'Failed' || (t.verdict !== 'PENDING' && !(isPassVerdict(t.verdict) && deferralBlocks(t))));
   const doneDay = (t: TicketView) => (t.finishedAt ?? t.laneSince).slice(0, 10);
   const burnup: Metrics['burnup'] = [];
   const end = now.slice(0, 10);
@@ -1279,18 +1572,25 @@ export function metrics(s: BoardState): Metrics {
   const openQ: { ticket: string, hours: number }[] = [];
   for (const t of scope) {
     for (const n of t.needs) {
-      if (n.answer) { answered.push(hours(n.since, n.answeredAt) ?? 0); }
-      else { openQ.push({ ticket: t.id, hours: round1(hours(n.since, now) ?? 0) }); }
+      if (awaitsOwner(n)) { openQ.push({ ticket: t.id, hours: round1(hours(n.since, now) ?? 0) }); }
+      else if (n.answeredBy === 'owner') { answered.push(hours(n.since, n.answeredAt) ?? 0); }
     }
   }
   // Questions already closed survive only in the timeline.
-  const openedAt = new Map<string, string>();
+  const asked = new Map<string, { ticket: string, need?: string, at: string, ownerAt?: string }>();
   for (const e of [...s.timeline].reverse()) {
     if (!e.ticket) { continue; }
-    if (e.kind === 'need.open') { openedAt.set(e.ticket, e.at); }
-    if (e.kind === 'need.close' && openedAt.has(e.ticket)) {
-      answered.push(hours(openedAt.get(e.ticket), e.at) ?? 0);
-      openedAt.delete(e.ticket);
+    if (e.kind === 'need.open') { asked.set(`${e.ticket} ${e.need}`, { ticket: e.ticket, need: e.need, at: e.at }); }
+    const here = [...asked].filter(([, q]) => q.ticket === e.ticket && (!e.need || q.need === e.need));
+    if (e.kind === 'need.answer' && e.by === 'owner') {
+      const hit = e.need ? here[0] : here.find(([, q]) => !q.ownerAt);
+      if (hit) { hit[1].ownerAt = e.at; }
+    }
+    if (e.kind === 'need.close') {
+      for (const [key, q] of here) {
+        if (q.ownerAt) { answered.push(hours(q.at, q.ownerAt) ?? 0); }
+        asked.delete(key);
+      }
     }
   }
 
@@ -1308,7 +1608,7 @@ export function metrics(s: BoardState): Metrics {
 
   const withVerdict = scope.filter(t => t.lane === 'Passed' || t.lane === 'Failed');
   const clean = withVerdict.filter(t => t.lane === 'Passed' && t.bugs.length === 0 && t.attempt === 1
-    && (t.tcs.some(x => x.status === 'PASSED') || t.type === 'Bug')).length;
+    && (t.tcs.some(x => x.status === 'PASSED') || isBugType(t.type))).length;
 
   return {
     scope: scope.length,
@@ -1319,6 +1619,7 @@ export function metrics(s: BoardState): Metrics {
     burnup,
     bugs: { total: seen.size, open, bySeverity, byDev, byModule, byStatus },
     firstPass: { clean, of: withVerdict.length },
+    notFullyTested: scope.filter(t => t.lane === 'Passed' && t.deferral).length,
     owner: { medianHours: answered.length ? round1(median(answered)!) : null, answered: answered.length, open: openQ.sort((a, b) => b.hours - a.hours) },
     waits: [...waits.values()].sort((a, b) => b.oldestHours - a.oldestHours),
     atRisk: scope.filter(t => t.atRisk).map(t => t.id),
@@ -1331,6 +1632,9 @@ export function metrics(s: BoardState): Metrics {
 // ---------------------------------------------------------------------------
 
 const SHARE_KINDS = new Set<TimelineItem['kind']>(['verdict', 'bug.link', 'release', 'tracker']);
+
+// The OK records stay out: a pointer and its writer are the owner's side of the board.
+const publicDeferral = (d?: Deferral): Deferral | undefined => d && { cases: [...d.cases], waiting: [...d.waiting], bug: d.bug, label: d.label };
 
 // ---------------------------------------------------------------------------
 // Automated outcomes (ADR-0020; ADR-0023 amendment)
@@ -1417,6 +1721,7 @@ export function toShareState(s: BoardState): BoardState {
       lane: t.lane === 'Needs you' ? 'Held' : t.lane,
       laneSince: t.laneSince,
       atRisk: t.atRisk,
+      deferral: publicDeferral(t.deferral),
       progress: [],
     })),
     asks: [],
@@ -1443,7 +1748,8 @@ export interface PriorityCoverage { priority: string, tickets: number, tested: n
  *   report ticket  on the board, in QA scope, and the tracker's Sprint is this board's sprint (a ticket
  *                  with no tracker Sprint counts while in scope); a ticket filed under another sprint is listed
  *                  in `excluded`, never counted
- *   tested         a report ticket with at least one TC or a PASSED/FAILED verdict; signed off = tested and in the tracker's `tested` bucket
+ *   tested         a report ticket with at least one TC or a passing or FAILED verdict; signed off = tested, in the tracker's
+ *                  `tested` bucket and with no deferral that blocks it (`deferralBlocks`)
  *   not tested     0 TCs and no verdict: `neverReached` (never got to the test environment) or `notCounted` (reached it, nothing on record)
  *   tc             totals over tested tickets; passRate = PASSED / (PASSED + FAILED), coverage = PASSED / all
  *   bugs           `sprintBugs`, minus a Bug row that is itself a report ticket and was never linked with
@@ -1454,7 +1760,7 @@ export interface SprintReport {
   /** The tracker Sprint value report tickets carry (the board's sprint name). */
   sprintLabel: string
   stpUrl?: string
-  tickets: { total: number, tested: number, signedOff: number, notSignedOff: string[] }
+  tickets: { total: number, tested: number, signedOff: number, notFullyTested: number, notSignedOff: string[] }
   notTested: { neverReached: NotTestedRow[], notCounted: NotTestedRow[] }
   excluded: { id: string, sprint?: string }[]
   tc: Record<TcStatus, number> & { total: number }
@@ -1509,8 +1815,8 @@ export function toReportState(s: BoardState, opts: { stpUrl?: string, stpHosts?:
   const mine = scope.filter(t => !t.sprint || sameSprint(t.sprint, label));
   const ids = new Set(mine.map(t => t.id));
   // A worker verdict counts as tested even with 0 TCs (an ATR-only bug retest), so the report never contradicts the board's Passed lane.
-  const tested = mine.filter(t => t.tcs.length > 0 || t.verdict === 'PASSED' || t.verdict === 'FAILED');
-  const signed = tested.filter(t => isTestedBucket(t.bucket));
+  const tested = mine.filter(t => t.tcs.length > 0 || isPassVerdict(t.verdict) || t.verdict === 'FAILED');
+  const signed = tested.filter(t => isTestedBucket(t.bucket) && !deferralBlocks(t));
 
   const tc = { 'PASSED': 0, 'FAILED': 0, 'NOT RUN': 0, 'BLOCKED': 0, 'DEFERRED': 0, 'total': 0 };
   const deferred: SprintReport['deferred'] = [];
@@ -1591,7 +1897,7 @@ export function toReportState(s: BoardState, opts: { stpUrl?: string, stpHosts?:
   const report: SprintReport = {
     sprintLabel: label,
     stpUrl: safeStp(opts.stpUrl, opts.stpHosts ?? []),
-    tickets: { total: mine.length, tested: tested.length, signedOff: signed.length, notSignedOff: tested.filter(t => !isTestedBucket(t.bucket)).map(t => t.id) },
+    tickets: { total: mine.length, tested: tested.length, signedOff: signed.length, notFullyTested: signed.filter(t => t.deferral).length, notSignedOff: tested.filter(t => !signed.includes(t)).map(t => t.id) },
     notTested: { neverReached, notCounted },
     excluded: scope.filter(t => !ids.has(t.id)).map(t => ({ id: t.id, sprint: t.sprint })),
     tc,
@@ -1642,6 +1948,7 @@ export function toReportState(s: BoardState, opts: { stpUrl?: string, stpHosts?:
       lane: t.lane === 'Needs you' ? 'Held' : t.lane,
       laneSince: t.laneSince,
       atRisk: t.atRisk,
+      deferral: publicDeferral(t.deferral),
       progress: [],
     })),
     asks: [],
@@ -1666,6 +1973,10 @@ export function toReportState(s: BoardState, opts: { stpUrl?: string, stpHosts?:
 const PRIORITY_ORDER = ['Critical', 'High', 'Medium', 'Low'];
 
 export function slackStatus(t: TicketView): string {
+  return t.deferral ? `${slackLaneStatus(t)}, ${deferralMark(t.deferral)}` : slackLaneStatus(t);
+}
+
+function slackLaneStatus(t: TicketView): string {
   const c = tcCounts(t.tcs);
   const tracker = t.trackerStatus ?? 'not synced';
   const bug = t.bugs[0]?.id;
@@ -1673,7 +1984,10 @@ export function slackStatus(t: TicketView): string {
   if (t.lane === 'Failed') { return `⚠️ Passed ${c.PASSED} of ${c.total}${bug ? `, Bug ${bug} filed` : ''}`; }
   if (t.lane === 'Running') { return `🔵 Running, ${t.worker.stage ?? 'started'}`; }
   if (t.lane === 'Needs you') { return '🟡 Standby, waiting on a decision'; }
-  if (t.lane === 'Held') { return `🟡 Standby, ${t.hold?.note ?? 'blocked'}`; }
+  if (t.lane === 'Held') {
+    const note = deferralNote(t);
+    return `🟡 Standby, ${note ? DEFERRAL_NOTES[note].en : t.hold?.note ?? 'blocked'}`;
+  }
   return `🟡 Assigned to me, ${tracker}`;
 }
 
@@ -1751,7 +2065,7 @@ export function slackBugSummary(s: BoardState): { html: string, plain: string } 
 }
 
 /** A ticket in the test environment that the conductor has not dealt with yet. */
-export interface Arrival { id: string, title?: string, dev?: string, priority?: string, module?: string, state: 'new' | 'recheck', note?: string }
+export interface Arrival { id: string, title?: string, dev?: string, priority?: string, module?: string, state: 'new' | 'recheck', noteBy?: string, note?: string }
 
 /**
  * Test-environment watch: which tickets reached the `in_test` bucket and still need a conductor
@@ -1762,7 +2076,7 @@ export interface Arrival { id: string, title?: string, dev?: string, priority?: 
 export function arrivals(events: BoardEvent[], tracker: TrackerSnapshot | null | undefined): { list: Arrival[], searched: number, inTest: number } {
   const latest = (m: Map<string, string>, id: string, at: string) => { if ((m.get(id) ?? '') < at) { m.set(id, at); } };
   const handled = new Map<string, string>(); const held = new Map<string, string>(); const arrived = new Map<string, string>();
-  const notes = new Map<string, string>(); const out = new Set<string>();
+  const notes = new Map<string, { noteBy?: string, note: string }>(); const out = new Set<string>();
   for (const e of events) {
     if (!e.ticket) { continue; }
     const x = e.data ?? {};
@@ -1777,7 +2091,7 @@ export function arrivals(events: BoardEvent[], tracker: TrackerSnapshot | null |
     if (e.kind === 'arrival') {
       if (x.action === 'held') { latest(held, e.ticket, e.at); }
       else { latest(handled, e.ticket, e.at); }
-      if (typeof x.note === 'string') { notes.set(e.ticket, x.note); }
+      if (typeof x.note === 'string') { notes.set(e.ticket, { noteBy: e.by, note: x.note }); }
     }
   }
   const tickets = Object.entries(tracker?.tickets ?? {});
@@ -1790,7 +2104,7 @@ export function arrivals(events: BoardEvent[], tracker: TrackerSnapshot | null |
     const h = handled.get(id); const a = arrived.get(id);
     if (h && (!a || a <= h)) { continue; }
     const hd = held.get(id);
-    list.push({ id, title: t.title, dev: t.dev, priority: t.priority, module: t.module, state: hd && hd >= (a ?? '') ? 'recheck' : 'new', note: notes.get(id) });
+    list.push({ id, title: t.title, dev: t.dev, priority: t.priority, module: t.module, state: hd && hd >= (a ?? '') ? 'recheck' : 'new', ...notes.get(id) });
   }
   return { list, searched: tickets.length, inTest };
 }
@@ -1858,13 +2172,33 @@ export const localHhmm = (iso: string): string => {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 };
 
+export interface WatcherView {
+  name: string
+  pid: number
+  startedAt: string
+  // Written on a clean exit only (the sentinel exits on every wake): a crash or a kill leaves it absent.
+  exitedAt?: string
+  alive: boolean
+}
+
+export const WATCHER_GRACE_MIN = 2;
+
+export function watchersDown(watchers: WatcherView[] | undefined, now: Date): WatcherView[] {
+  const inGrace = (exitedAt: string) => {
+    // An unreadable time gives NaN and a future one a negative age: neither excuses a dead watcher.
+    const age = now.getTime() - Date.parse(exitedAt);
+    return age >= 0 && age <= WATCHER_GRACE_MIN * 60_000;
+  };
+  return (watchers ?? []).filter(w => !w.alive && !(w.exitedAt && inGrace(w.exitedAt)));
+}
+
 // ---------------------------------------------------------------------------
 // listen --since: replay owner actions a stopped listener missed
 // ---------------------------------------------------------------------------
 
 /**
  * `--since` takes an ISO time (local unless it carries Z or an offset) or an id: a message id
- * (`msg-...`), a need, a draft or an event id. An id resolves to that event's time on any of
+ * (`msg-...`), a need, an ask or an event id. An id resolves to that event's time on any of
  * the given boards. Returns the ISO cutoff, or null when the input matches nothing (the caller
  * stops and says so, fail loudly).
  */
@@ -1885,12 +2219,17 @@ export function sinceCutoff(since: string, boards: BoardEvent[][]): string | nul
 export const ownerActionsSince = (events: BoardEvent[], cutoff: string): BoardEvent[] =>
   events.filter(e => e.by === 'owner' && e.at > cutoff).sort((a, b) => a.at.localeCompare(b.at));
 
+// Stored text is an agent's to write: printed raw, a line break or a long pad in it would draw a line of its own, an owner's included.
+export const printable = (line: string): string => line.replace(/[\p{Cc}\p{Zl}\p{Zp}\p{Bidi_Control}]+/gu, ' ').replace(/(?<=\S)\s{8,}/g, '  ');
+export const printableJson = (value: unknown, indent?: number): string => JSON.stringify(value, null, indent)
+  .replace(/[\u007F-\u009F\u2028\u2029\p{Bidi_Control}]/gu, c => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`);
+
 /** One stdout line per owner action: the format `listen` prints and a Monitor reads. */
 export function listenLine(slug: string, e: BoardEvent): string {
   const x = e.data ?? {};
   const reply = typeof x.replyTo === 'string' ? ` reply-to ${x.replyTo}` : '';
   const id = typeof x.id === 'string' ? ` ${x.id}` : '';
-  return `[${slug}] ${e.kind}${id}${e.ticket ? ` ${e.ticket}` : ''}${reply}: ${e.text}`;
+  return printable(`[${slug}] ${e.kind}${id}${e.ticket ? ` ${e.ticket}` : ''}${reply} by ${e.by ?? '?'}: ${e.text}`);
 }
 
 // ---------------------------------------------------------------------------

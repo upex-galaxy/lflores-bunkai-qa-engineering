@@ -1080,6 +1080,7 @@ export const UPDATER_OWNED_PATHS_ENV = 'UPEX_UPDATER_OWNED_PATHS';
  * project was scaffolded at. See `selfUpdatedComponents`.
  */
 export const UPDATER_SELF_UPDATED_ENV = 'UPEX_UPDATER_SELF_UPDATED';
+export const AUTO_COLLAPSE_THRESHOLD = 10;
 
 /**
  * Env var through which the parent tells its self-update re-exec child which
@@ -3589,7 +3590,6 @@ export async function runUpdate(
 
   // --- PHASE 3 — SCOPE ---
   let chosenScopes: string[] = [];
-  const AUTO_COLLAPSE_THRESHOLD = 10;
   if (visible.length > 0) {
     if (nonInteractive || visible.length < AUTO_COLLAPSE_THRESHOLD) {
       chosenScopes = [...perComp.keys()];

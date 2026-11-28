@@ -556,14 +556,13 @@ export const GENERIC_RULES: Readonly<Record<string, GenericRule>> = {
   // repo's, and they are the only place in this module where that happens.
   //
   // `git_strategy.meta.strategy_source` is `inherited` in the schema: nobody
-  // has chosen anything yet. Critical Rule #5 says an absent or unset
-  // `git_strategy` behaves as `confirm` — ask before every push to a protected
-  // branch — precisely because nobody chose. A template that hands a brand-new
-  // project `direct_push_to_protected: allowed` alongside `inherited` would
-  // contradict that: the AI would push to `main` without asking, under an
-  // authorization the maintainer granted to HIS OWN repo and nobody granted to
-  // this one. `confirm` costs one prompt and is reversible; `allowed` is the
-  // default nobody notices until it has already pushed.
+  // has chosen anything yet. A template that hands a brand-new project
+  // `direct_push_to_protected: allowed` would let the AI push to `main` with
+  // no gate, under an authorization the maintainer granted to HIS OWN repo and
+  // nobody granted to this one. The template ships `evidence`, the value
+  // Critical Rule #5 reads for an unset key: the AI pushes without asking only
+  // when the pre-push evidence gate passes, so nothing lands unchecked and no
+  // person has to authorize a push.
   //
   // `admin_bypass: true` is a FACT about this repo's credential, not a policy:
   // the push credential is an org admin and sits on the ruleset's bypass list,
@@ -573,8 +572,12 @@ export const GENERIC_RULES: Readonly<Record<string, GenericRule>> = {
   //
   // Strategy Setup raises both to the project's real answer when it runs.
   'git_strategy.policy.direct_push_to_protected': {
-    value: 'confirm',
-    why: 'this repo grants itself standing push authorization; a fresh project has authorized nothing',
+    value: 'evidence',
+    why: 'this repo grants itself standing push authorization with no gate; a fresh project pushes only when the evidence gate passes',
+  },
+  'git_strategy.policy.merge_mode': {
+    value: 'null',
+    why: 'a fresh project has chosen no merge mode; git:policy reads null as auto and only warns until it is declared',
   },
   'git_strategy.policy.admin_bypass': {
     value: 'false',
@@ -756,6 +759,8 @@ export const FILLED_ELSEWHERE: Readonly<Record<string, string>> = {
   'git_strategy.branches.ephemeral_pattern': 'the git-flow-master Strategy Setup questionnaire',
   'git_strategy.meta.created': 'stamped by the git-flow-master Strategy Setup questionnaire',
   'git_strategy.meta.policy_verified': 'stamped by `bun run git:policy verify --stamp`',
+  'evidence.review.bot': 'by hand when the project adopts a review bot; null = none',
+  'git_strategy.policy.merge_mode': 'the git-flow-master Strategy Setup questionnaire; null reads as auto',
   'testing.browser.pair_mode': 'asked once, the first time an agentic browser session starts (agentic-qa-core/references/browser-sessions.md, Agentic Pair Testing)',
   'secrets.onepassword.vault': 'the secret-manager choice of `bun setup` (cli/lib/secret-providers.ts; null while secrets.provider is local)',
   'secrets.onepassword.account': 'the secret-manager choice of `bun setup` (optional: null = the 1Password CLI default account)',

@@ -21,7 +21,7 @@ compact_rules: |
   - No ROI verdict while a scenario is `oracle: observed`: it needs a person's answer to "is this intended?" first (decision-protocol kind 1). Canon: `agentic-qa-core/references/discovery-driven-doctrine.md` §4.
   - A Candidate or Manual verdict is fired only after a person signs it (a batch through the `mkd` deck, one verdict through the question tool). The ROI comment then carries `Verdict signed: <who>, <where>, <when>` with a checkable `<where>`, the line the TC source gate of `/test-automation` reads. Only an attended session writes it; a subagent, worker or routine lists verdicts as pending. Format: `references/tms-conventions.md` §9.
   - Discovery intake (`references/discovery-intake.md`): a COVERED candidate is dropped with a line, a WEAK one becomes a strengthen proposal for the existing test (never a new Test), a NEW one runs the full pipeline anchored to its coverage Tech Story. The >50% alarm is computed per chunk.
-  - `PASSED` or `FAILED` only from a run observed in the environment the TC's precondition names, else `NOT RUN` with its reason (doctrine §5). `automated` (`merged`) only once the spec is on the production branch, through mode `post-promotion` (doctrine §6).
+  - `PASSED` or `FAILED` only from a run observed in the environment the TC's precondition names, else `NOT RUN` with its reason (doctrine §5), written `BLOCKED` or `DEFERRED (execution)` only after the unblock preflight (`sprint-testing/references/preflight-gate.md`). `automated` (`merged`) only once the spec is on the production branch, through mode `post-promotion` (doctrine §6).
   - Cardinality: US to TC is 1:N; AC to TC is N:1 or N:M. Resolve the TMS modality (Xray or Jira-native) in Phase 0 first.
   - Mode from `$ARGUMENTS`: a first token matching a mode in Mode routing (`repair-traceability`, `post-promotion`, `document`) is the mode and the rest is forwarded. Otherwise `document` for plain documentation work; ask when it could be either.
   - Bug-driven (golden rule): a regression-worthy bug must end with a Test. Reuse the existing failed Test if the bug came from one, else create one (both modalities). A non-qualifying bug is treated like a failed test: Deferred, no new Test.
@@ -70,7 +70,7 @@ Requires `agentic-qa-core`. Loads on demand:
 - No ROI verdict while a scenario is `oracle: observed`: it needs a person's answer to "is this intended?" first (decision-protocol kind 1). Canon: `agentic-qa-core/references/discovery-driven-doctrine.md` §4.
 - A Candidate or Manual verdict is fired only after a person signs it (a batch through the `mkd` deck, one verdict through the question tool). The ROI comment then carries `Verdict signed: <who>, <where>, <when>` with a checkable `<where>` (the person's own comment id, or the saved mkd result or decision record path), the line the TC source gate of `/test-automation` reads. Only an attended session writes it; a subagent, worker or routine lists verdicts as pending. Format and the sign-only pass: `references/tms-conventions.md` §9.
 - Discovery intake (`references/discovery-intake.md`): COVERED is dropped with a line, WEAK becomes a strengthen proposal (never a new Test), NEW runs the full pipeline anchored to its coverage Tech Story; the >50% alarm is per chunk.
-- `PASSED` or `FAILED` only from a run observed in the environment the TC's precondition names, else `NOT RUN` with its reason (doctrine §5). `automated` (`merged`) only once the spec is on the production branch, through mode `post-promotion` (doctrine §6).
+- `PASSED` or `FAILED` only from a run observed in the environment the TC's precondition names, else `NOT RUN` with its reason (doctrine §5), written `BLOCKED` or `DEFERRED (execution)` only after the unblock preflight (`sprint-testing/references/preflight-gate.md`). `automated` (`merged`) only once the spec is on the production branch, through mode `post-promotion` (doctrine §6).
 - Cardinality: US to TC is 1:N; AC to TC is N:1 or N:M. Resolve the TMS modality in Phase 0 first. The mode comes from `$ARGUMENTS` (Mode routing).
 - Bug-driven (golden rule): a regression-worthy bug must end with a Test. Reuse the existing failed Test if the bug came from one, else create one (both modalities). A non-qualifying bug is treated like a failed test: Deferred, no new Test.
 
@@ -177,8 +177,8 @@ Does this project have Xray installed and licensed on Jira?
 
 ### How to resolve it without asking (in order)
 
-1. Resolve `{{TMS_CLI}}` (`testing.tms_cli` in `.agents/project.yaml`). Value `bun xray` (or any Xray CLI) means a **candidate** jira-xray, confirmed in step 2. Value unset, `acli`-only, or `{{TMS_CLI}}` matching `{{ISSUE_TRACKER_CLI}}` means **Modality jira-native**.
-2. Confirm Xray by **evidence**: the Xray API answers through `[TMS_TOOL]` (`/xray-cli`: its auth status check, then one read against the project). If it answers, the modality is **jira-xray**. Work types alone never decide: `Test Plan` / `Test Execution` / `Test Set` / `Pre-Condition` also exist as native Jira work types on jira-native instances (the table below uses them there "by excellence"), so their presence proves nothing about Xray. **Fail closed**: no answer from the Xray API means never assume jira-xray. When step 1 named an Xray CLI, that is a tool or credential failure: stop per Critical Rule #10 and name the `XRAY_*` variables.
+1. Resolve `{{TMS_CLI}}` (`testing.tms_cli` in `.agents/project.yaml`). Value `bun xray` (or any Xray CLI) means a **candidate** jira-xray, confirmed in step 2. Value `acli`-only, or `{{TMS_CLI}}` matching `{{ISSUE_TRACKER_CLI}}`, means **Modality jira-native**. Value unset decides nothing (a fresh project can leave it empty): go to step 2.
+2. Confirm Xray by **evidence**: the Xray API answers through `[TMS_TOOL]` (`/xray-cli`: its auth status check, then one read against the project). If it answers, the modality is **jira-xray**. Work types alone never decide: `Test Plan` / `Test Execution` / `Test Set` / `Pre-Condition` also exist as native Jira work types on jira-native instances (the table below uses them there "by excellence"), so their presence proves nothing about Xray. **Fail closed**: no answer from the Xray API means never assume jira-xray. When step 1 named an Xray CLI, that is a tool or credential failure: stop per Critical Rule #10 and name the `XRAY_*` variables. When step 1 found it unset, check by name whether `XRAY_CLIENT_ID` and `XRAY_CLIENT_SECRET` are set (`bunx varlock load --agent`, never by value). Not set means the project has no Xray: **Modality jira-native**. Set, and the probe answers: jira-xray, so cache `testing.tms_cli: bun xray` in `.agents/project.yaml`, as the QA epic keys are cached, because the scripts that read the modality from the config treat an unset value as jira-native. Set, and the probe fails or times out: stop at the point of use per Critical Rule #10, name the variables and the failure, write nothing to the cache and do not continue in jira-native.
 3. **Only if neither the config nor the evidence settles it**, ask the user the question above. Do not ask by default: autoresolve first.
 
 ### What changes per modality
@@ -496,7 +496,7 @@ Plan and Set lifecycle (`agentic-qa-core/references/artifact-lifecycle.md` §1):
 | Artifact | Born | This skill moves it to | Then |
 |---|---|---|---|
 | RTP (Regression Test Plan) | `{{jira.status.test_plan.planning}}` | `{{jira.status.test_plan.ready}}` via `{{jira.transition.test_plan.designed}}` on the first promotion | stays `ready` forever, because the RTP is long-lived. Never fire `{{jira.transition.test_plan.complete}}` on it |
-| ATS (per-Story Set) | `{{jira.status.test_set.designing}}` | closed by `/sprint-testing` Reporting, not here | none |
+| ATS (per-Story Set) | `{{jira.status.test_set.designing}}` (left there on purpose by `/sprint-testing` Reporting, as the hand-off marker to this stage) | `{{jira.status.test_set.close}}` via `{{jira.transition.test_set.done}}`, after the ROI verdict: write the ROI-dependent fields the close demands (estimates, automation type, regression flag), then fire. A validator refusal follows `agentic-qa-core/references/artifact-lifecycle.md` §4.2 | terminal |
 | TS (optional feature Set) | `{{jira.status.test_set.designing}}` | stays `designing` for the life of the feature | `{{jira.transition.test_set.done}}` only when its Epic closes |
 | Precondition | `{{jira.status.precondition.active}}` | nothing: the workflow has no transition out of `active` | stays `active`; that is correct, not a gap |
 
@@ -675,6 +675,8 @@ Run the eight-line template in `agentic-qa-core/references/artifact-lifecycle.md
     Deferred stated as deliberately left at {{jira.status.test_case.ready}}
 [ ] Every promoted TC's summary matches the canonical form, re-derived and verified
     BEFORE the `regression-candidate` label and RTP membership (§"Title on promotion")
+[ ] The Story's ATS at {{jira.status.test_set.close}} (via done) with the ROI fields written,
+    or a stated N/A quoting the validator (artifact-lifecycle.md §4.2)
 [ ] RTP at {{jira.status.test_plan.ready}}, assignee = self, NOT completed
 [ ] Promoted TCs added to the RTP (and the optional feature TS) — membership verified
 [ ] Every Candidate grouped into a named e2e regression flow, and the grouping written

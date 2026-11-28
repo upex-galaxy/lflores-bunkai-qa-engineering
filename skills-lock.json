@@ -5,8 +5,8 @@
       "source": "cathrynlavery/diagram-design",
       "sourceType": "github",
       "skillPath": "skills/diagram-design/SKILL.md",
-      "computedHash": "09dc4e3efaa22dea09470c0e51d44e98667bd2c3595c1efc2bde8ff5dc43071b",
-      "commit": "d7b0176d7e60c6f2ff54067991491ac7622c81fb"
+      "computedHash": "d48c9ab592486435222c760c347b99e6e27d89b103aaf6b2808b2dec2b57d466",
+      "commit": "795eec47fd376e5dda0b9e056a49520060cd2f13"
     },
     "domain-modeling": {
       "source": "upex-galaxy/agentic-user-skills",

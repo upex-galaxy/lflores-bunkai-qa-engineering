@@ -1,0 +1,103 @@
+# The record and the signature
+
+Two artifacts carry a delivery's evidence. The **record** is the gate's full account of one push, kept on the machine. The **evidence commit** is the signed, permanent part, kept in git history and checked by CI. This file says what each holds, what the pair proves and what it cannot.
+
+## The record
+
+| Property | Value |
+|---|---|
+| File | `<primary-root>/.session/evidence/<head-sha>.json`. The primary root is the parent of `git rev-parse --path-format=absolute --git-common-dir`, so a worktree session writes where durable state lives |
+| Artifacts | `<primary-root>/.session/evidence/artifacts/<subject-sha>/<check-id>/<env>/`: traces, screenshots, transcripts, plus one `verdict.json` per folder |
+| In git | never; `.session/` is ignored |
+| Writer | `bun run edd gate` (pre-push hook) and `bun run edd verify --ci` (CI). The agent never writes it |
+| When | every gate run of the pre-push hook and every CI run of the verifier. One file per gate run: a later hook gate can still refuse the push. The CI copy goes to the job summary and an Actions artifact |
+
+The schema is `edd-evidence/1`. Its sections, in order:
+
+| Section | Says |
+|---|---|
+| `subject` | the code commit, its tree, the patch-id of `base...sha`, the merge base, branch and repository |
+| `push` | the remote ref, the flow (`direct`, `pr`, `chain`) and where the gate ran (`pre-push`, `ci`) |
+| `contract` | digest of the merged contract, the ref it was read from, the computed depth and why |
+| `static` | per check: command, exit code, duration, hash of the output |
+| `agentic` | the evidence commit, its signature status and signer, and per check the verdict, who gave it, the environment, each artifact's hash and size, and the tester's free-text claim, marked as a claim |
+| `ready` | CI only: open review threads, review-bot state, assignee, tracker link, title |
+| `touches_gate` | whether the change touches `evidence.human` paths or keys, and which |
+| `producer` | hash of the gate script that wrote it, worktree and session |
+| `result` | `pass` or `fail` |
+
+How a person sees it: in a PR, the body's evidence section is a fresh verification against the merge base (`bun run edd render --pr` never reads a local record), and the CI verifier keeps one sticky comment with the verified copy. After a direct push the hook prints the record path and a one-line verdict, and `git log --format='%(trailers:key=Evidence-Digest)'` lists every attested push. Heavy artifacts are published for a person separately; the record holds only their hashes.
+
+## The evidence commit
+
+After the agentic run, the author or tester session runs `bun run edd attest`. The script, not the agent, hashes every artifact, checks that each required agentic check left at least one artifact of its `kind`, that traces and screenshots are newer than the code commit, that traces hit the host of the declared environment, and that a `test-run` check's JUnit XML or Playwright JSON report ran at least one test with none failing. Then it creates an empty, signed commit on top of the code.
+
+The layout `attest` reads: one folder per required check and environment, `.session/evidence/artifacts/<subject-sha>/<check-id>/<env>/`, holding the artifact files and a `verdict.json` with `verdict` (`pass` to deliver), an optional `verdict_by` and an optional `claim`. At depth `deep` every environment of the check needs its folder; below it, one is enough. The tester passes its own label with `bun run edd attest --tester <label>` (or `EDD_TESTER`): it becomes the `verdict_by` of every folder whose `verdict.json` names none, a different `verdict_by` in the file is refused, and at depth `standard` or deeper it must differ from the `Session:` trailer of every code commit. A subagent tester uses `<author label>/tester`:
+
+```
+test(evidence): attest 1a2b3c4 standard
+
+{"schema":"edd-agentic/1","subject":"1a2b3c4...","patch_id":"9f..","depth":"standard",
+ "contract_digest":"sha256:..","checks":[{"id":"changed-specs","verdict":"pass","verdict_by":"<tester label>",
+ "env":"staging","artifacts":[{"path":"trace.zip","sha256":"..","bytes":40211}]}]}
+
+Evidence-Subject: 1a2b3c4...
+Evidence-Patch-Id: 9f...
+Evidence-Digest: sha256:<of the JSON line above>
+Worktree: <name|primary>
+Session: <label>
+```
+
+Normal hooks run on it. The forensic trailers stay last.
+
+## What CI verifies
+
+The check `edd/evidence` runs the verifier from the **default** branch's code (`pull_request_target`), which also supplies the contract and the allowed signers, reading the PR's commits as data and never running them, so a PR cannot edit the verifier that judges it. Where the ruleset requires that check (the `forbidden` push preset), it requires it from the GitHub Actions app, so a status posted with a personal token does not count; under the shipped default nothing on the host requires it. A PR can still add a workflow of its own with a job of the same name: it comes from the same Actions app, and GitHub accepts its green check. See the table below. When the real verifier runs, it enforces:
+
+| Rule | Why |
+|---|---|
+| the evidence commit changes no file (its tree equals its parent's) | evidence never smuggles code |
+| its subject is the commit below it, or the patch-id still matches | a clean merge of the base keeps the evidence; any change to the PR's own diff voids it |
+| the signature is valid against the allowed-signers list read from the base | a PR cannot add its own key once a signer is listed |
+| the contract digest matches the base's contract | a PR cannot weaken its own contract |
+| recomputed depth is not above the attested depth | the attest cannot under-declare |
+| at depth `standard` or deeper, every `verdict_by` differs from the `Session:` trailer of the code commits | the author is not its own tester |
+
+Static checks run as ordinary required CI jobs next to it.
+
+**The first signer is trusted on first use.** The installer and `bun run agents:setup` write the user's own public signing key (`git config user.signingkey`) to `.agents/edd/allowed_signers` with `bun run edd signers`, and say what to configure when there is none. While the base lists no signer, the change that adds the file needs no signature for it; anything else in that change that needs agentic evidence still needs evidence signed by a key the base lists, so the first signer lands in a change of its own. From then on only a key already listed at the base can add another. `bun sync` never writes the file.
+
+A line counts as a signer only when it parses as `principal [options] keytype base64` and the base64 key names its own key type, so a file with only its comment header, blank lines or a malformed line lists no signer, and the next change can still seat the first one. The verifier never follows a symlink at that path: at the base a symlink lists no signer, and in a change it fails the verification with the fix (`git rm` the link, run `bun run edd signers`, commit the file it writes on its own). `bun run edd signers` refuses to write through one.
+
+**A copy seats its own first signer too.** A fork, a clone or an old template copy carries the boilerplate's committed `allowed_signers`, which lists only the maintainer's key, so nobody in the copy could ever sign. The verifier treats such a base as listing no signer when it is an untouched copy: its `allowed_signers`, at the base and in every earlier version of the file, lists only boilerplate maintainer keys; every evidence commit in its history verifies against those keys alone; and the repository is not one of the boilerplates themselves (in CI, by the repository name or the numeric repository id GitHub reports, so a renamed or transferred boilerplate is still itself; on the local gate, by the `origin` remote). A project that ever seated a signer of its own, or delivered under evidence with one, is not an untouched copy, and getting back to a maintainer-only file takes evidence signed by its own key, which that history then shows. `bun run edd signers` and `bun run agents:setup` replace the maintainer key with the user's in an untouched copy and commit the file on its own, in a commit whose message says it seats the project's first signer and, when a session identity exists (`EDD_SESSION`, with `EDD_WORKTREE`), ends with the `Worktree:` and `Session:` trailers; the boilerplates keep the maintainer's key.
+
+Trust is per key, not per committer. Git finds the principal by the key that signed, so the principal in `allowed_signers` is a label and never binds to the commit's author, and the record's `signer` is the key fingerprint. `bun run edd signers` resolves a relative `user.signingkey` from the top of the worktree, the way git does when it runs `ssh-keygen` to sign, and prints the key's SHA256 fingerprint and the file it read it from, so the user can check that the key is their own.
+
+## What this can and cannot guarantee
+
+The gate protects against mistakes and drift, not against an agent that deliberately forges a check. An agent that follows this doctrine cannot push red code, attest the wrong diff or test its own work without the gate noticing. An agent that sets out to cheat, using the owner's identity, can.
+
+| Caught: mistakes and drift | Not caught: an agent that deliberately forges |
+|---|---|
+| a static check that fails: the pre-push gate re-runs it and CI runs it again | a green `edd/evidence` posted by a workflow the PR itself adds: same Actions app, same name, so the ruleset accepts it |
+| evidence attested for another diff, or left stale by a later code change (patch-id) | a weakened static level below the script a contract `cmd` names: the static jobs run the PR's own workflow files, tool configs and the files that script runs, so a PR that edits them is judged by its edited checks (a changed `package.json` script itself is a gate key, `contract.md`) |
+| a contract, signer list or verifier weakened by the change it judges, when the real verifier runs | that the agentic test happened as claimed: an agent holding the signing key and the tools can fabricate artifacts and the tester's claim |
+| the author giving its own agentic verdict (`verdict_by` against the `Session:` trailer) | that session labels are real: they are self-declared and as honest as the harness's identity hook |
+| a status posted with a personal token | a direct push beyond the local hook: the agent controls that machine, and CI on the pushed branch catches a problem only after the fact. A force push to the default branch fails that CI run, and so does a push that recreates it while the repository holds other branches or tags, because no previous tip and no base contract remain to verify against. The first push of a new repository, with no other branch or tag, passes with a note. A limit: a pusher who deletes every other branch and tag first, then deletes and recreates the default branch, sends a push the check cannot tell from a first push (the event carries the same `before`, `created` and `forced`, and the check never reads the pushed tree to decide), so it passes with that note and verifies nothing; the next push is judged against the recreated tree. A host ruleset that forbids deleting the protected branch closes it, and the EDD rollout sets one. A push to any other branch is judged against the contract of `origin/<default>`, and the pre-push gate refuses to delete a protected branch |
+| every attested delivery stays in git history with its digests | the artifacts themselves after the retention window |
+
+A change to the gate itself is delivered like any other change, so the right column includes a PR that loosens the gate. What covers it: the change takes depth `standard` or deeper, the record flags it as `touches_gate`, and a repo on `human-approves` lists the gate paths in CODEOWNERS so a person reviews them. Agents push with the owner's own GitHub identity, so the host cannot tell the owner from the agent, and the owner accepted this risk for their repositories.
+
+Other cheap mitigations: a reader who opens every record flagged `touches_gate`, a tester session separate from the author, artifacts a reader can open from the PR, an optional reviewer session (`waiting.md`), post-merge detection (CI on push, regression runs), and `human-approves` for a team that wants a person on every merge.
+
+**Upgrade path.** A dedicated GitHub App as the only source of `edd/evidence`, with the ruleset pinned to that app's `integration_id`, closes the forged-check gap: a workflow a PR adds cannot post as that app. It is offered to the owner at rollout and not built yet.
+
+## Why not something simpler
+
+| Mechanism | Why it falls short alone |
+|---|---|
+| a trailer on the code commit (`Evidence: pass`) | the agent writes it while composing the message, before any check runs; it proves nothing |
+| git notes | bound to a SHA but carry no origin, and two sessions pushing notes at once reject each other |
+| a committed attestation file | changes the tree on every push, so format and lint see it |
+| a commit status posted by the agent | any account with push access can post one |
+| artifact attestation from CI | does not fit a check that runs on a local machine |

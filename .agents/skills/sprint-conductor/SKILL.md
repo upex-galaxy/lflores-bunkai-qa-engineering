@@ -12,15 +12,18 @@ metadata:
 compact_rules: |
   - Orca is required (owner decision, the one exception to the orchestrator-silence rule): run the gate of `agent-orchestration` (binary and reachable runtime) before anything else. When it fails, say ONE line and stop, writing nothing: "/sprint-conductor runs on Orca and no reachable Orca runtime is on this machine; run the sprint with /sprint-testing sprint-wide and N executors, which writes paste-ready launch lines." Every other workflow skill keeps its silence unchanged.
   - Split of duties: this skill owns the maneuver (boot, watch pass, round close, resume); `sprint-testing/references/fleet-conductor.md` owns the fleet, `sprint-testing/references/sprint-board.md` the board, `agent-orchestration` the transport. Cite them, do not restate them.
-  - Ask the owner only what the board, the tracker and the files cannot decide: the sprint when the CURRENT board and the tracker disagree or no board exists, and the worker cap when the ticket count exceeds it and the owner named none (held for this session, never persisted as a new default). Everything else is decided and reported.
+  - Ask the owner only what the board, the tracker and the files cannot decide: the sprint when the CURRENT board and the tracker disagree or no board exists, and the worker cap when the ticket count exceeds it and the owner named none (held for this session, never persisted as a new default). One more goes to the owner every time: the shift-right deferral OK a worker asks for, returned as a pointer to the owner's own comment on the item or board answer and never answered by the conductor (`sprint-testing/references/shift-right-deferral.md` §3). Everything else is decided and reported.
   - The conductor does not test and does not investigate a ticket. The line is fixture versus finding: seeding data, verifying with ONE query that a fixture exists and belongs to whom the brief says, and creating an owner-approved fixture user are conductor work; what a case asserts, the code behind it and any id the test needs are the worker's.
   - Conductor-owned pre-flight, before EVERY launch (a watch-pass launch included): the conductor alone mints tokens and browser states and refreshes them when stale; a credential is proven with the cheap API login before any browser login, stopping after 3 failed attempts; the sibling-repo fetch is a gate (a non-zero exit stops and escalates, it never falls through to the counts) and its two drift counts go into every brief; the schema sync runs from a current checkout or is skipped with the skip written into every brief. Full: `references/boot-and-resume.md` §2.
   - The sentinel is armed at boot and re-armed after EVERY wake, as a background task, one per board, with the same `--baseline` file. No homemade monitor, no scheduled pass when background tasks exist, no mailbox polling.
-  - Every watch pass records each decision with `bun run board arrival <KEY> launched|held|skipped "<why>"`, so a missed pass costs nothing. The deploy check always runs: a tracker status is a hint, the deployed build is the truth. Fixture gaps are asked at triage. The cap counts every live worker, an ad-hoc retest included, and collisions are checked against the LIVE workers, not the round plan.
+  - Any other long-running process the conductor starts is registered with `bun run board watcher register <name> --pid <n> --match=<text>`; one retired on purpose, the sentinel included, is cleared with `bun run board watcher clear <name>`, or the board keeps flagging it. Full: `sprint-testing/references/sprint-board.md` §7.
+  - Every watch pass records each decision with `bun run board arrival <KEY> launched|held|skipped "<why>" --by conductor`, so a missed pass costs nothing. The deploy check always runs: a tracker status is a hint, the deployed build is the truth. Fixture gaps are asked at triage. The cap counts every live worker, an ad-hoc retest included, and collisions are checked against the LIVE workers, not the round plan.
+  - The Decision dock is read on every pass (`bun run board sweep read --unconsumed --json`), and each batch or note acted on is marked with `bun run board sweep consume <id> --by conductor`. `sweep add` is for a small decision that blocks nothing; a question that blocks a ticket or gates a step the owner signs is a `needs-you` card. Full: `sprint-testing/references/sprint-board.md` §3.
+  - A board question that gates something (a deferral OK, a transition, any step the owner signs) is not resolved by an agent before the owner's own record exists, on the board (their answer on the page) or in the tracker. A chat answer mirrored with `--by conductor` leaves it open. Full: `sprint-testing/references/sprint-board.md` §3.
   - The CONDUCTOR reads back a finished worker's final ticket status itself, with a bounded poll for the expected value; a worker's or a subagent's "verified" is not proof (Critical Rule #16). The round close is ONE subagent per finished worker that verifies the artifacts, not the report; closes whose workers touched the same Epic run one after another, so only one of them publishes that Epic's `## Module Context (QA)` section at a time.
   - A redeploy while workers are live: fetch only (do not fast-forward a sibling repo while a worker is live), then tell EVERY live worker once, with the repo, the old and new build and whether its own change's files moved.
-  - Message a developer only on the owner's explicit order for that message, never commit, never print a credential. Reports to the owner are counts and tables that name who must answer, not a narrative.
-  - Resume after a reboot or a session resume: find the workers by the label in their tab title, the part before the last `--term_` (the handle after it is stale), and re-issue each tab rename and each session rename (the harness rename verb, Claude Code included) with the new handle, restart the board, re-arm the sentinel with the same baseline, replay the owner's actions with `listen --since`, read the mailbox, send ONE resume message per live worker, and launch nothing until every live worker confirmed. Full: `references/boot-and-resume.md` §4.
+  - Message a developer only on the owner's explicit order for that message (a precondition request and a deferral notice are Story comments, tracker writes of the stage, not messages; chat or Slack stays on that order, one staged message per wave), never commit, never print a credential. Reports to the owner are counts and tables that name who must answer, not a narrative.
+  - Resume after a reboot or a session resume: find the workers by the label in their tab title, the part before the last `--term_` (the handle after it is stale), and re-issue each tab rename and each session rename (the harness rename verb, Claude Code included) with the new handle, restart the board, re-arm the sentinel with the same baseline, replay the owner's actions with `listen --since`, read `sweep read --unconsumed --json`, check `watcher list`, read the mailbox, send ONE resume message per live worker, and launch nothing until every live worker confirmed. Full: `references/boot-and-resume.md` §4.
   - On any subagent failure: STOP, report which pass or ticket failed with full context, offer retry, skip or abort, and do not auto-fix. A skill that itself broke is reported upstream per `agentic-qa-core/references/upstream-feedback.md`.
 ---
 
@@ -47,14 +50,14 @@ The skill is thin on purpose: almost everything it does has a canonical home, an
 | Concern | Canon |
 |---|---|
 | Fleet mode: worker identity, briefs, `launch.txt`, rounds, auth one-writer, claims, ad-hoc retest, Live Progress, the dashboard, the sprint record | `sprint-testing/references/fleet-conductor.md` |
-| The board: commands per stage, the block a worker's brief carries, the four channels, drafts, decision cards, evidence, fixtures, the sentinel wake table, staged artifacts | `sprint-testing/references/sprint-board.md`, command reference `cli/sprint-board/README.md` |
+| The board: commands per stage, the block a worker's brief carries, the four channels, asks, the Decision dock, decision cards, evidence, fixtures, the sentinel wake table, staged artifacts | `sprint-testing/references/sprint-board.md`, command reference `cli/sprint-board/README.md` |
 | The transport: Run, Tasks, native launch, the mailbox, liveness, closing, the conductor handoff | `agent-orchestration` (its `SKILL.md`, conductor cycle, Orca provider and gotchas) |
 | The deploy check (the deployed environment is truth, the tracker is a hint) | `sprint-testing/references/session-entry-points.md` Step 1c |
 | This skill: the boot, one watch pass, the round close, the resume | `references/boot-and-resume.md`, `references/watch-pass.md`, `references/round-close.md` |
 
 ```
-owner ── board (Needs you, inbox, drafts) + chat ──┐
-                                                    │
+owner ── board (Needs you, inbox, dock, asks) + chat ┐
+                                                      │
 sentinel ─ wake ─> CONDUCTOR (this skill) ── Run mailbox ── workers (sprint-testing, fleet worker)
                       │  boot · watch pass · round close · resume          │
                       └── tracker (read + sprint record) ── board CLI <────┘ (--by worker)
@@ -134,8 +137,8 @@ The fleet files (`launch.txt`, `roster.md`, `claims.md`, each `<KEY>/brief.md`, 
 | 2 | Resolve the sprint and the board (`board sprints`, `use` or `new`, people), `sync --discover`, `add` late tickets, start the server when the page does not answer | `sprint-board.md` §1 row "0 boot" |
 | 3 | The conductor-owned pre-flight: tokens, browser states, the credential check, the sibling-repo fetch gate and drift counts, the schema sync or its logged skip, the deployed build per repo | `references/boot-and-resume.md` §2 |
 | 4 | Bind the sprint's Run (its id from `kickoff.md`, the roster or the board timeline) or create it; probe the reply direction ONCE before any worker depends on it | `references/boot-and-resume.md` §3, `/agent-orchestration` (conductor cycle §8) |
-| 5 | Arm the sentinel (skip with `--no-watch`) | `sprint-board.md` §7 |
-| 6 | Read what waits: the Run mailbox, the board inbox plus the bounded `listen --since` replay, answers the owner gave in chat (relay, then mirror to the board), then the first watch pass | `sprint-board.md` §3, `references/watch-pass.md` |
+| 5 | Arm the sentinel (skip with `--no-watch`, and clear a registration an earlier session left: `board watcher clear sentinel`) | `sprint-board.md` §7 |
+| 6 | Read what waits: the Run mailbox, the board inbox plus the bounded `listen --since` replay, the unread dock batches and notes, answers the owner gave in chat (relay, then mirror to the board; a gating question stays open), then the first watch pass | `sprint-board.md` §3, `references/watch-pass.md` |
 | 7 | One status screen for the owner | §"Status screen" below |
 
 Then stay in conductor mode: answer workers, keep the board current, run a watch pass on each sentinel
@@ -152,7 +155,7 @@ In the owner's language, counts and tables, no narrative (`agent-orchestration` 
 
 - In the test environment: each ticket launched, held (and on whom), skipped or new, one reason each.
 - Who waits on whom: workers waiting on the owner, the owner waiting on developers (open waits and
-  drafts), tickets waiting on a deploy.
+  asks), tickets waiting on a deploy.
 - What the owner must decide: each open question with its options, numbered so one line answers it, and
   for each blocker the person to ask (developer, product owner, or a named owner of the access).
 - Boot facts: board URL, the sentinel armed (its task id) or not, the Run id, the pre-flight result and
@@ -187,7 +190,7 @@ it, `agentic-qa-core/references/decision-protocol.md` decides what reaches a per
 |---|---|---|
 | resume, restart or abort offer (0.1) | the launching conductor answers | resume when live workers exist, since resuming loses nothing; otherwise start fresh and say so |
 | the sprint or the cap (rule 3) | the launcher's brief names them | the brief names them; without one, take the CURRENT board and `orchestration.max_workers`, and report the assumption; if the board and the tracker disagree or no board exists, launch nothing and report |
-| a failed sibling fetch, a failed credential, a fixture gap | the launcher is told in the report | hold the affected tickets as `held`, record the blocker on the board (`needs-you`), launch nothing that depends on it |
+| a failed sibling fetch, a failed credential, a fixture gap | the launcher is told in the report | hold the affected tickets as `held`, record the blocker on the board (`needs-you ... --by conductor`), launch nothing that depends on it |
 | a message to a developer | the launcher relays | draft it on the board, never send |
 | a subagent failure (retry, skip or abort) | the launcher decides | skip that ticket, record why, report; never auto-fix |
 | filing an upstream report | the launcher decides | draft and redact locally, do not file |
@@ -272,5 +275,5 @@ cite them.
 - [ ] Sprint, board and cap resolved
 - [ ] Pre-flight green, or each deviation logged in `kickoff.md` and in every brief it affects
 - [ ] Run bound, reply direction probed, sentinel armed (or `--no-watch` stated)
-- [ ] Mailbox, inbox and `listen --since` replay read; chat answers relayed and mirrored
+- [ ] Mailbox, inbox, unread dock and `listen --since` replay read; chat answers relayed and mirrored
 - [ ] One status screen sent

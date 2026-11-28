@@ -97,7 +97,7 @@ build it tests.
 ### 2.5 Fixture gaps, before launch
 
 For every ticket of the round, ask whether any case needs a user, an organization or data that does not
-exist in `<env>`. Ask the owner now, on the board (`needs-you`) and in chat, before a worker finds it: on the source fleet two workers found a missing role user mid-run and
+exist in `<env>`. Ask the owner now, on the board (`needs-you ... --by conductor`) and in chat, before a worker finds it: on the source fleet two workers found a missing role user mid-run and
 waited about four hours. Verifying a fixture a developer supplied is
 conductor work, one query each; anything not verified goes into the brief marked `UNVERIFIED`.
 
@@ -152,8 +152,11 @@ browser session, because a browser call without the named session falls back to 
    background (the sentinel would at its next tick; doing it now lets the resume read the page).
 3. Sentinel: re-arm it with the SAME `--baseline` file (`sprint-board.md` §7). On a harness without
    background tasks, list the scheduled passes first: present, leave it; missing, arm it, and never add a duplicate.
+   Then `bun run board watcher list`: start again and re-register every other process it shows as not
+   running, and clear each one this run no longer uses (`sprint-board.md` §7).
 4. Owner actions missed while down: `bun run board inbox` plus the bounded
-   `bun run board listen --since <last pass or last id seen>` replay (`sprint-board.md` §3).
+   `bun run board listen --since <last pass or last id seen>` replay, and
+   `bun run board sweep read --unconsumed --json` for the Decision dock (`sprint-board.md` §3).
 5. Mailbox: read it per §3 step 3.
 6. One message per live worker, through the mailbox with a terminal pointer as the nudge
    (`/agent-orchestration` channel discipline), with `<KEY>` filled in:

@@ -1,4 +1,6 @@
-import type { BoardEvent, TrackerSnapshot } from './model.ts';
+import type { TicketBucket } from '../lib/sprint-source/types.ts';
+import type { Messenger } from './messenger.ts';
+import type { Ask, AskState, BoardEvent, TrackerSnapshot } from './model.ts';
 /**
  * `board sentinel`: the conductor's zero-token test-environment watch trigger.
  *
@@ -18,7 +20,9 @@ import type { BoardEvent, TrackerSnapshot } from './model.ts';
  * so the tests run without a network, a server or a real clock. Why it exists and how the
  * conductor uses it: `.agents/skills/sprint-testing/references/sprint-board.md` §Sentinel.
  */
-import { arrivals, boardTicketIds, untrackedInTest } from './model.ts';
+import { resolveMessenger } from './messenger.ts';
+import { arrivals, boardTicketIds, foldAsks, printableJson, untrackedInTest } from './model.ts';
+import { DOCK_VIA, foldSweep, openSweepItems, unreadNotes } from './sweep.ts';
 
 // ---------------------------------------------------------------------------
 // Signature: what the conductor must react to
@@ -27,7 +31,13 @@ import { arrivals, boardTicketIds, untrackedInTest } from './model.ts';
 export interface SigArrival { id: string, kind: 'NEW' | 'RECHECK', title?: string }
 export interface SigUntracked { id: string, qa?: string, title?: string }
 export interface SigOwner { event: string, ticket?: string, text: string }
-export interface SigNeed { id: string, ticket: string, question: string }
+export interface SigNeed { id: string, ticket: string, by?: string, question: string }
+export type SigAsk = Pick<Ask, 'id' | 'to' | 'state' | 'stateAt' | 'sentAt' | 'kind' | 'twoWay' | 'tickets' | 'by'>;
+export interface SigAskChange { id: string, to: string, from: AskState, state: AskState, by?: string }
+export interface SigBatch { id: string, at: string, items: number, tickets: string[] }
+export interface SigNote { id: string, at: string, ticket?: string, text: string }
+export interface SigDock { item: string, ticket: string, question: string, since: string, bucket: TicketBucket }
+export type SigDockRecheck = Omit<SigDock, 'bucket'> & { from: TicketBucket, to: TicketBucket };
 
 /**
  * Compared by key only (ids and kinds); the other fields are there so a wake can say what
@@ -40,8 +50,17 @@ export interface Signature {
   ownerAnswer: SigOwner | null
   /** Needs-you a worker raised that nobody (owner or conductor) has answered or closed. */
   workerNeeds: SigNeed[]
+  // Absent in a baseline saved before asks were watched, which adopts them.
+  asks?: SigAsk[]
+  drafting?: boolean
+  // Dock batches and notes nobody consumed; a baseline saved before the dock reads as empty.
+  sweep?: { batches: SigBatch[], notes: SigNote[] }
+  // Open dock items that name a ticket with a synced row; a baseline saved before the dock adopts them.
+  dock?: SigDock[]
 }
 
+// What the owner sends from the dock has its own wake parts, and a batch carries the card answers it wrote.
+const isOwnerAnswer = (e: BoardEvent) => e.by === 'owner' && (e.kind === 'need.answer' || e.kind === 'msg') && e.data?.via !== DOCK_VIA;
 const byId = <T extends { id: string }>(a: T, b: T) => a.id.localeCompare(b.id, undefined, { numeric: true });
 const str = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
 /** Whoever records a need for the owner and is not the owner, the conductor or Claude's inbox. */
@@ -61,7 +80,7 @@ export function openWorkerNeeds(events: BoardEvent[]): SigNeed[] {
     byTicket.set(e.ticket, needs);
     if (e.kind === 'need.open') {
       const id = str(x.id) ?? e.id;
-      needs.set(id, { id, ticket: e.ticket, question: str(x.question) ?? e.text, answered: false, worker: !NOT_A_WORKER.has(e.by ?? '') });
+      needs.set(id, { id, ticket: e.ticket, by: e.by, question: str(x.question) ?? e.text, answered: false, worker: !NOT_A_WORKER.has(e.by ?? '') });
     }
     else if (e.kind === 'need.answer') {
       const want = str(x.id);
@@ -75,7 +94,7 @@ export function openWorkerNeeds(events: BoardEvent[]): SigNeed[] {
     }
   }
   const open = [...byTicket.values()].flatMap(m => [...m.values()]).filter(n => n.worker && !n.answered);
-  return open.map(({ id, ticket, question }) => ({ id, ticket, question: question.slice(0, 200) })).sort(byId);
+  return open.map(({ id, ticket, by, question }) => ({ id, ticket, by, question: question.slice(0, 200) })).sort(byId);
 }
 
 /** Tickets with a hold that was never cleared, minus the ones taken out of scope. */
@@ -89,24 +108,61 @@ export function activeHolds(events: BoardEvent[]): string[] {
   return [...held].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 }
 
-export function signatureOf(events: BoardEvent[], tracker: TrackerSnapshot | null | undefined): Signature {
+const asksOf = (events: BoardEvent[]): SigAsk[] => foldAsks(events)
+  .map(({ id, to, state, stateAt, sentAt, kind, twoWay, tickets, by }) => ({ id, to, state, stateAt, sentAt, kind, twoWay, tickets, by }))
+  .sort(byId);
+
+const NOTE_CHARS = 300;
+const QUESTION_CHARS = 200;
+const byNumber = (a: string, b: string) => a.localeCompare(b, undefined, { numeric: true });
+
+function dockOf(events: BoardEvent[], tracker: TrackerSnapshot | null | undefined): Required<Pick<Signature, 'sweep' | 'dock'>> {
+  const view = foldSweep(events);
+  const batches = view.batches.filter(b => b.complete && !b.consumed).map(b => ({
+    id: b.id,
+    at: b.at,
+    items: b.answers.length,
+    tickets: [...new Set(b.answers.flatMap(a => (a.ticket ? [a.ticket] : [])))].sort(byNumber),
+  }));
+  const notes = unreadNotes({ sweep: view }).map(n => ({ id: n.id, at: n.at, ticket: n.ticket, text: n.text.slice(0, NOTE_CHARS) }));
+  const dock = openSweepItems({ sweep: view }).flatMap((it) => {
+    const bucket = it.ticket ? tracker?.tickets[it.ticket]?.bucket : undefined;
+    return it.ticket && bucket ? [{ item: it.id, ticket: it.ticket, question: it.question.slice(0, QUESTION_CHARS), since: it.createdAt, bucket }] : [];
+  }).sort((a, b) => byNumber(a.item, b.item));
+  return { sweep: { batches, notes }, dock };
+}
+
+export function signatureOf(events: BoardEvent[], tracker: TrackerSnapshot | null | undefined, messenger: Messenger | null = resolveMessenger()): Signature {
   const r = arrivals(events, tracker);
   const untracked = untrackedInTest(tracker?.discover?.untracked ?? [], boardTicketIds(events, tracker));
-  const owner = events.filter(e => e.by === 'owner' && (e.kind === 'need.answer' || e.kind === 'msg')).at(-1);
+  const owner = events.filter(isOwnerAnswer).at(-1);
   return {
     arrivals: r.list.map(a => ({ id: a.id, kind: a.state === 'new' ? 'NEW' as const : 'RECHECK' as const, title: a.title })).sort(byId),
     untracked: untracked.map(u => ({ id: u.id, qa: u.qa, title: u.title })).sort(byId),
     ownerAnswer: owner ? { event: owner.id, ticket: owner.ticket, text: str(owner.data?.text) ?? owner.text } : null,
     workerNeeds: openWorkerNeeds(events),
+    asks: asksOf(events),
+    drafting: Boolean(messenger),
+    ...dockOf(events, tracker),
   };
 }
 
+const askKey = (a: SigAsk) => `${a.state}@${a.stateAt ?? ''}`;
+// The conductor and the sentinel must never wake themselves with their own writes.
+const wakesOnAsk = (a: SigAsk) => a.by !== undefined && a.by !== 'conductor' && a.by !== 'sentinel';
+
 export interface Additions {
-  parts: ('arrivals' | 'untracked' | 'owner-answer' | 'worker-need')[]
+  parts: ('arrivals' | 'untracked' | 'owner-answer' | 'worker-need' | 'ask-approved' | 'ask-sent' | 'ask-changed' | 'sweep-answered' | 'dock-note' | 'dock-recheck')[]
   arrivals: SigArrival[]
   untracked: SigUntracked[]
   ownerAnswer?: SigOwner
   workerNeeds: SigNeed[]
+  askApproved: SigAsk[]
+  askSent: SigAsk[]
+  askChanged: SigAskChange[]
+  sweepAnswered: SigBatch[]
+  dockNotes: SigNote[]
+  dockRecheck: SigDockRecheck[]
 }
 
 /**
@@ -122,12 +178,70 @@ export function additions(base: Signature, now: Signature): Additions | null {
   const owner = now.ownerAnswer && now.ownerAnswer.event !== base.ownerAnswer?.event ? now.ownerAnswer : undefined;
   const baseNeeds = new Set(base.workerNeeds.map(n => n.id));
   const needs = now.workerNeeds.filter(n => !baseNeeds.has(n.id));
+  const baseAsks = base.asks && new Map(base.asks.map(a => [a.id, a]));
+  const moved = baseAsks
+    ? (now.asks ?? []).filter((a) => {
+        const was = baseAsks.get(a.id);
+        return wakesOnAsk(a) && (!was || askKey(was) !== askKey(a));
+      })
+    : [];
+  const askApproved = now.drafting ? moved.filter(a => a.state === 'approved') : [];
+  // The send time tells a new send from an Undo or a reopen back into one the baseline already holds.
+  const askSent = moved.filter(a => a.state === 'sent' && a.twoWay && baseAsks?.get(a.id)?.sentAt !== a.sentAt);
+  const askChanged = moved.flatMap((a) => {
+    // An ask the baseline never saw was a draft when it was proposed.
+    const from = baseAsks?.get(a.id)?.state ?? 'draft';
+    const isNewDraft = a.state === 'draft' && !baseAsks?.has(a.id);
+    return isNewDraft || a.state === 'approved' || a.state === 'sent' ? [] : [{ id: a.id, to: a.to, from, state: a.state, by: a.by }];
+  });
+  const baseBatches = new Set(base.sweep?.batches.map(b => b.id));
+  const sweepAnswered = (now.sweep?.batches ?? []).filter(b => !baseBatches.has(b.id));
+  const baseNotes = new Set(base.sweep?.notes.map(n => n.id));
+  const dockNotes = (now.sweep?.notes ?? []).filter(n => !baseNotes.has(n.id));
+  // An item the baseline never held adopts silently: its question was just written.
+  const baseDock = new Map(base.dock?.map(d => [d.item, d]));
+  const dockRecheck = (now.dock ?? []).flatMap(({ bucket, ...item }) => {
+    const from = baseDock.get(item.item)?.bucket;
+    return from && from !== bucket ? [{ ...item, from, to: bucket }] : [];
+  });
   const parts: Additions['parts'] = [];
   if (arr.length) { parts.push('arrivals'); }
   if (unt.length) { parts.push('untracked'); }
   if (owner) { parts.push('owner-answer'); }
   if (needs.length) { parts.push('worker-need'); }
-  return parts.length ? { parts, arrivals: arr, untracked: unt, ownerAnswer: owner, workerNeeds: needs } : null;
+  if (askApproved.length) { parts.push('ask-approved'); }
+  if (askSent.length) { parts.push('ask-sent'); }
+  if (askChanged.length) { parts.push('ask-changed'); }
+  if (sweepAnswered.length) { parts.push('sweep-answered'); }
+  if (dockNotes.length) { parts.push('dock-note'); }
+  if (dockRecheck.length) { parts.push('dock-recheck'); }
+  return parts.length ? { parts, arrivals: arr, untracked: unt, ownerAnswer: owner, workerNeeds: needs, askApproved, askSent, askChanged, sweepAnswered, dockNotes, dockRecheck } : null;
+}
+
+export const IMMEDIATE_PARTS: readonly Additions['parts'][number][] = ['owner-answer', 'ask-approved', 'ask-sent', 'ask-changed', 'sweep-answered', 'dock-note'];
+
+function hasPendingOwnerAnswer(events: BoardEvent[]): boolean {
+  const rootOf = new Map<string, string>();
+  const msgId = (e: BoardEvent) => str(e.data?.id) ?? e.id;
+  for (const e of events.filter(x => x.kind === 'msg')) {
+    rootOf.set(msgId(e), rootOf.get(str(e.data?.replyTo) ?? '') ?? msgId(e));
+  }
+  return events.some((answer, at) => {
+    if (!isOwnerAnswer(answer)) { return false; }
+    const later = events.slice(at + 1);
+    if (answer.kind === 'need.answer') {
+      const need = str(answer.data?.id);
+      return !later.some(e => e.kind === 'need.close' && e.ticket === answer.ticket && (!need || !str(e.data?.id) || e.data?.id === need));
+    }
+    return !later.some(e => e.kind === 'msg' && e.data?.from === 'claude' && rootOf.get(msgId(e)) === rootOf.get(msgId(answer)));
+  });
+}
+
+// With no saved baseline, an owner answer nobody has acted on, an unread dock batch or note, or an ask approved and not drafted, is work and not history: leaving it out makes it wake.
+export function freshBaseline(events: BoardEvent[], sig: Signature): Signature {
+  const unread = { ...sig, sweep: { batches: [], notes: [] } };
+  const base = hasPendingOwnerAnswer(events) ? { ...unread, ownerAnswer: null } : unread;
+  return sig.drafting ? { ...base, asks: base.asks?.filter(a => a.state !== 'approved') } : base;
 }
 
 // ---------------------------------------------------------------------------
@@ -206,11 +320,13 @@ export function inHours(d: Date, cfg: SentinelConfig): boolean {
 /**
  * Stop the server once per working day, on the first tick inside [stopAt, stopAt + every).
  * The window, not "any time after", so a sentinel armed at 20:00 never kills a board the
- * owner started by hand after hours.
+ * owner started by hand after hours. The one catch-up past the window: a re-arm whose saved
+ * baseline shows today's watch was running before the stop time.
  */
-export function shouldStop(d: Date, cfg: SentinelConfig, stoppedOn: string | undefined): boolean {
+export function shouldStop(d: Date, cfg: SentinelConfig, stoppedOn: string | undefined, resumedOn?: string): boolean {
   const m = minuteOfDay(d);
-  return isWorkDay(d, cfg) && m >= cfg.stopAt && m < cfg.stopAt + cfg.everyMin && stoppedOn !== dayKey(d);
+  const today = dayKey(d);
+  return isWorkDay(d, cfg) && m >= cfg.stopAt && (m < cfg.stopAt + cfg.everyMin || resumedOn === today) && stoppedOn !== today;
 }
 
 /** Milliseconds to the next grid tick, or to today's stop-at when that comes first. */
@@ -255,6 +371,10 @@ export interface SentinelState {
   startFailures: number
   stoppedOn?: string
   serverStartedAt?: number
+  // The last working day a cycle ran before the stop time.
+  watchedOn?: string
+  // `watchedOn` as the saved baseline had it: only a re-arm may stop the board past the window.
+  resumedOn?: string
 }
 
 export interface SentinelDeps {
@@ -278,11 +398,13 @@ export const MAX_FAILURES = 3;
 export const MAX_START_FAILURES = 2;
 
 const wake = (reason: WakeReason, details: Record<string, unknown>): Wake => ({ reason, details });
+const NEVER_SYNCED = 'source.json is missing: this board has never synced, so there is nothing to compare';
 
 export async function cycle(cfg: SentinelConfig, deps: SentinelDeps, st: SentinelState): Promise<Wake | null> {
   const now = deps.now();
+  if (isWorkDay(now, cfg) && minuteOfDay(now) < cfg.stopAt) { st.watchedOn = dayKey(now); }
   try {
-    if (shouldStop(now, cfg, st.stoppedOn)) {
+    if (shouldStop(now, cfg, st.stoppedOn, st.resumedOn)) {
       const pids = await deps.listening();
       st.stoppedOn = dayKey(now);
       st.serverStartedAt = undefined;
@@ -300,10 +422,10 @@ export async function cycle(cfg: SentinelConfig, deps: SentinelDeps, st: Sentine
     else { st.startFailures = 0; }
 
     const { events, tracker } = deps.read();
-    if (!tracker) { throw new Error('source.json is missing: this board has never synced, so there is nothing to compare'); }
+    if (!tracker) { throw new Error(NEVER_SYNCED); }
 
     const sig = signatureOf(events, tracker);
-    if (!st.baseline) { st.baseline = sig; st.failures = 0; return null; }
+    if (!st.baseline) { st.baseline = freshBaseline(events, sig); st.failures = 0; return null; }
 
     const stale = syncStale(tracker.syncedAt, now, cfg, st.serverStartedAt);
     if (stale.stale && st.staleReported !== tracker.syncedAt) {
@@ -336,18 +458,86 @@ export async function cycle(cfg: SentinelConfig, deps: SentinelDeps, st: Sentine
   }
 }
 
+// No hours gate. Without an immediate part the baseline stays, so the next tick still reports the additions.
+export function quickCheck(st: SentinelState, { events, tracker }: ReturnType<SentinelDeps['read']>, now: Date): Wake | null {
+  // Thrown, not null: the wait must not count a board it could not compare as checked.
+  if (!tracker) { throw new Error(NEVER_SYNCED); }
+  const sig = signatureOf(events, tracker);
+  st.baseline ??= freshBaseline(events, sig);
+  // Adopted here too: off hours no tick reads the board, and an older baseline would never see an ask move.
+  if (!st.baseline.asks) { st.baseline = { ...st.baseline, asks: sig.asks }; }
+  const added = additions(st.baseline, sig);
+  if (!added?.parts.some(p => IMMEDIATE_PARTS.includes(p))) { return null; }
+  st.baseline = sig;
+  st.sweptAt = now.getTime();
+  return wake('change', { ...added });
+}
+
+export const POLL_MS = 2_000;
+// One action can append several events; the check waits for the burst to land.
+export const SETTLE_MS = 1_500;
+
+export interface WaitDeps {
+  statKey: () => string
+  sleep: (ms: number) => Promise<void>
+  now: () => number
+  check: () => Wake | null
+  log: (line: string) => void
+}
+
+export async function waitForTick(deps: WaitDeps, until: number, seen: string): Promise<{ wake: Wake | null, seen: string }> {
+  let checked = seen;
+  let failure = '';
+  while (deps.now() < until) {
+    await deps.sleep(Math.max(0, Math.min(POLL_MS, until - deps.now())));
+    if (deps.statKey() === checked) { continue; }
+    await deps.sleep(SETTLE_MS);
+    // Sampled before the read: a write that lands during the check changes the key again.
+    const key = deps.statKey();
+    try {
+      const found = deps.check();
+      checked = key;
+      failure = '';
+      if (found) { return { wake: found, seen: checked }; }
+    }
+    catch (err) {
+      const message = (err as Error).message ?? String(err);
+      if (message !== failure) { deps.log(`quick check failed, retrying: ${message}`); }
+      failure = message;
+    }
+  }
+  return { wake: null, seen: checked };
+}
+
+export async function watchUntilWake(cfg: SentinelConfig, deps: WaitDeps & { tick: () => Promise<Wake | null> }): Promise<Wake> {
+  // '' is no file's key, so the first wait checks at once. Later keys carry over, never resampled after a cycle: off hours a cycle reads nothing.
+  let seen = '';
+  for (;;) {
+    const ticked = await deps.tick();
+    if (ticked) { return ticked; }
+    const until = deps.now() + msToNextTick(new Date(deps.now()), cfg);
+    if (cfg.dryRun) {
+      await deps.sleep(until - deps.now());
+      continue;
+    }
+    const waited = await waitForTick(deps, until, seen);
+    if (waited.wake) { return waited.wake; }
+    seen = waited.seen;
+  }
+}
+
 /** The two lines a wake prints: the reason line the harness notification shows, then JSON. */
 export function wakeLines(w: Wake, ctx: { at: Date, slug: string, rearm: string }): [string, string] {
   const parts = Array.isArray(w.details.parts) ? ` (${(w.details.parts as string[]).join(', ')})` : '';
-  return [`SENTINEL WAKE ${w.reason}${parts}`, JSON.stringify({ reason: w.reason, at: ctx.at.toISOString(), slug: ctx.slug, ...w.details, rearm: ctx.rearm })];
+  return [`SENTINEL WAKE ${w.reason}${parts}`, printableJson({ reason: w.reason, at: ctx.at.toISOString(), slug: ctx.slug, ...w.details, rearm: ctx.rearm })];
 }
 
 // ---------------------------------------------------------------------------
 // Baseline persistence
 // ---------------------------------------------------------------------------
 
-/** `stoppedOn` and `serverStartedAt` ride along so a re-armed sentinel neither stops the board twice in one stop window nor loses the morning grace. */
-export interface BaselineFile { v: 1, savedAt: string, slug: string, signature: Signature, sweptAt: string, staleReported?: string, stoppedOn?: string, serverStartedAt?: string }
+/** `stoppedOn`, `watchedOn` and `serverStartedAt` ride along so a re-armed sentinel neither stops the board twice in one day, misses a stop it owes, nor loses the morning grace. */
+export interface BaselineFile { v: 1, savedAt: string, slug: string, signature: Signature, sweptAt: string, staleReported?: string, stoppedOn?: string, watchedOn?: string, serverStartedAt?: string }
 
 export function toBaselineFile(st: SentinelState, slug: string, at: Date): BaselineFile | null {
   if (!st.baseline) { return null; }
@@ -359,12 +549,13 @@ export function toBaselineFile(st: SentinelState, slug: string, at: Date): Basel
     sweptAt: new Date(st.sweptAt).toISOString(),
     staleReported: st.staleReported,
     stoppedOn: st.stoppedOn,
+    watchedOn: st.watchedOn,
     serverStartedAt: st.serverStartedAt === undefined ? undefined : new Date(st.serverStartedAt).toISOString(),
   };
 }
 
 /** A baseline written for another board is refused, never silently reused (fail loudly). */
-export function fromBaselineFile(raw: string, slug: string, path: string): Pick<SentinelState, 'baseline' | 'sweptAt' | 'staleReported' | 'stoppedOn' | 'serverStartedAt'> {
+export function fromBaselineFile(raw: string, slug: string, path: string): Pick<SentinelState, 'baseline' | 'sweptAt' | 'staleReported' | 'stoppedOn' | 'watchedOn' | 'resumedOn' | 'serverStartedAt'> {
   const f = JSON.parse(raw) as Partial<BaselineFile>;
   if (f.v !== 1 || !f.signature || !Array.isArray(f.signature.arrivals)) { throw new Error(`${path} is not a sentinel baseline (v1)`); }
   if (f.slug !== slug) { throw new Error(`${path} is the baseline of ${f.slug}, not ${slug}; pass a baseline under this board's folder`); }
@@ -375,6 +566,8 @@ export function fromBaselineFile(raw: string, slug: string, path: string): Pick<
     sweptAt: Number.isFinite(swept) ? swept : Date.now(),
     staleReported: f.staleReported,
     stoppedOn: f.stoppedOn,
+    watchedOn: f.watchedOn,
+    resumedOn: f.watchedOn,
     serverStartedAt: Number.isFinite(started) ? started : undefined,
   };
 }
