@@ -1,0 +1,32 @@
+{
+  "atc": {
+    "id": "ebeb4071-1cf0-4aea-a451-7eaa5cc46569",
+    "slug": "defect-triage/atc-492d7343",
+    "tags": [],
+    "layer": "API",
+    "steps": [
+      {
+        "id": "49195df1-5184-404f-8a2e-8bc3f9267052",
+        "content": "Seeded by BK-864 to fix the AC in a known coverage state",
+        "expected": null,
+        "position": 1,
+        "input_data": null
+      }
+    ],
+    "title": "ATC executed cov-1795846250145-xaVStt",
+    "status": "unrun",
+    "version": 1,
+    "priority": null,
+    "module_id": "589e386c-4220-4dbd-9519-66cf19f40c75",
+    "technique": null,
+    "assertions": [],
+    "created_at": "2026-11-28T06:10:52.510066+00:00",
+    "project_id": "0fe6b7ba-20ef-4486-a7e4-16c7572adee3",
+    "updated_at": "2026-11-28T06:10:52.510066+00:00",
+    "archived_at": null,
+    "user_story_id": "34248692-3db6-4118-91c2-24cde007669e",
+    "acceptance_criterion_ids": [
+      "f182deff-d0bb-4d61-b4fa-92599caf37af"
+    ]
+  }
+}

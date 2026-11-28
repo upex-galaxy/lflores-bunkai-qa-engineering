@@ -1,0 +1,12 @@
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/bugs
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/aa2d62e2-cbd7-4fb6-b194-ce67930b7319/assign
+✅ [BK-477] assignBugToEligibleMember - PASS (299ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/aa2d62e2-cbd7-4fb6-b194-ce67930b7319/status
+✅ [BK-479] advanceStatusLegally - PASS (286ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/aa2d62e2-cbd7-4fb6-b194-ce67930b7319/status
+✅ [BK-479] advanceStatusLegally - PASS (316ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/aa2d62e2-cbd7-4fb6-b194-ce67930b7319/status
+✅ [BK-479] advanceStatusLegally - PASS (317ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/aa2d62e2-cbd7-4fb6-b194-ce67930b7319/assign
+✅ [BK-484] keepAssigneeAndStatusIndependent - PASS (304ms)
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/aa2d62e2-cbd7-4fb6-b194-ce67930b7319
