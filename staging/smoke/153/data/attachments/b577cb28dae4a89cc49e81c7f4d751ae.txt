@@ -1,0 +1,4 @@
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/me
+---- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/bugs
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/bugs/56b81f13-f837-43ae-ba38-b1a197d3e4ac/assign
+---- API OK: 200 - https://staging-upexbunkai.vercel.app/api/v1/activity

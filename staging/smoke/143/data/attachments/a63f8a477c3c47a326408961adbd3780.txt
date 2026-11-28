@@ -1,4 +1,0 @@
-✅ [BK-557] createModuleViaSessionRegardlessOfPatScope - PASS (183ms)
----- API OK: 201 - https://staging-upexbunkai.vercel.app/api/v1/tokens
----- API OK: 204 - https://staging-upexbunkai.vercel.app/api/v1/tokens/bb4dbea3-552a-43cb-a364-a1f89fc4cc1e
----- API NOK: 401 - https://staging-upexbunkai.vercel.app/api/v1/projects/0fe6b7ba-20ef-4486-a7e4-16c7572adee3/modules
